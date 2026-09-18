@@ -736,6 +736,216 @@ var SIMULATION_CONFIG = {
 };
 
 /* ==============================================================
+   SECTION 2B: PBA PRACTICE — Question Bank
+   ============================================================== */
+
+var PBA_QUESTIONS = [
+  // ── MAJOR PRACTICALS (Section A, 6 marks each) ──────────
+
+  // A1 — Fractional Distillation
+  {
+    id: "MAJ_A1_Q1",
+    practicalId: "A1",
+    section: "A",
+    marks: 6,
+    prompt: "You are given a mixture of water and ethanol. Describe the apparatus setup for fractional distillation and explain the role of each major component.",
+    type: "multi_part",
+    parts: [
+      { component: "Apparatus", marks: 2, prompt: "List the apparatus needed for fractional distillation.", type: "selection_multi", options: ["Round-bottom flask", "Fractionating column", "Condenser", "Thermometer", "Bunsen burner", "Beaker", "Evaporating dish", "Filter funnel"], correctAnswers: ["Round-bottom flask", "Fractionating column", "Condenser", "Thermometer", "Bunsen burner"] },
+      { component: "Procedure", marks: 2, prompt: "Arrange the distillation steps in the correct order.", type: "ordering", steps: ["Assemble the apparatus with fractionating column", "Add the mixture to the round-bottom flask", "Heat gently and monitor temperature", "Collect distillate when temperature stabilises"], correctOrder: [0, 1, 2, 3] },
+      { component: "Observation", marks: 1, prompt: "At what temperature does ethanol distil?", type: "measurement", unit: "°C", expectedValue: 78, tolerance: 2 },
+      { component: "Interpretation", marks: 1, prompt: "Why is a fractionating column used instead of simple distillation?", type: "selection", options: ["To increase the surface area for repeated condensation and vaporisation", "To cool the vapour more quickly", "To hold the thermometer in place", "To prevent bumping"], correctAnswer: 0 }
+    ]
+  },
+  // A2 — Paper Chromatography (Ink)
+  {
+    id: "MAJ_A2_Q1",
+    practicalId: "A2",
+    section: "A",
+    marks: 6,
+    prompt: "A student separates the components of an ink using paper chromatography. Answer the following questions about the procedure and results.",
+    type: "multi_part",
+    parts: [
+      { component: "Apparatus", marks: 1, prompt: "Why is a pencil line used instead of pen for the baseline?", type: "selection", options: ["Pencil graphite does not dissolve in the solvent", "Pencil marks are easier to see", "Pen ink would interfere with the chromatogram", "Pencil is cheaper"], correctAnswer: 0 },
+      { component: "Procedure", marks: 1, prompt: "Where should the ink spot be placed relative to the baseline?", type: "selection", options: ["On the baseline", "Below the baseline", "Above the baseline", "At the top of the paper"], correctAnswer: 1 },
+      { component: "Observation", marks: 2, prompt: "A chromatogram shows three spots. The solvent front travelled 8.0 cm. Spot A is at 2.4 cm, Spot B is at 5.6 cm, Spot C is at 7.2 cm. Calculate the Rf value of Spot B.", type: "calculation", expectedValue: 0.7, tolerance: 0.05, unit: "" },
+      { component: "Interpretation", marks: 1, prompt: "What does an Rf value of 0.30 indicate about a component?", type: "selection", options: ["It is less soluble in the solvent and/or more strongly adsorbed", "It is more soluble in the solvent", "It has a higher molecular weight", "It is more volatile"], correctAnswer: 0 },
+      { component: "Conclusion", marks: 1, prompt: "Two different inks produce identical chromatograms. What can you conclude?", type: "selection", options: ["They likely contain the same dye components", "They are definitely the same ink", "They have the same colour", "They were dissolved in the same solvent"], correctAnswer: 0 }
+    ]
+  },
+  // A3 — Pb²⁺/Cd²⁺ Paper Chromatography
+  {
+    id: "MAJ_A3_Q1",
+    practicalId: "A3",
+    section: "A",
+    marks: 6,
+    prompt: "A mixture containing Pb²⁺ and Cd²⁺ ions is separated by paper chromatography using HCl as the solvent. Answer the following.",
+    type: "multi_part",
+    parts: [
+      { component: "Apparatus", marks: 1, prompt: "What is used to detect the separated ions on the chromatogram?", type: "selection", options: ["Potassium iodide solution", "Sodium hydroxide solution", "Litmus paper", "Phenolphthalein"], correctAnswer: 0 },
+      { component: "Observation", marks: 2, prompt: "On the chromatogram, Pb²⁺ appears as a yellow spot and Cd²⁺ as a brown spot. If the solvent front is 10 cm, Pb²⁺ spot is at 3.0 cm, and Cd²⁺ spot is at 6.5 cm, calculate the Rf of Cd²⁺.", type: "calculation", expectedValue: 0.65, tolerance: 0.05, unit: "" },
+      { component: "Interpretation", marks: 2, prompt: "Which ion travels further and why?", type: "selection", options: ["Cd²⁺ travels further because it is more soluble in the mobile phase", "Pb²⁺ travels further because it is heavier", "Both travel the same distance", "Neither travels from the baseline"], correctAnswer: 0 },
+      { component: "Conclusion", marks: 1, prompt: "What is the purpose of running a reference sample alongside the mixture?", type: "selection", options: ["To confirm the identity of separated ions by comparison", "To make the chromatogram develop faster", "To prevent the solvent from evaporating", "To increase the Rf values"], correctAnswer: 0 }
+    ]
+  },
+  // A4 — NaOH Volumetric Analysis
+  {
+    id: "MAJ_A4_Q1",
+    practicalId: "A4",
+    section: "A",
+    marks: 6,
+    prompt: "You titrate a 25.00 cm³ sample of NaOH solution against 0.1000 mol/dm³ HCl using phenolphthalein indicator. The average titre is 23.45 cm³. Answer the following.",
+    type: "multi_part",
+    parts: [
+      { component: "Apparatus", marks: 1, prompt: "Which apparatus is used to measure exactly 25.00 cm³ of NaOH?", type: "selection", options: ["Volumetric pipette", "Measuring cylinder", "Beaker", "Burette"], correctAnswer: 0 },
+      { component: "Procedure", marks: 1, prompt: "Why is the burette rinsed with the acid solution before filling?", type: "selection", options: ["To remove water that would dilute the acid", "To warm the burette", "To check for leaks", "To clean dust from the burette"], correctAnswer: 0 },
+      { component: "Calculation", marks: 2, prompt: "Calculate the molarity of NaOH. (M₁V₁ = M₂V₂ where acid is M₁V₁ and base is M₂V₂)", type: "calculation", expectedValue: 0.0938, tolerance: 0.002, unit: "mol/dm³" },
+      { component: "Interpretation", marks: 1, prompt: "Why are concordant titres (within 0.10 cm³) required?", type: "selection", options: ["To ensure the result is reliable and reproducible", "To make the calculation simpler", "To use less acid solution", "To complete the titration faster"], correctAnswer: 0 },
+      { component: "Conclusion", marks: 1, prompt: "At the endpoint, phenolphthalein changes from:", type: "selection", options: ["Pink to colourless", "Colourless to pink", "Yellow to orange", "Blue to green"], correctAnswer: 0 }
+    ]
+  },
+  // A5 — Gas Detection
+  {
+    id: "MAJ_A5_Q1",
+    practicalId: "A5",
+    section: "A",
+    marks: 6,
+    prompt: "Three colourless gases — NH₃, CO₂, and Cl₂ — are to be identified using appropriate chemical tests. Answer the following.",
+    type: "multi_part",
+    parts: [
+      { component: "Apparatus", marks: 1, prompt: "What is used to deliver a gas sample to a test reagent?", type: "selection", options: ["Delivering tube", "Glass rod", "Dropper", "Watch glass"], correctAnswer: 0 },
+      { component: "Observation", marks: 2, prompt: "NH₃ is tested with damp red litmus paper. What change is observed?", type: "selection", options: ["Red litmus turns blue", "Blue litmus turns red", "No change", "Paper turns brown"], correctAnswer: 0 },
+      { component: "Observation", marks: 1, prompt: "CO₂ is tested with limewater. What observation confirms CO₂?", type: "selection", options: ["Limewater turns milky/cloudy", "Limewater turns yellow", "Bubbles form only", "No visible change"], correctAnswer: 0 },
+      { component: "Interpretation", marks: 1, prompt: "Cl₂ gas turns damp blue litmus paper red, then white. What does the second change indicate?", type: "selection", options: ["Chlorine has bleaching action", "Chlorine is acidic", "Chlorine is alkaline", "The paper is wet"], correctAnswer: 0 },
+      { component: "Conclusion", marks: 1, prompt: "Which test uniquely identifies NH₃ among the three gases?", type: "selection", options: ["Damp red litmus turns blue (alkaline gas)", "Limewater turns milky", "Damp litmus is bleached", "Burns with a pop sound"], correctAnswer: 0 }
+    ]
+  },
+
+  // ── MINOR PRACTICALS (Section B, 4 marks each) ──────────
+
+  // M7.1 — Sublimation
+  {
+    id: "MIN_M71_Q1",
+    practicalId: "M7_1",
+    section: "B",
+    marks: 4,
+    prompt: "A mixture of naphthalene, sand, and salt is to be separated. Answer the following about the sublimation of naphthalene.",
+    type: "multi_part",
+    parts: [
+      { component: "Apparatus", marks: 1, prompt: "Which apparatus is used to collect the sublimed naphthalene?", type: "selection", options: ["Inverted funnel lined with filter paper", "Beaker", "Measuring cylinder", "Evaporating dish"], correctAnswer: 0 },
+      { component: "Procedure", marks: 1, prompt: "What type of heating is required for sublimation?", type: "selection", options: ["Gentle heating with a Bunsen burner", "Strong heating with a blast burner", "Heating in a water bath", "No heating required"], correctAnswer: 0 },
+      { component: "Observation", marks: 1, prompt: "Where does the naphthalene deposit during sublimation?", type: "selection", options: ["On the cool surface of the inverted funnel", "At the bottom of the evaporating dish", "On the tripod stand", "It evaporates completely"], correctAnswer: 0 },
+      { component: "Conclusion", marks: 1, prompt: "After sublimation, what remains in the evaporating dish?", type: "selection", options: ["Sand and salt", "Naphthalene only", "Sand only", "Nothing — the dish is empty"], correctAnswer: 0 }
+    ]
+  },
+  // M7.2 — Flame Tests
+  {
+    id: "MIN_M72_Q1",
+    practicalId: "M7_2",
+    section: "B",
+    marks: 4,
+    prompt: "A student identifies five ions by flame test. Match each ion to its characteristic flame colour.",
+    type: "multi_part",
+    parts: [
+      { component: "Observation", marks: 1, prompt: "Which ion produces a yellow flame?", type: "selection", options: ["Na⁺", "K⁺", "Ca²⁺", "Cu²⁺", "Ba²⁺"], correctAnswer: 0 },
+      { component: "Observation", marks: 1, prompt: "Which ion produces a blue-green flame?", type: "selection", options: ["Cu²⁺", "Na⁺", "K⁺", "Ca²⁺", "Ba²⁺"], correctAnswer: 0 },
+      { component: "Procedure", marks: 1, prompt: "Why is the wire cleaned with HCl between tests?", type: "selection", options: ["To remove residue from the previous sample", "To make the wire hotter", "To change the flame colour", "To prevent rusting"], correctAnswer: 0 },
+      { component: "Interpretation", marks: 1, prompt: "K⁺ produces a lilac flame. What observation would mask this colour?", type: "selection", options: ["Na⁺ contamination giving intense yellow", "Ca²⁺ giving brick-red", "Cu²⁺ giving blue-green", "Ba²⁺ giving green"], correctAnswer: 0 }
+    ]
+  },
+  // M7.3 — CuSO₄ Crystals
+  {
+    id: "MIN_M73_Q1",
+    practicalId: "M7_3",
+    section: "B",
+    marks: 4,
+    prompt: "Describe the preparation of copper(II) sulphate pentahydrate crystals.",
+    type: "multi_part",
+    parts: [
+      { component: "Procedure", marks: 1, prompt: "What is the first step in preparing CuSO₄·5H₂O crystals?", type: "selection", options: ["Dissolve CuSO₄ powder in warm distilled water", "Heat the solution to boiling", "Filter the solution", "Add ice to the solution"], correctAnswer: 0 },
+      { component: "Procedure", marks: 1, prompt: "After dissolving, what should be done before crystallisation?", type: "selection", options: ["Filter to remove impurities", "Add more water", "Add NaOH", "Cool rapidly in ice"], correctAnswer: 0 },
+      { component: "Observation", marks: 1, prompt: "What is the colour of CuSO₄·5H₂O crystals?", type: "selection", options: ["Blue", "White", "Green", "Red"], correctAnswer: 0 },
+      { component: "Interpretation", marks: 1, prompt: "Why should the solution cool slowly rather than rapidly?", type: "selection", options: ["To form larger, purer crystals", "To save time", "To prevent evaporation", "To change the colour"], correctAnswer: 0 }
+    ]
+  },
+  // M7.4 — Melting Point
+  {
+    id: "MIN_M74_Q1",
+    practicalId: "M7_4",
+    section: "B",
+    marks: 4,
+    prompt: "A student determines the melting point of naphthalene. Answer the following.",
+    type: "multi_part",
+    parts: [
+      { component: "Apparatus", marks: 1, prompt: "Which apparatus holds the naphthalene sample during melting point determination?", type: "selection", options: ["Capillary tube", "Beaker", "Test tube", "Evaporating dish"], correctAnswer: 0 },
+      { component: "Procedure", marks: 1, prompt: "How should the water bath be heated?", type: "selection", options: ["Gradually, to ensure uniform temperature rise", "Rapidly, to save time", "At full flame intensity", "In a microwave"], correctAnswer: 0 },
+      { component: "Measurement", marks: 1, prompt: "The expected melting point of pure naphthalene is approximately:", type: "calculation", expectedValue: 80, tolerance: 2, unit: "°C" },
+      { component: "Interpretation", marks: 1, prompt: "If the observed melting point is lower than expected, what does this suggest?", type: "selection", options: ["The sample may be impure", "The thermometer is faulty", "The sample is heated too slowly", "The water bath is too hot"], correctAnswer: 0 }
+    ]
+  },
+  // M7.5 — Boiling Point
+  {
+    id: "MIN_M75_Q1",
+    practicalId: "M7_5",
+    section: "B",
+    marks: 4,
+    prompt: "A student determines the boiling point of ethyl alcohol (ethanol).",
+    type: "multi_part",
+    parts: [
+      { component: "Apparatus", marks: 1, prompt: "Where should the thermometer bulb be placed during distillation?", type: "selection", options: ["At the branch of the flask, level with the side arm", "In the liquid at the bottom", "Above the flask", "In the condenser"], correctAnswer: 0 },
+      { component: "Procedure", marks: 1, prompt: "Why are boiling chips added before heating?", type: "selection", options: ["To ensure smooth, even boiling and prevent bumping", "To increase the boiling point", "To change the colour", "To absorb impurities"], correctAnswer: 0 },
+      { component: "Measurement", marks: 1, prompt: "The expected boiling point of ethanol is approximately:", type: "calculation", expectedValue: 78, tolerance: 2, unit: "°C" },
+      { component: "Interpretation", marks: 1, prompt: "If the boiling point is higher than expected, what could be the reason?", type: "selection", options: ["The ethanol is contaminated with a higher-boiling impurity", "The thermometer is inaccurate", "Too many boiling chips were used", "The condenser is too cold"], correctAnswer: 0 }
+    ]
+  },
+  // M7.6 — Metal Displacement
+  {
+    id: "MIN_M76_Q1",
+    practicalId: "M7_6",
+    section: "B",
+    marks: 4,
+    prompt: "Zinc granules are added to copper(II) sulphate solution. Answer the following about the displacement reaction.",
+    type: "multi_part",
+    parts: [
+      { component: "Observation", marks: 1, prompt: "What change in colour of the solution is observed?", type: "selection", options: ["Blue solution becomes colourless/pale", "Colourless solution turns blue", "Solution turns yellow", "No colour change"], correctAnswer: 0 },
+      { component: "Observation", marks: 1, prompt: "What is deposited on the zinc surface?", type: "selection", options: ["Red-brown copper metal", "White zinc powder", "Green copper hydroxide", "Blue copper sulphate crystals"], correctAnswer: 0 },
+      { component: "Interpretation", marks: 1, prompt: "Write the displacement reaction. Which is correct?", type: "selection", options: ["Zn(s) + CuSO₄(aq) → ZnSO₄(aq) + Cu(s)", "Cu(s) + ZnSO₄(aq) → CuSO₄(aq) + Zn(s)", "Zn(s) + Cu(s) → ZnCu(s)", "ZnSO₄(aq) + CuSO₄(aq) → No reaction"], correctAnswer: 0 },
+      { component: "Conclusion", marks: 1, prompt: "What does this reaction demonstrate about the reactivity series?", type: "selection", options: ["Zinc is more reactive than copper", "Copper is more reactive than zinc", "Both have equal reactivity", "Neither is reactive"], correctAnswer: 0 }
+    ]
+  },
+  // M7.7 — Water Test
+  {
+    id: "MIN_M77_Q1",
+    practicalId: "M7_7",
+    section: "B",
+    marks: 4,
+    prompt: "Anhydrous copper(II) sulphate is used to test for the presence of water. Answer the following.",
+    type: "multi_part",
+    parts: [
+      { component: "Observation", marks: 1, prompt: "What is the initial colour of anhydrous CuSO₄?", type: "selection", options: ["White", "Blue", "Green", "Pink"], correctAnswer: 0 },
+      { component: "Observation", marks: 1, prompt: "What colour change occurs when water is added?", type: "selection", options: ["White turns to blue", "Blue turns to white", "Green turns to brown", "No change"], correctAnswer: 0 },
+      { component: "Interpretation", marks: 1, prompt: "What does the colour change indicate?", type: "selection", options: ["Water is present — CuSO₄ becomes hydrated", "The sample is dry", "The CuSO₄ has decomposed", "A chemical reaction with air occurred"], correctAnswer: 0 },
+      { component: "Conclusion", marks: 1, prompt: "Why is this test described as a chemical test for water?", type: "selection", options: ["Because a chemical change (hydration) produces a visible colour change", "Because it uses chemicals", "Because it involves heating", "Because it measures pH"], correctAnswer: 0 }
+    ]
+  },
+  // M7.8 — Water Purity
+  {
+    id: "MIN_M78_Q1",
+    practicalId: "M7_8",
+    section: "B",
+    marks: 4,
+    prompt: "The purity of a water sample is tested by determining its melting point and boiling point.",
+    type: "multi_part",
+    parts: [
+      { component: "Measurement", marks: 1, prompt: "The expected melting point of pure water (ice) at standard pressure is:", type: "calculation", expectedValue: 0, tolerance: 1, unit: "°C" },
+      { component: "Measurement", marks: 1, prompt: "The expected boiling point of pure water at standard pressure is:", type: "calculation", expectedValue: 100, tolerance: 2, unit: "°C" },
+      { component: "Interpretation", marks: 1, prompt: "If the boiling point is slightly above 100°C, what does this suggest?", type: "selection", options: ["The water may contain dissolved impurities (e.g. salt)", "The water is definitely pure", "The thermometer is broken", "The water is frozen"], correctAnswer: 0 },
+      { component: "Conclusion", marks: 1, prompt: "Pure water has a melting point of 0°C and boiling point of 100°C. A sample melts at -1°C and boils at 103°C. What is the most likely conclusion?", type: "selection", options: ["The sample is impure", "The sample is pure", "The sample is distilled water only", "The sample contains no dissolved substances"], correctAnswer: 0 }
+    ]
+  }
+];
+
+/* ==============================================================
    SECTION 3: STATE
    ============================================================== */
 
@@ -786,7 +996,14 @@ var state = {
   m7_ionIndex: 0,
   m7_ionResults: {},
   m7ActionDone: false,
-  m7ObservationDone: false
+  m7ObservationDone: false,
+
+  // -- PBA Practice Mode (M8) --
+  appMode: "lab",                   // "lab" | "pba"
+  pbaScreen: "menu",               // "menu" | "mode_select" | "generating" | "section_a" | "section_b" | "review" | "result"
+  pbaSession: null,                // { sessionId, startedAt, mode, majorQuestions, minorQuestions, answers, marks, totalMarks, submitted, timerStarted, timerElapsed }
+  pbaCurrentSection: "A",          // "A" | "B"
+  pbaCurrentIndex: 0               // Current question index within section
 };
 
 /* ==============================================================
@@ -831,7 +1048,603 @@ function prevStage() {
 }
 
 /* ==============================================================
-   SECTION 5: DOM
+   SECTION 8C: PBA PRACTICE — Session Engine & Renderers
+   ============================================================== */
+
+function pbaGenerateSession() {
+  var majorPool = PBA_QUESTIONS.filter(function(q) { return q.section === "A"; });
+  var minorPool = PBA_QUESTIONS.filter(function(q) { return q.section === "B"; });
+  var shuffled = pbaShuffle(majorPool.slice());
+  var selectedMajor = shuffled.slice(0, 2);
+  var shuffledMinor = pbaShuffle(minorPool.slice());
+  var selectedMinor = shuffledMinor.slice(0, 2);
+  var answers = {};
+  var marks = {};
+  for (var i = 0; i < selectedMajor.length; i++) {
+    var q = selectedMajor[i];
+    answers[q.id] = {};
+    marks[q.id] = 0;
+    if (q.parts) {
+      for (var p = 0; p < q.parts.length; p++) {
+        answers[q.id][p] = null;
+        marks[q.id] = 0;
+      }
+    }
+  }
+  for (var j = 0; j < selectedMinor.length; j++) {
+    var q2 = selectedMinor[j];
+    answers[q2.id] = {};
+    marks[q2.id] = 0;
+    if (q2.parts) {
+      for (var p2 = 0; p2 < q2.parts.length; p2++) {
+        answers[q2.id][p2] = null;
+      }
+    }
+  }
+  state.pbaSession = {
+    sessionId: "PBA_" + Date.now(),
+    startedAt: Date.now(),
+    mode: "full",
+    majorQuestions: selectedMajor,
+    minorQuestions: selectedMinor,
+    answers: answers,
+    marks: marks,
+    totalMarks: 0,
+    submitted: false,
+    timerStarted: false,
+    timerElapsed: 0
+  };
+}
+
+function pbaShuffle(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+  }
+  return arr;
+}
+
+function pbaScoreQuestion(question) {
+  if (!question || !question.parts) return 0;
+  var total = 0;
+  for (var i = 0; i < question.parts.length; i++) {
+    var part = question.parts[i];
+    var answer = state.pbaSession.answers[question.id][i];
+    if (answer === null || answer === undefined) continue;
+    if (part.type === "selection") {
+      if (answer === part.correctAnswer) total += part.marks;
+    } else if (part.type === "selection_multi") {
+      var correct = part.correctAnswers;
+      var selected = answer;
+      if (selected && selected.length === correct.length) {
+        var allCorrect = true;
+        for (var k = 0; k < correct.length; k++) {
+          if (selected.indexOf(correct[k]) === -1) { allCorrect = false; break; }
+        }
+        if (allCorrect) total += part.marks;
+      }
+    } else if (part.type === "ordering") {
+      var expected = part.correctOrder;
+      var given = answer;
+      if (given && given.length === expected.length) {
+        var orderCorrect = true;
+        for (var m = 0; m < expected.length; m++) {
+          if (given[m] !== expected[m]) { orderCorrect = false; break; }
+        }
+        if (orderCorrect) total += part.marks;
+      }
+    } else if (part.type === "calculation") {
+      var num = parseFloat(answer);
+      if (!isNaN(num)) {
+        var diff = Math.abs(num - part.expectedValue);
+        if (diff <= part.tolerance) total += part.marks;
+      }
+    }
+  }
+  return total;
+}
+
+function pbaScoreAll() {
+  var sess = state.pbaSession;
+  if (!sess) return;
+  var allQ = sess.majorQuestions.concat(sess.minorQuestions);
+  var total = 0;
+  for (var i = 0; i < allQ.length; i++) {
+    sess.marks[allQ[i].id] = pbaScoreQuestion(allQ[i]);
+    total += sess.marks[allQ[i].id];
+  }
+  sess.totalMarks = total;
+}
+
+function pbaGetAllQuestions() {
+  var s = state.pbaSession;
+  if (!s) return [];
+  return s.majorQuestions.concat(s.minorQuestions);
+}
+
+function pbaGetCurrentQuestion() {
+  var all = pbaGetAllQuestions();
+  var idx = state.pbaCurrentIndex;
+  return all[idx] || null;
+}
+
+function pbaGetMajorTotal() {
+  var s = state.pbaSession;
+  if (!s) return 0;
+  var t = 0;
+  for (var i = 0; i < s.majorQuestions.length; i++) t += s.majorQuestions[i].marks;
+  return t;
+}
+
+function pbaGetMinorTotal() {
+  var s = state.pbaSession;
+  if (!s) return 0;
+  var t = 0;
+  for (var i = 0; i < s.minorQuestions.length; i++) t += s.minorQuestions[i].marks;
+  return t;
+}
+
+function pbaGetSectionScore(section) {
+  var s = state.pbaSession;
+  if (!s) return 0;
+  var total = 0;
+  var qs = section === "A" ? s.majorQuestions : s.minorQuestions;
+  for (var i = 0; i < qs.length; i++) total += (s.marks[qs[i].id] || 0);
+  return total;
+}
+
+function pbaIsUnanswered(question) {
+  if (!question || !question.parts) return false;
+  var ans = state.pbaSession.answers[question.id];
+  if (!ans) return true;
+  for (var i = 0; i < question.parts.length; i++) {
+    if (ans[i] === null || ans[i] === undefined) return true;
+    if (question.parts[i].type === "selection_multi" && (!ans[i] || ans[i].length === 0)) return true;
+    if (question.parts[i].type === "ordering" && (!ans[i] || ans[i].length === 0)) return true;
+  }
+  return false;
+}
+
+function pbaFormatTime(ms) {
+  var sec = Math.floor(ms / 1000);
+  var h = Math.floor(sec / 3600);
+  var m = Math.floor((sec % 3600) / 60);
+  var s = sec % 60;
+  return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+}
+
+/* ── PBA Renderers ─────────────────────────── */
+
+function renderPBAMenu() {
+  var html = '<div style="text-align:center;padding:2rem;">';
+  html += '<h2>ChemSim</h2>';
+  html += '<p class="subtitle">Interactive Virtual Chemistry Laboratory</p>';
+  html += '<div style="margin-top:2rem;">';
+  html += '<button class="btn btn-primary" id="btn-enter-lab" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;">Practical Lab</button>';
+  html += '<button class="btn btn-accent" id="btn-enter-pba" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;">PBA Practice</button>';
+  html += '</div>';
+  html += '<div class="sim-note" style="max-width:300px;margin:2rem auto;text-align:left;">';
+  html += 'PBA Practice simulates the FBISE Chemistry Practical Based Assessment.<br><br>';
+  html += '<strong>PBA Structure:</strong><br>';
+  html += 'Section A — Major: 2 × 6 = 12 marks (60%)<br>';
+  html += 'Section B — Minor: 2 × 4 = 8 marks (40%)<br>';
+  html += 'Total: 20 marks | Duration: 2 hours';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderPBAModeSelect() {
+  var html = '<div style="text-align:center;padding:2rem;">';
+  html += '<h3>PBA Practice Mode</h3>';
+  html += '<p>Choose a practice mode:</p>';
+  html += '<button class="btn btn-primary" id="btn-pba-full" style="display:block;width:100%;max-width:350px;margin:0.75rem auto;padding:1rem;">Full PBA Session<br><small>2 Major + 2 Minor | 20 marks | 2 hours</small></button>';
+  html += '<button class="btn btn-accent" id="btn-pba-major" style="display:block;width:100%;max-width:350px;margin:0.75rem auto;padding:1rem;">Major Practice<br><small>2 Major questions | 12 marks</small></button>';
+  html += '<button class="btn btn-accent" id="btn-pba-minor" style="display:block;width:100%;max-width:350px;margin:0.75rem auto;padding:1rem;">Minor Practice<br><small>2 Minor questions | 8 marks</small></button>';
+  html += '<button class="btn btn-secondary" id="btn-pba-back" style="margin-top:1.5rem;">← Back to Menu</button>';
+  html += '</div>';
+  return html;
+}
+
+function renderPBAProgress() {
+  var s = state.pbaSession;
+  if (!s) return "";
+  var all = pbaGetAllQuestions();
+  var total = all.length;
+  var html = '<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">';
+  html += '<div>';
+  html += '<strong>' + (state.pbaCurrentSection === "A" ? "Section A — Major" : "Section B — Minor") + '</strong>';
+  html += '<span style="margin-left:0.5rem;">Question ' + (state.pbaCurrentIndex + 1) + ' of ' + total + '</span>';
+  html += '</div>';
+  html += '<div style="margin-left:auto;">';
+  html += '<span>Marks: ' + s.totalMarks + '/20</span>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderPBAQuestion() {
+  var q = pbaGetCurrentQuestion();
+  if (!q) return "<p>No question loaded.</p>";
+  var s = state.pbaSession;
+  var html = '<div class="pba-question">';
+  html += '<div class="label">ChemSim Practice Question</div>';
+  html += '<h3>' + (q.section === "A" ? "Major" : "Minor") + ' Question — ' + q.marks + ' marks</h3>';
+  html += '<p><strong>' + q.prompt + '</strong></p>';
+  if (q.parts) {
+    for (var i = 0; i < q.parts.length; i++) {
+      var part = q.parts[i];
+      var ans = s.answers[q.id] ? s.answers[q.id][i] : null;
+      html += '<div class="pba-part" style="margin:1rem 0;padding:1rem;border:1px solid var(--color-border);border-radius:8px;">';
+      html += '<p><strong>' + part.component + '</strong> (' + part.marks + ' mark' + (part.marks > 1 ? 's' : '') + ')</p>';
+      html += '<p>' + part.prompt + '</p>';
+      if (part.type === "selection") {
+        html += '<div class="tool-options">';
+        for (var j = 0; j < part.options.length; j++) {
+          var selClass = ans === j ? "btn btn-tool selected" : "btn btn-tool";
+          html += '<button class="' + selClass + '" data-qid="' + q.id + '" data-part="' + i + '" data-ans="' + j + '">' + part.options[j] + '</button>';
+        }
+        html += '</div>';
+      } else if (part.type === "selection_multi") {
+        html += '<div class="tool-options">';
+        for (var j2 = 0; j2 < part.options.length; j2++) {
+          var sel = (ans && ans.indexOf(part.options[j2]) !== -1);
+          var selClass2 = sel ? "btn btn-tool selected" : "btn btn-tool";
+          html += '<button class="' + selClass2 + '" data-qid="' + q.id + '" data-part="' + i + '" data-multi="' + part.options[j2] + '">' + part.options[j2] + '</button>';
+        }
+        html += '</div>';
+        html += '<p class="sim-note" style="margin-top:0.5rem;">Select all that apply</p>';
+      } else if (part.type === "ordering") {
+        var steps = part.steps.slice();
+        var userOrder = ans || steps.map(function(_, idx) { return idx; });
+        for (var k = 0; k < userOrder.length; k++) {
+          var stepIdx = userOrder[k];
+          html += '<div class="procedure-step" data-qid="' + q.id + '" data-part="' + i + '" data-step="' + stepIdx + '">';
+          html += '<span class="step-num">' + (k + 1) + '</span>';
+          html += '<span>' + steps[stepIdx] + '</span>';
+          html += '<span style="margin-left:auto;">';
+          if (k > 0) html += '<button class="btn btn-tool" data-qid="' + q.id + '" data-part="' + i + '" data-move="-1" data-pos="' + k + '">▲</button> ';
+          if (k < userOrder.length - 1) html += '<button class="btn btn-tool" data-qid="' + q.id + '" data-part="' + i + '" data-move="1" data-pos="' + k + '">▼</button>';
+          html += '</span>';
+          html += '</div>';
+        }
+      } else if (part.type === "calculation") {
+        html += '<div style="margin-top:0.5rem;">';
+        html += '<input type="number" step="any" class="pba-calc-input" data-qid="' + q.id + '" data-part="' + i + '" value="' + (ans !== null && ans !== undefined ? ans : '') + '" placeholder="Enter value..." style="padding:0.5rem;border:1px solid var(--color-border);border-radius:4px;width:150px;">';
+        if (part.unit) html += ' <span>' + part.unit + '</span>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderPBAReview() {
+  var s = state.pbaSession;
+  if (!s) return "";
+  var all = pbaGetAllQuestions();
+  var html = '<div class="pba-review">';
+  html += '<h3>Review Answers</h3>';
+  html += '<p>Check your answers before final submission.</p>';
+  html += '<table class="measure-table">';
+  html += '<thead><tr><th>Section</th><th>Question</th><th>Marks</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+  for (var i = 0; i < all.length; i++) {
+    var q = all[i];
+    var unanswered = pbaIsUnanswered(q);
+    html += '<tr>';
+    html += '<td>' + (q.section === "A" ? "Major" : "Minor") + '</td>';
+    html += '<td>' + q.prompt.substring(0, 50) + '...</td>';
+    html += '<td>' + q.marks + '</td>';
+    html += '<td>' + (unanswered ? '<span style="color:var(--color-error);">Unanswered</span>' : '<span style="color:var(--color-success);">Answered</span>') + '</td>';
+    html += '<td><button class="btn btn-tool pba-goto" data-idx="' + i + '">Go to</button></td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  html += '<div style="margin-top:1rem;">';
+  html += '<button class="btn btn-primary" id="btn-pba-submit">Submit PBA</button>';
+  html += '<button class="btn btn-secondary" id="btn-pba-review-back" style="margin-left:0.5rem;">Back to Questions</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderPBAResult() {
+  var s = state.pbaSession;
+  if (!s) return "";
+  var majorScore = pbaGetSectionScore("A");
+  var minorScore = pbaGetSectionScore("B");
+  var majorMax = pbaGetMajorTotal();
+  var minorMax = pbaGetMinorTotal();
+  var totalMax = majorMax + minorMax;
+  var pct = totalMax > 0 ? Math.round((s.totalMarks / totalMax) * 100) : 0;
+  var elapsed = s.timerElapsed || (Date.now() - s.startedAt);
+  var html = '<div class="pba-result" style="text-align:center;padding:1.5rem;">';
+  html += '<h2>PBA Practice Result</h2>';
+  html += '<p class="label">ChemSim Practice Scoring</p>';
+  html += '<div style="display:flex;justify-content:center;gap:2rem;margin:1.5rem 0;flex-wrap:wrap;">';
+  html += '<div style="text-align:center;">';
+  html += '<p><strong>Section A — Major</strong></p>';
+  html += '<p style="font-size:1.5rem;font-weight:bold;">' + majorScore + '/' + majorMax + '</p>';
+  html += '</div>';
+  html += '<div style="text-align:center;">';
+  html += '<p><strong>Section B — Minor</strong></p>';
+  html += '<p style="font-size:1.5rem;font-weight:bold;">' + minorScore + '/' + minorMax + '</p>';
+  html += '</div>';
+  html += '<div style="text-align:center;">';
+  html += '<p><strong>TOTAL</strong></p>';
+  html += '<p style="font-size:2rem;font-weight:bold;">' + s.totalMarks + '/' + totalMax + '</p>';
+  html += '<p>' + pct + '%</p>';
+  html += '</div>';
+  html += '</div>';
+  html += '<p>Time taken: ' + pbaFormatTime(elapsed) + '</p>';
+  html += '<hr style="margin:1rem 0;border:none;border-top:1px solid var(--color-border);">';
+  html += '<h3>Question-by-Question Performance</h3>';
+  html += '<table class="measure-table">';
+  html += '<thead><tr><th>Section</th><th>Question</th><th>Marks</th><th>Score</th></tr></thead><tbody>';
+  var all = pbaGetAllQuestions();
+  for (var i = 0; i < all.length; i++) {
+    var q = all[i];
+    html += '<tr>';
+    html += '<td>' + (q.section === "A" ? "Major" : "Minor") + '</td>';
+    html += '<td>' + q.prompt.substring(0, 40) + '...</td>';
+    html += '<td>' + q.marks + '</td>';
+    html += '<td>' + (s.marks[q.id] || 0) + '/' + q.marks + '</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  html += '<h3 style="margin-top:1.5rem;">Skill Breakdown</h3>';
+  html += '<table class="measure-table">';
+  html += '<thead><tr><th>Skill</th><th>Score</th></tr></thead><tbody>';
+  var skills = {};
+  for (var j = 0; j < all.length; j++) {
+    var q2 = all[j];
+    if (q2.parts) {
+      for (var p = 0; p < q2.parts.length; p++) {
+        var comp = q2.parts[p].component;
+        if (!skills[comp]) skills[comp] = { earned: 0, total: 0 };
+        skills[comp].total += q2.parts[p].marks;
+        var ans = s.answers[q2.id] ? s.answers[q2.id][p] : null;
+        if (ans !== null && ans !== undefined) {
+          if (q2.parts[p].type === "selection" && ans === q2.parts[p].correctAnswer) skills[comp].earned += q2.parts[p].marks;
+          else if (q2.parts[p].type === "calculation") {
+            var num = parseFloat(ans);
+            if (!isNaN(num) && Math.abs(num - q2.parts[p].expectedValue) <= q2.parts[p].tolerance) skills[comp].earned += q2.parts[p].marks;
+          } else if (q2.parts[p].type === "selection_multi") {
+            var correct = q2.parts[p].correctAnswers;
+            if (ans && ans.length === correct.length) {
+              var allC = true;
+              for (var c = 0; c < correct.length; c++) { if (ans.indexOf(correct[c]) === -1) { allC = false; break; } }
+              if (allC) skills[comp].earned += q2.parts[p].marks;
+            }
+          } else if (q2.parts[p].type === "ordering") {
+            var exp = q2.parts[p].correctOrder;
+            if (ans && ans.length === exp.length) {
+              var ordOk = true;
+              for (var o = 0; o < exp.length; o++) { if (ans[o] !== exp[o]) { ordOk = false; break; } }
+              if (ordOk) skills[comp].earned += q2.parts[p].marks;
+            }
+          }
+        }
+      }
+    }
+  }
+  for (var sk in skills) {
+    html += '<tr><td>' + sk + '</td><td>' + skills[sk].earned + '/' + skills[sk].total + '</td></tr>';
+  }
+  html += '</tbody></table>';
+  html += '<div style="margin-top:1.5rem;">';
+  html += '<button class="btn btn-primary" id="btn-pba-finish">Finish PBA Practice</button>';
+  html += '<button class="btn btn-secondary" id="btn-pba-result-review" style="margin-left:0.5rem;">Review Answers</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderPBATimer() {
+  var s = state.pbaSession;
+  if (!s || !s.timerStarted) return "";
+  var elapsed = Date.now() - s.timerStarted + s.timerElapsed;
+  return '<div style="text-align:right;font-family:monospace;">Time: ' + pbaFormatTime(elapsed) + ' / 2:00:00</div>';
+}
+
+function pbaUpdateTimer() {
+  var timerEl = document.getElementById("pba-timer-display");
+  if (timerEl && state.pbaSession && state.pbaSession.timerStarted) {
+    var elapsed = Date.now() - state.pbaSession.timerStarted + state.pbaSession.timerElapsed;
+    timerEl.textContent = "Time: " + pbaFormatTime(elapsed) + " / 2:00:00";
+  }
+}
+
+/* ── PBA Event Handlers ─────────────────────── */
+
+function onPBAClick(e) {
+  var target = e.target;
+
+  // Main menu buttons
+  if (target.id === "btn-enter-lab") {
+    state.appMode = "lab";
+    state.currentStage = "select";
+    renderCurrentStage();
+    renderSidebar();
+    return;
+  }
+  if (target.id === "btn-enter-pba") {
+    state.appMode = "pba";
+    state.pbaScreen = "mode_select";
+    renderCurrentStage();
+    return;
+  }
+
+  // Mode select buttons
+  if (target.id === "btn-pba-full" || target.id === "btn-pba-major" || target.id === "btn-pba-minor") {
+    state.pbaScreen = "generating";
+    renderCurrentStage();
+    setTimeout(function() {
+      pbaGenerateSession();
+      if (target.id === "btn-pba-major") {
+        state.pbaSession.minorQuestions = [];
+      } else if (target.id === "btn-pba-minor") {
+        state.pbaSession.majorQuestions = [];
+      }
+      state.pbaCurrentSection = "A";
+      state.pbaCurrentIndex = 0;
+      state.pbaScreen = "question";
+      state.pbaSession.timerStarted = Date.now();
+      state.pbaSession.timerElapsed = 0;
+      renderCurrentStage();
+    }, 800);
+    return;
+  }
+  if (target.id === "btn-pba-back") {
+    state.pbaScreen = "menu";
+    renderCurrentStage();
+    return;
+  }
+
+  // Navigation buttons
+  if (target.id === "btn-pba-prev") {
+    if (state.pbaCurrentIndex > 0) {
+      state.pbaCurrentIndex--;
+      var allQ = pbaGetAllQuestions();
+      state.pbaCurrentSection = allQ[state.pbaCurrentIndex].section;
+      renderCurrentStage();
+    }
+    return;
+  }
+  if (target.id === "btn-pba-next") {
+    var allQ2 = pbaGetAllQuestions();
+    if (state.pbaCurrentIndex < allQ2.length - 1) {
+      state.pbaCurrentIndex++;
+      state.pbaCurrentSection = allQ2[state.pbaCurrentIndex].section;
+      renderCurrentStage();
+    } else {
+      state.pbaScreen = "review";
+      renderCurrentStage();
+    }
+    return;
+  }
+  if (target.id === "btn-pba-review-back") {
+    state.pbaScreen = "question";
+    renderCurrentStage();
+    return;
+  }
+
+  // Submit
+  if (target.id === "btn-pba-submit") {
+    pbaScoreAll();
+    state.pbaSession.submitted = true;
+    if (state.pbaSession.timerStarted) {
+      state.pbaSession.timerElapsed += Date.now() - state.pbaSession.timerStarted;
+      state.pbaSession.timerStarted = false;
+    }
+    state.pbaScreen = "result";
+    renderCurrentStage();
+    return;
+  }
+
+  // Review goto
+  if (target.classList.contains("pba-goto")) {
+    var idx = parseInt(target.getAttribute("data-idx"), 10);
+    var allQ3 = pbaGetAllQuestions();
+    state.pbaCurrentIndex = idx;
+    state.pbaCurrentSection = allQ3[idx].section;
+    state.pbaScreen = "question";
+    renderCurrentStage();
+    return;
+  }
+
+  // Result actions
+  if (target.id === "btn-pba-finish") {
+    state.pbaScreen = "menu";
+    state.pbaSession = null;
+    state.pbaCurrentIndex = 0;
+    state.pbaCurrentSection = "A";
+    renderCurrentStage();
+    renderSidebar();
+    return;
+  }
+  if (target.id === "btn-pba-result-review") {
+    state.pbaScreen = "result_review";
+    renderCurrentStage();
+    return;
+  }
+
+  // Selection answers
+  if (target.classList.contains("btn-tool") && target.getAttribute("data-qid") && target.getAttribute("data-ans") !== null) {
+    var qid = target.getAttribute("data-qid");
+    var partIdx = parseInt(target.getAttribute("data-part"), 10);
+    var ansIdx = parseInt(target.getAttribute("data-ans"), 10);
+    if (state.pbaSession.answers[qid]) {
+      state.pbaSession.answers[qid][partIdx] = ansIdx;
+      renderCurrentStage();
+    }
+    return;
+  }
+
+  // Multi-selection answers
+  if (target.classList.contains("btn-tool") && target.getAttribute("data-multi")) {
+    var qid2 = target.getAttribute("data-qid");
+    var partIdx2 = parseInt(target.getAttribute("data-part"), 10);
+    var val = target.getAttribute("data-multi");
+    if (state.pbaSession.answers[qid2]) {
+      var current = state.pbaSession.answers[qid2][partIdx2] || [];
+      if (typeof current === "string") current = [current];
+      var pos = current.indexOf(val);
+      if (pos === -1) current.push(val);
+      else current.splice(pos, 1);
+      state.pbaSession.answers[qid2][partIdx2] = current;
+      renderCurrentStage();
+    }
+    return;
+  }
+
+  // Ordering — move
+  if (target.getAttribute("data-move")) {
+    var qid3 = target.getAttribute("data-qid");
+    var partIdx3 = parseInt(target.getAttribute("data-part"), 10);
+    var dir = parseInt(target.getAttribute("data-move"), 10);
+    var pos = parseInt(target.getAttribute("data-pos"), 10);
+    if (state.pbaSession.answers[qid3]) {
+      var arr = state.pbaSession.answers[qid3][partIdx3];
+      if (arr && arr.length > 0) {
+        var swapIdx = pos + dir;
+        if (swapIdx >= 0 && swapIdx < arr.length) {
+          var tmp = arr[pos];
+          arr[pos] = arr[swapIdx];
+          arr[swapIdx] = tmp;
+          renderCurrentStage();
+        }
+      }
+    }
+    return;
+  }
+
+  // Back to menu from result
+  if (target.id === "btn-pba-back-menu") {
+    state.pbaScreen = "menu";
+    state.pbaSession = null;
+    renderCurrentStage();
+    return;
+  }
+}
+
+function onPBAInput(e) {
+  var target = e.target;
+  if (target.classList.contains("pba-calc-input")) {
+    var qid = target.getAttribute("data-qid");
+    var partIdx = parseInt(target.getAttribute("data-part"), 10);
+    if (state.pbaSession.answers[qid]) {
+      state.pbaSession.answers[qid][partIdx] = target.value;
+    }
+  }
+}
+
+/* ==============================================================
+   SECTION 9: SIMULATION CONTROL
    ============================================================== */
 
 var dom = {};
@@ -855,6 +1668,13 @@ function cacheDom() {
    ============================================================== */
 
 function renderCurrentStage() {
+  if (state.appMode === "pba") {
+    renderPBAStage();
+    return;
+  }
+  // Restore sidebar when in lab mode
+  var sidebar = document.getElementById("sidebar");
+  if (sidebar) sidebar.style.display = "";
   renderProgress();
   renderStageContent();
   renderSimulationArea();
@@ -862,6 +1682,121 @@ function renderCurrentStage() {
   renderFeedback();
   renderButtons();
   renderSidebarActive();
+}
+
+function renderPBAStage() {
+  var stageContent = document.getElementById("stage-content");
+  var stageTitle = document.getElementById("stage-title");
+  var stageProgress = document.getElementById("stage-progress");
+  var simulationArea = document.getElementById("simulation-area");
+  var userInputArea = document.getElementById("user-input-area");
+  var feedbackArea = document.getElementById("feedback-area");
+  var btnBack = document.getElementById("btn-back");
+  var btnNext = document.getElementById("btn-next");
+  var sidebar = document.getElementById("sidebar");
+  var practicalList = document.getElementById("practical-list");
+
+  sidebar.style.display = "none";
+  simulationArea.classList.add("hidden");
+  userInputArea.innerHTML = "";
+  feedbackArea.innerHTML = "";
+
+  if (state.pbaScreen === "menu") {
+    stageTitle.textContent = "";
+    stageProgress.innerHTML = "";
+    stageContent.innerHTML = renderPBAMenu();
+    btnBack.style.display = "none";
+    btnNext.style.display = "none";
+  } else if (state.pbaScreen === "mode_select") {
+    stageTitle.textContent = "PBA Practice";
+    stageProgress.innerHTML = "";
+    stageContent.innerHTML = renderPBAModeSelect();
+    btnBack.style.display = "none";
+    btnNext.style.display = "none";
+  } else if (state.pbaScreen === "generating") {
+    stageTitle.textContent = "Generating PBA...";
+    stageProgress.innerHTML = "";
+    stageContent.innerHTML = '<div style="text-align:center;padding:3rem;"><p>Generating your PBA practice session...</p><div class="sim-note">Selecting questions from the prescribed practical pool.</div></div>';
+    btnBack.style.display = "none";
+    btnNext.style.display = "none";
+  } else if (state.pbaScreen === "question") {
+    var allQ = pbaGetAllQuestions();
+    var q = allQ[state.pbaCurrentIndex];
+    stageTitle.textContent = "PBA Practice";
+    stageProgress.innerHTML = renderPBAProgress();
+    stageContent.innerHTML = renderPBAQuestion();
+    userInputArea.innerHTML = renderPBATimer();
+    btnBack.style.display = state.pbaCurrentIndex > 0 ? "" : "none";
+    btnBack.textContent = "← Previous";
+    btnNext.style.display = "";
+    btnNext.textContent = state.pbaCurrentIndex < allQ.length - 1 ? "Next →" : "Review Answers";
+    btnNext.className = "btn btn-primary";
+    // Listen for selection clicks within stage content
+    stageContent.onclick = onPBAClick;
+    userInputArea.onclick = onPBAClick;
+  } else if (state.pbaScreen === "review") {
+    stageTitle.textContent = "Review Answers";
+    stageProgress.innerHTML = renderPBAProgress();
+    stageContent.innerHTML = renderPBAReview();
+    btnBack.style.display = "none";
+    btnNext.style.display = "none";
+    stageContent.onclick = onPBAClick;
+  } else if (state.pbaScreen === "result") {
+    stageTitle.textContent = "PBA Result";
+    stageProgress.innerHTML = "";
+    stageContent.innerHTML = renderPBAResult();
+    btnBack.style.display = "none";
+    btnNext.style.display = "none";
+    stageContent.onclick = onPBAClick;
+  } else if (state.pbaScreen === "result_review") {
+    stageTitle.textContent = "Review Answers";
+    stageProgress.innerHTML = "";
+    // Show all questions with correct answers
+    var all = pbaGetAllQuestions();
+    var s = state.pbaSession;
+    var html = '<div class="pba-question">';
+    html += '<div class="label">ChemSim Practice Question — Review</div>';
+    for (var i = 0; i < all.length; i++) {
+      var qr = all[i];
+      html += '<h3>' + (qr.section === "A" ? "Major" : "Minor") + ' Question ' + (i + 1) + ' — ' + qr.marks + ' marks</h3>';
+      html += '<p><strong>' + qr.prompt + '</strong></p>';
+      if (qr.parts) {
+        for (var p = 0; p < qr.parts.length; p++) {
+          var part = qr.parts[p];
+          var ans = s.answers[qr.id] ? s.answers[qr.id][p] : null;
+          var earned = 0;
+          if (part.type === "selection" && ans === part.correctAnswer) earned = part.marks;
+          else if (part.type === "calculation") {
+            var num = parseFloat(ans);
+            if (!isNaN(num) && Math.abs(num - part.expectedValue) <= part.tolerance) earned = part.marks;
+          }
+          html += '<div style="margin:0.5rem 0;padding:0.75rem;border-left:3px solid ' + (earned > 0 ? 'var(--color-success)' : 'var(--color-error)') + ';background:' + (earned > 0 ? '#e8f5e9' : '#ffebee') + ';border-radius:4px;">';
+          html += '<p><strong>' + part.component + '</strong> (' + part.marks + ' mark' + (part.marks > 1 ? 's' : '') + ') — Scored: ' + earned + '/' + part.marks + '</p>';
+          html += '<p>' + part.prompt + '</p>';
+          if (part.type === "selection") {
+            var given = ans !== null ? part.options[ans] : "No answer";
+            var correct = part.options[part.correctAnswer];
+            html += '<p>Your answer: <strong>' + given + '</strong></p>';
+            if (earned === 0) html += '<p>Correct answer: <strong>' + correct + '</strong></p>';
+          } else if (part.type === "calculation") {
+            html += '<p>Your answer: <strong>' + (ans !== null && ans !== undefined ? ans : "No answer") + '</strong></p>';
+            html += '<p>Expected: <strong>' + part.expectedValue + ' ± ' + part.tolerance + ' ' + (part.unit || "") + '</strong></p>';
+          }
+          html += '</div>';
+        }
+      }
+    }
+    html += '</div>';
+    stageContent.innerHTML = html;
+    btnBack.style.display = "";
+    btnBack.textContent = "← Back to Result";
+    btnNext.style.display = "none";
+    btnBack.onclick = function() {
+      state.pbaScreen = "result";
+      renderCurrentStage();
+      btnBack.onclick = onBtnBack;
+    };
+  }
 }
 
 /* ── Progress dots ─────────────────────────────── */
@@ -1004,6 +1939,7 @@ function renderStageContent() {
 function renderSelectContent() {
   return '<h3>Select a Practical</h3>' +
     '<p>Choose an experiment from the sidebar to begin.</p>' +
+    '<button class="btn btn-accent" id="btn-enter-pba-from-lab" style="margin-bottom:1rem;">PBA Practice →</button>' +
     '<p><strong>Major Practicals:</strong></p><ul>' +
     '<li><strong>A1</strong> — Fractional Distillation</li>' +
     '<li><strong>A2</strong> — Paper Chromatography</li>' +
@@ -3125,6 +4061,19 @@ function resetExperimentState() {
 }
 
 function onBtnNext() {
+  if (state.appMode === "pba") {
+    // PBA navigation handled by onPBAClick
+    var allQ = pbaGetAllQuestions();
+    if (state.pbaCurrentIndex < allQ.length - 1) {
+      state.pbaCurrentIndex++;
+      state.pbaCurrentSection = allQ[state.pbaCurrentIndex].section;
+      renderCurrentStage();
+    } else {
+      state.pbaScreen = "review";
+      renderCurrentStage();
+    }
+    return;
+  }
   var id = state.experiment ? state.experiment.id : "";
   if ((id === "A2" || id === "A3") && state.currentStage === "run" && state.simulation && !state.simulation.done) {
     return;
@@ -3142,6 +4091,15 @@ function onBtnNext() {
 }
 
 function onBtnBack() {
+  if (state.appMode === "pba") {
+    if (state.pbaCurrentIndex > 0) {
+      state.pbaCurrentIndex--;
+      var allQ = pbaGetAllQuestions();
+      state.pbaCurrentSection = allQ[state.pbaCurrentIndex].section;
+      renderCurrentStage();
+    }
+    return;
+  }
   prevStage();
 }
 
@@ -3296,6 +4254,12 @@ function handleMeasureClick(g, mx, my) {
 
 function onStageContentClick(e) {
   var target = e.target;
+  if (target.id === "btn-enter-pba-from-lab") {
+    state.appMode = "pba";
+    state.pbaScreen = "menu";
+    renderCurrentStage();
+    return;
+  }
   if (target.classList.contains("btn-tool")) {
     var tool = target.getAttribute("data-tool");
     var gasAttr = target.getAttribute("data-gas");

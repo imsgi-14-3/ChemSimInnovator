@@ -19,13 +19,13 @@ This uploaded PDF is the authoritative source selected for the ChemSim PBA matri
 
 **Phase:** Implementation
 
-**Overall implementation:** Milestone 7 complete, awaiting review
+**Overall implementation:** Milestone 8 complete, awaiting review
 
-**Current milestone:** Milestone 7 — 8 Minor Practicals
+**Current milestone:** Milestone 8 — PBA Practice Mode
 
-**Next milestone:** Milestone 8 — further practicals or features
+**Next milestone:** Milestone 9 — further practicals or features
 
-**Milestone 7 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+**Milestone 8 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
 
 ## Completed Decisions
 
@@ -618,3 +618,83 @@ Implemented all 8 Minor Practicals from the FBISE prescribed list:
 - A5 regression: PASS
 - JavaScript syntax: VALID
 - No existing functionality broken
+
+---
+
+## Milestone 8 — PBA Practice Mode
+
+**Status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+
+**Date:** 2026-09-18
+
+### Summary
+
+Implemented PBA Practice Mode — a practical-performance assessment simulation mirroring the FBISE SSC Chemistry PBA paper structure:
+
+| Section | Type | Questions | Marks Each | Total |
+|---------|------|-----------|------------|-------|
+| A | Major | 2 | 6 | 12 |
+| B | Minor | 2 | 4 | 8 |
+| Total | — | 4 | — | 20 |
+
+Duration: 2 hours (tracked with elapsed timer).
+
+### What was built
+
+#### Question Bank (PBA_QUESTIONS)
+- 13 questions total: 5 Major (A1–A5) + 8 Minor (M7.1–M7.8)
+- Each question has multi-part components with rubric scoring
+- Question types: selection, calculation, ordering, multi_part, multi_selection
+- All labelled "ChemSim Practice Question"
+
+#### Session Engine
+- `pbaGenerateSession()` — shuffles and selects 2 Major + 2 Minor (or Major/Minor only modes)
+- `pbaShuffle()` — Fisher-Yates shuffle
+- `pbaScoreQuestion()` — per-question scoring with tolerance for calculations, array comparison for ordering, set comparison for multi-selection
+- `pbaScoreAll()` — full session scoring
+- `pbaGetAllQuestions()` / `pbaGetCurrentQuestion()` — question accessors
+- `pbaGetMajorTotal()` / `pbaGetMinorTotal()` / `pbaGetSectionScore()` — score aggregation
+- `pbaIsUnanswered()` — validation check
+- `pbaFormatTime()` — HH:MM:SS elapsed timer formatting
+
+#### UI Screens
+- Main menu with Practical Lab and PBA Practice entry points
+- Mode selection: Full PBA, Major Only, Minor Only
+- Progress bar with section/marks/timer display
+- Question renderer with per-component scoring, instructions, data tables
+- Review-before-submit screen with unanswered-question detection
+- Final result with Section A, Section B, TOTAL (/20), percentage, time taken
+- Question-by-question performance table
+- Skill Breakdown table (apparatus, observation, calculation, interpretation)
+- Result review navigation (go back to result from review)
+
+#### Navigation Integration
+- `renderCurrentStage()` dispatches to `renderPBAStage()` when `appMode === "pba"`
+- Sidebar hidden in PBA mode, restored in lab mode
+- `onBtnNext`/`onBtnBack` handle PBA navigation
+- `onStageContentClick` handles PBA entry from lab select screen
+- `onPBAClick` handles all PBA button interactions
+- `onPBAInput` handles calculation input changes
+
+#### CSS
+- `.pba-question`, `.pba-part`, `.pba-review`, `.pba-result`, `.pba-calc-input` styles
+
+### Files modified
+
+- `script.js` — PBA_QUESTIONS array, PBA state variables, session engine functions, 9 renderers, 2 event handlers, navigation wiring
+- `style.css` — PBA-specific styles
+
+### Regression Tests
+
+- 153 tests performed (24 question bank, 7 state variables, 23 session engine, 24 renderers, 17 event handlers, 11 navigation integration, 6 scoring, 4 timer, 5 CSS, 4 structure, 4 question selection, 16 regression [A1–A5, M7.1–M7.8], 6 technical)
+- 153/153 passed
+- A1 regression: PASS
+- A2 regression: PASS
+- A3 regression: PASS
+- A4 regression: PASS
+- A5 regression: PASS
+- M7.1–M7.8 regression: PASS
+- JavaScript syntax: VALID
+- No React/Vue/Angular: CONFIRMED
+- SIMULATED educational values: PRESENT
+- 13 EXPERIMENTS / 13 SIMULATION_CONFIG / 13 PBA_QUESTIONS: VERIFIED

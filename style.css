@@ -610,3 +610,43 @@ body {
     border-bottom-color: var(--color-primary);
   }
 }
+
+/* ============================================================
+   PBA PRACTICE STYLES (M8)
+   ============================================================ */
+
+.pba-question {
+  max-width: 700px;
+}
+
+.pba-part {
+  transition: background 0.2s;
+}
+
+.pba-part:hover {
+  background: var(--color-bg);
+}
+
+.pba-review {
+  max-width: 700px;
+}
+
+.pba-result {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.pba-calc-input:focus {
+  outline: 2px solid var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.pba-question .measure-table {
+  margin-top: 1rem;
+}
+
+.pba-question .measure-table td,
+.pba-question .measure-table th {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
