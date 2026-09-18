@@ -1007,7 +1007,11 @@ var state = {
 
   // -- Mystery Lab (M9) --
   mysteryScreen: "menu",           // "menu" | "intro" | "investigation" | "test_execute" | "observe" | "interpret" | "identify" | "conclusion" | "complete"
-  mysterySession: null             // { sampleId, sampleLabel, testsPerformed, evidence, hypothesis, identified, conclusion, completed, startedAt }
+  mysterySession: null,            // { sampleId, sampleLabel, testsPerformed, evidence, hypothesis, identified, conclusion, completed, startedAt }
+
+  // -- Experiment Log (M10) --
+  logScreen: "list",               // "list" | "detail"
+  logDetailId: null                // id of record being viewed
 };
 
 /* ==============================================================
@@ -1229,6 +1233,7 @@ function renderPBAMenu() {
   html += '<button class="btn btn-primary" id="btn-enter-lab" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;">Practical Lab</button>';
   html += '<button class="btn btn-accent" id="btn-enter-pba" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;">PBA Practice</button>';
   html += '<button class="btn btn-primary" id="btn-enter-mystery" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#6a1b9a;">Mystery Lab</button>';
+  html += '<button class="btn btn-primary" id="btn-enter-log" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#1565c0;">Experiment Log</button>';
   html += '</div>';
   html += '<div class="sim-note" style="max-width:300px;margin:2rem auto;text-align:left;">';
   html += 'PBA Practice simulates the FBISE Chemistry Practical Based Assessment.<br><br>';
@@ -1490,6 +1495,13 @@ function onPBAClick(e) {
     renderCurrentStage();
     return;
   }
+  if (target.id === "btn-enter-log") {
+    state.appMode = "log";
+    state.logScreen = "list";
+    state.logDetailId = null;
+    renderCurrentStage();
+    return;
+  }
 
   // Mode select buttons
   if (target.id === "btn-pba-full" || target.id === "btn-pba-major" || target.id === "btn-pba-minor") {
@@ -1686,6 +1698,10 @@ function renderCurrentStage() {
   }
   if (state.appMode === "mystery") {
     renderMysteryStage();
+    return;
+  }
+  if (state.appMode === "log") {
+    renderLogStage();
     return;
   }
   // Restore sidebar when in lab mode
@@ -1957,6 +1973,7 @@ function renderSelectContent() {
     '<p>Choose an experiment from the sidebar to begin.</p>' +
     '<button class="btn btn-accent" id="btn-enter-pba-from-lab" style="margin-bottom:1rem;">PBA Practice →</button>' +
     '<button class="btn btn-primary" id="btn-enter-mystery-from-lab" style="margin-bottom:1rem;background:#6a1b9a;">Mystery Lab →</button>' +
+    '<button class="btn btn-primary" id="btn-enter-log-from-lab" style="margin-bottom:1rem;background:#1565c0;">Experiment Log →</button>' +
     '<p><strong>Major Practicals:</strong></p><ul>' +
     '<li><strong>A1</strong> — Fractional Distillation</li>' +
     '<li><strong>A2</strong> — Paper Chromatography</li>' +
@@ -4095,6 +4112,10 @@ function onBtnNext() {
     // Mystery Lab navigation handled by onMysteryClick
     return;
   }
+  if (state.appMode === "log") {
+    // Log navigation handled by onLogClick
+    return;
+  }
   var id = state.experiment ? state.experiment.id : "";
   if ((id === "A2" || id === "A3") && state.currentStage === "run" && state.simulation && !state.simulation.done) {
     return;
@@ -4130,6 +4151,14 @@ function onBtnBack() {
       renderCurrentStage();
     } else if (state.mysteryScreen === "conclusion") {
       state.mysteryScreen = "investigation";
+      renderCurrentStage();
+    }
+    return;
+  }
+  if (state.appMode === "log") {
+    if (state.logScreen === "detail") {
+      state.logScreen = "list";
+      state.logDetailId = null;
       renderCurrentStage();
     }
     return;
@@ -4297,6 +4326,13 @@ function onStageContentClick(e) {
   if (target.id === "btn-enter-mystery-from-lab") {
     state.appMode = "mystery";
     state.mysteryScreen = "menu";
+    renderCurrentStage();
+    return;
+  }
+  if (target.id === "btn-enter-log-from-lab") {
+    state.appMode = "log";
+    state.logScreen = "list";
+    state.logDetailId = null;
     renderCurrentStage();
     return;
   }
@@ -4526,6 +4562,7 @@ function onUserInputClick(e) {
   }
   if (target.id === "btn-finish-experiment") {
     if (state.currentStage === "complete") {
+      expLogCreateFromPractical();
       state.currentStage = "select";
       state.selectedExperimentId = null;
       state.experiment = null;
@@ -5839,6 +5876,7 @@ function onMysteryClick(e) {
 
   /* Finish */
   if (target.id === "btn-mystery-finish") {
+    expLogCreateFromMystery();
     state.mysterySession = null;
     state.mysteryScreen = "menu";
     state.appMode = "pba";
@@ -5871,6 +5909,506 @@ function onMysteryInput(e) {
       else if (field === "interp") state.mysterySession.evidence[idx].studentInterpretation = target.value;
     }
   }
+}
+
+/* ==============================================================
+   SECTION 9C: EXPERIMENT LOG (M10)
+   ============================================================== */
+
+var EXP_LOG_STORAGE_KEY = "chemsim_experiment_log";
+
+/* ---- M10: Storage Layer ---- */
+
+function expLogLoad() {
+  try {
+    if (typeof localStorage === "undefined") return [];
+    var raw = localStorage.getItem(EXP_LOG_STORAGE_KEY);
+    if (!raw) return [];
+    var parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
+  } catch (e) {
+    return [];
+  }
+}
+
+function expLogSave(records) {
+  try {
+    if (typeof localStorage === "undefined") return false;
+    localStorage.setItem(EXP_LOG_STORAGE_KEY, JSON.stringify(records));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function expLogAdd(record) {
+  var records = expLogLoad();
+  records.unshift(record);
+  return expLogSave(records);
+}
+
+function expLogDelete(recordId) {
+  var records = expLogLoad();
+  var found = false;
+  for (var i = 0; i < records.length; i++) {
+    if (records[i].id === recordId) {
+      records.splice(i, 1);
+      found = true;
+      break;
+    }
+  }
+  if (found) expLogSave(records);
+  return found;
+}
+
+function expLogClearAll() {
+  return expLogSave([]);
+}
+
+function expLogGetById(recordId) {
+  var records = expLogLoad();
+  for (var i = 0; i < records.length; i++) {
+    if (records[i].id === recordId) return records[i];
+  }
+  return null;
+}
+
+/* ---- M10: Record Builders ---- */
+
+function expLogTimestamp() {
+  var now = new Date();
+  var date = now.getFullYear() + "-" +
+    ((now.getMonth() + 1) < 10 ? "0" : "") + (now.getMonth() + 1) + "-" +
+    (now.getDate() < 10 ? "0" : "") + now.getDate();
+  var time = ((now.getHours() < 10 ? "0" : "") + now.getHours()) + ":" +
+    ((now.getMinutes() < 10 ? "0" : "") + now.getMinutes()) + ":" +
+    ((now.getSeconds() < 10 ? "0" : "") + now.getSeconds());
+  return { date: date, time: time, ts: now.getTime() };
+}
+
+function expLogBuildPracticalRecord(exp, state) {
+  var ts = expLogTimestamp();
+  var id = "LOG-" + ts.ts + "-" + Math.random().toString(36).substring(2, 6);
+
+  /* Collect experiment-specific observations/measurements */
+  var observations = "";
+  var measurements = "";
+  var calculations = "";
+  var result = "";
+  var conclusion = state.conclusion || "";
+
+  if (exp.id === "A1") {
+    var sim = SIMULATION_CONFIG["A1"];
+    observations = "First fraction: " + sim.firstFraction.name + " at " + sim.firstFraction.boilingPoint + " °C. " +
+      "Second fraction: " + sim.secondFraction.name + " at " + sim.secondFraction.boilingPoint + " °C.";
+    measurements = "Temperature monitored throughout distillation. Distillate collected at stabilised boiling points.";
+    result = sim.firstFraction.name + " distils first at the lower boiling point, while " + sim.secondFraction.name + " remains in the flask.";
+  } else if (exp.id === "A2" || exp.id === "A3") {
+    var simC = SIMULATION_CONFIG[exp.id];
+    var parts = [];
+    for (var i = 0; i < simC.components.length; i++) {
+      var c = simC.components[i];
+      var dist = state.measuredComponents[i] ? state.measuredComponents[i].distance : 0;
+      var rf = state.rfAnswers["rf_" + i] || "—";
+      parts.push(c.name + ": distance=" + dist.toFixed(2) + " cm, Rf=" + rf);
+    }
+    observations = parts.join("; ");
+    measurements = "Component distances and Rf values measured. Solvent front: " + (state.solventFrontDist ? state.solventFrontDist.toFixed(2) + " cm" : "—") + ".";
+    result = "Components separated by paper chromatography based on different Rf values.";
+  } else if (exp.id === "A4") {
+    var simT = SIMULATION_CONFIG["A4"];
+    observations = "HCl concentration: " + simT.hclConcentration.toFixed(4) + " mol/L. NaOH volume: " + simT.naohVolume.toFixed(2) + " mL. Mean titre: " + simT.meanTitre.toFixed(2) + " mL.";
+    measurements = "Mean titre value used for molarity calculation.";
+    calculations = "NaOH molarity = " + simT.expectedMolarity.toFixed(4) + " mol/L.";
+    result = "Exact molarity of NaOH determined volumetrically as " + simT.expectedMolarity.toFixed(4) + " mol/L.";
+  } else if (exp.id === "A5") {
+    var simG = SIMULATION_CONFIG["A5"];
+    var gasObs = [];
+    for (var gi = 0; gi < simG.gases.length; gi++) {
+      var g = simG.gases[gi];
+      var res = state.gasResults[g.id] || {};
+      gasObs.push(g.name + ": test=" + g.correctTestLabel + ", observation=" + (res.recorded || "—") + ", interpretation=" + (res.interpretation || "—") + ", confirmed=" + (res.confirmed ? "yes" : "no"));
+    }
+    observations = gasObs.join("; ");
+    measurements = "Three gases tested and confirmed using appropriate chemical tests.";
+    result = "NH₃ confirmed with damp red litmus, CO₂ confirmed with limewater, Cl₂ confirmed with damp litmus.";
+  } else if (exp.id && exp.id.indexOf("M7") === 0) {
+    observations = state.interpretation || "";
+    measurements = "Observations recorded during the practical.";
+    result = "Experiment completed. Observations recorded.";
+  }
+
+  return {
+    id: id,
+    experimentId: exp.id,
+    title: exp.title,
+    section: exp.section,
+    type: "practical",
+    date: ts.date,
+    time: ts.time,
+    slos: exp.slos || [],
+    objective: exp.objective || "",
+    apparatus: exp.apparatus || [],
+    materials: exp.materials || [],
+    procedure: exp.procedure || [],
+    observations: observations,
+    measurements: measurements,
+    calculations: calculations,
+    result: result,
+    conclusion: conclusion,
+    sourceLabel: "FBISE prescribed practical",
+    simulatedNotice: "All measurements and values are simulated educational values, not real laboratory measurements."
+  };
+}
+
+function expLogBuildMysteryRecord(mSession) {
+  var ts = expLogTimestamp();
+  var id = "LOG-" + ts.ts + "-" + Math.random().toString(36).substring(2, 6);
+  var sample = mysteryGetSample();
+
+  var evidenceText = [];
+  for (var i = 0; i < mSession.evidence.length; i++) {
+    var e = mSession.evidence[i];
+    evidenceText.push(e.testName + ": " + e.observation + " (interpretation: " + e.interpretation + ")");
+  }
+
+  return {
+    id: id,
+    experimentId: "mystery",
+    title: "Mystery Lab Investigation",
+    section: "investigation",
+    type: "mystery",
+    date: ts.date,
+    time: ts.time,
+    sampleId: mSession.sampleId,
+    sampleIdentity: sample ? sample.identity : "Unknown",
+    testsPerformed: mSession.testsPerformed.slice(),
+    evidence: evidenceText,
+    hypothesis: mSession.hypothesis || "",
+    identification: sample ? sample.identity : "Unknown",
+    identified: mSession.identified,
+    conclusion: mSession.conclusion || "",
+    sourceLabel: "ChemSim Mystery Lab — Educational Simulation",
+    simulatedNotice: "All observations are simulated educational values, not real laboratory measurements."
+  };
+}
+
+/* ---- M10: Renderers ---- */
+
+function renderLogMenu() {
+  var records = expLogLoad();
+  var count = records.length;
+
+  var html = '<div style="text-align:center;padding:2rem;">';
+  html += '<h2>ChemSim Experiment Log</h2>';
+  html += '<p class="subtitle">A browser-local record of your ChemSim educational investigations.</p>';
+  html += '<p style="max-width:450px;margin:1rem auto;color:var(--color-text-secondary);">Review your completed practicals and Mystery Lab investigations. Records are stored locally in your browser.</p>';
+  html += '<div style="margin-top:1.5rem;">';
+  html += '<button class="btn btn-primary" id="btn-log-open" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#1565c0;">Open Experiment Log (' + count + ' record' + (count !== 1 ? 's' : '') + ')</button>';
+  html += '<button class="btn btn-secondary" id="btn-log-back-to-menu" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:0.75rem;">← Back to Main Menu</button>';
+  html += '</div>';
+  html += '<div class="sim-note" style="max-width:400px;margin:2rem auto;text-align:left;">';
+  html += '<strong>About the Experiment Log:</strong><br>';
+  html += 'Records are created automatically when you finish a practical or Mystery Lab investigation.<br><br>';
+  html += '<em>Simulation values are educationally simulated and are not real laboratory measurements.</em>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderLogList() {
+  var records = expLogLoad();
+  var html = '<div class="log-panel">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">';
+  html += '<div>';
+  html += '<h3>Experiment Log</h3>';
+  html += '<p style="font-size:0.9rem;color:var(--color-text-secondary);">' + records.length + ' record' + (records.length !== 1 ? 's' : '') + ' saved</p>';
+  html += '</div>';
+  html += '<div style="display:flex;gap:0.5rem;">';
+  if (records.length > 0) {
+    html += '<button class="btn btn-secondary" id="btn-log-clear-all" style="font-size:0.85rem;padding:0.4rem 1rem;">Clear All</button>';
+  }
+  html += '</div>';
+  html += '</div>';
+
+  if (records.length === 0) {
+    html += '<div class="log-empty">';
+    html += '<p style="font-size:1.1rem;margin-bottom:0.5rem;">No experiment records yet.</p>';
+    html += '<p style="color:var(--color-text-secondary);">Complete a practical or Mystery Lab investigation to create your first record.</p>';
+    html += '</div>';
+  } else {
+    for (var i = 0; i < records.length; i++) {
+      var r = records[i];
+      var typeLabel = r.type === "mystery" ? "Mystery Lab" : (r.section === "major" ? "Major" : "Minor");
+      var typeColor = r.type === "mystery" ? "#6a1b9a" : (r.section === "major" ? "var(--color-primary)" : "var(--color-accent, #ff9800)");
+      html += '<div class="log-card">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:start;gap:1rem;">';
+      html += '<div style="flex:1;min-width:0;">';
+      html += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">';
+      html += '<span class="log-badge" style="background:' + typeColor + ';">' + typeLabel + '</span>';
+      html += '<strong style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(r.title) + '</strong>';
+      html += '</div>';
+      html += '<p style="font-size:0.85rem;color:var(--color-text-secondary);margin:0;">' + r.date + ' at ' + r.time + '</p>';
+      if (r.type === "mystery" && r.sampleId) {
+        html += '<p style="font-size:0.85rem;color:var(--color-text-secondary);margin:0;">Sample: ' + r.sampleId + '</p>';
+      }
+      html += '</div>';
+      html += '<div style="display:flex;gap:0.5rem;flex-shrink:0;">';
+      html += '<button class="btn btn-secondary btn-log-view" data-log-id="' + r.id + '" style="font-size:0.85rem;padding:0.4rem 0.75rem;">View</button>';
+      html += '<button class="btn btn-secondary btn-log-delete" data-log-id="' + r.id + '" style="font-size:0.85rem;padding:0.4rem 0.75rem;color:var(--color-error, #d32f2f);">Delete</button>';
+      html += '</div>';
+      html += '</div>';
+      html += '</div>';
+    }
+  }
+
+  html += '<div style="text-align:center;margin-top:1rem;">';
+  html += '<button class="btn btn-secondary" id="btn-log-back-from-list" style="padding:0.5rem 1.5rem;">← Back to Main Menu</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderLogDetail() {
+  var record = expLogGetById(state.logDetailId);
+  if (!record) {
+    state.logScreen = "list";
+    return renderLogList();
+  }
+
+  var html = '<div class="log-panel log-detail">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">';
+  html += '<h3>' + escapeHtml(record.title) + '</h3>';
+  html += '<button class="btn btn-secondary btn-log-delete" data-log-id="' + record.id + '" style="font-size:0.85rem;padding:0.4rem 0.75rem;color:var(--color-error, #d32f2f);">Delete</button>';
+  html += '</div>';
+
+  /* Metadata */
+  html += '<div class="log-detail-meta">';
+  var typeLabel = record.type === "mystery" ? "Mystery Lab Investigation" : (record.section === "major" ? "Major Practical" : "Minor Practical");
+  html += '<p><strong>Type:</strong> ' + typeLabel + '</p>';
+  html += '<p><strong>Date:</strong> ' + record.date + ' at ' + record.time + '</p>';
+  if (record.slos && record.slos.length > 0) {
+    html += '<p><strong>SLOs:</strong> ' + record.slos.join(", ") + '</p>';
+  }
+  html += '</div>';
+
+  if (record.type === "mystery") {
+    /* Mystery Lab detail */
+    html += '<div class="log-detail-section">';
+    if (record.sampleId) html += '<p><strong>Sample ID:</strong> ' + escapeHtml(record.sampleId) + '</p>';
+    if (record.sampleIdentity) html += '<p><strong>Identity:</strong> ' + escapeHtml(record.sampleIdentity) + '</p>';
+    if (record.testsPerformed && record.testsPerformed.length > 0) {
+      html += '<p><strong>Tests Performed:</strong> ' + record.testsPerformed.length + '</p>';
+    }
+    if (record.hypothesis) html += '<p><strong>Hypothesis:</strong> ' + escapeHtml(record.hypothesis) + '</p>';
+    html += '<p><strong>Identification Correct:</strong> ' + (record.identified ? 'Yes' : 'No') + '</p>';
+    if (record.evidence && record.evidence.length > 0) {
+      html += '<h4>Evidence</h4>';
+      for (var i = 0; i < record.evidence.length; i++) {
+        html += '<div class="log-evidence-entry"><p>' + escapeHtml(record.evidence[i]) + '</p></div>';
+      }
+    }
+    if (record.conclusion) {
+      html += '<h4>Conclusion</h4>';
+      html += '<p>' + escapeHtml(record.conclusion) + '</p>';
+    }
+    html += '</div>';
+  } else {
+    /* Practical detail */
+    if (record.objective) {
+      html += '<div class="log-detail-section">';
+      html += '<h4>Objective</h4>';
+      html += '<p>' + escapeHtml(record.objective) + '</p>';
+      html += '</div>';
+    }
+    if (record.apparatus && record.apparatus.length > 0) {
+      html += '<div class="log-detail-section">';
+      html += '<h4>Apparatus</h4>';
+      html += '<ul>';
+      for (var ai = 0; ai < record.apparatus.length; ai++) {
+        var a = record.apparatus[ai];
+        html += '<li>' + escapeHtml(a.name) + (a.desc ? ' — ' + escapeHtml(a.desc) : '') + '</li>';
+      }
+      html += '</ul>';
+      html += '</div>';
+    }
+    if (record.materials && record.materials.length > 0) {
+      html += '<div class="log-detail-section">';
+      html += '<h4>Materials</h4>';
+      html += '<ul>';
+      for (var mi = 0; mi < record.materials.length; mi++) {
+        html += '<li>' + escapeHtml(record.materials[mi].name) + '</li>';
+      }
+      html += '</ul>';
+      html += '</div>';
+    }
+    if (record.procedure && record.procedure.length > 0) {
+      html += '<div class="log-detail-section">';
+      html += '<h4>Procedure</h4>';
+      html += '<ol>';
+      for (var pi = 0; pi < record.procedure.length; pi++) {
+        html += '<li>' + escapeHtml(record.procedure[pi]) + '</li>';
+      }
+      html += '</ol>';
+      html += '</div>';
+    }
+    if (record.observations) {
+      html += '<div class="log-detail-section">';
+      html += '<h4>Observations</h4>';
+      html += '<p>' + escapeHtml(record.observations) + '</p>';
+      html += '</div>';
+    }
+    if (record.measurements) {
+      html += '<div class="log-detail-section">';
+      html += '<h4>Measurements</h4>';
+      html += '<p>' + escapeHtml(record.measurements) + '</p>';
+      html += '</div>';
+    }
+    if (record.calculations) {
+      html += '<div class="log-detail-section">';
+      html += '<h4>Calculations</h4>';
+      html += '<p>' + escapeHtml(record.calculations) + '</p>';
+      html += '</div>';
+    }
+    if (record.result) {
+      html += '<div class="log-detail-section">';
+      html += '<h4>Result</h4>';
+      html += '<p>' + escapeHtml(record.result) + '</p>';
+      html += '</div>';
+    }
+    if (record.conclusion) {
+      html += '<div class="log-detail-section">';
+      html += '<h4>Conclusion</h4>';
+      html += '<p>' + escapeHtml(record.conclusion) + '</p>';
+      html += '</div>';
+    }
+  }
+
+  /* Simulation notice */
+  html += '<div class="log-sim-notice">';
+  html += '<p>' + escapeHtml(record.simulatedNotice || "All measurements are simulated educational values.") + '</p>';
+  html += '</div>';
+
+  html += '<div style="text-align:center;margin-top:1rem;">';
+  html += '<button class="btn btn-secondary" id="btn-log-back-from-detail" style="padding:0.5rem 1.5rem;">← Back to Log</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+/* ---- M10: Stage Router ---- */
+
+function renderLogStage() {
+  var stageContent = document.getElementById("stage-content");
+  var stageTitle = document.getElementById("stage-title");
+  var stageProgress = document.getElementById("stage-progress");
+  var simulationArea = document.getElementById("simulation-area");
+  var userInputArea = document.getElementById("user-input-area");
+  var feedbackArea = document.getElementById("feedback-area");
+  var btnBack = document.getElementById("btn-back");
+  var btnNext = document.getElementById("btn-next");
+  var sidebar = document.getElementById("sidebar");
+
+  sidebar.style.display = "none";
+  simulationArea.classList.add("hidden");
+  userInputArea.innerHTML = "";
+  feedbackArea.innerHTML = "";
+  btnBack.style.display = "none";
+  btnNext.style.display = "none";
+
+  if (state.logScreen === "list") {
+    stageTitle.textContent = "";
+    stageProgress.innerHTML = "";
+    stageContent.innerHTML = renderLogMenu();
+    stageContent.onclick = onLogClick;
+  } else if (state.logScreen === "detail") {
+    stageTitle.textContent = "Experiment Log";
+    stageProgress.innerHTML = '<span class="label">Record Detail</span>';
+    stageContent.innerHTML = renderLogDetail();
+    stageContent.onclick = onLogClick;
+  }
+}
+
+/* ---- M10: Event Handler ---- */
+
+function onLogClick(e) {
+  var target = e.target;
+
+  /* Main menu */
+  if (target.id === "btn-log-open") {
+    state.logScreen = "list";
+    renderCurrentStage();
+    return;
+  }
+  if (target.id === "btn-log-back-to-menu") {
+    state.appMode = "pba";
+    state.logScreen = "list";
+    renderCurrentStage();
+    return;
+  }
+
+  /* List navigation */
+  if (target.id === "btn-log-back-from-list") {
+    state.appMode = "pba";
+    state.logScreen = "list";
+    renderCurrentStage();
+    return;
+  }
+
+  /* View record */
+  if (target.classList.contains("btn-log-view")) {
+    var viewId = target.getAttribute("data-log-id");
+    state.logDetailId = viewId;
+    state.logScreen = "detail";
+    renderCurrentStage();
+    return;
+  }
+
+  /* Delete record */
+  if (target.classList.contains("btn-log-delete")) {
+    var delId = target.getAttribute("data-log-id");
+    expLogDelete(delId);
+    if (state.logScreen === "detail") {
+      state.logScreen = "list";
+      state.logDetailId = null;
+    }
+    renderCurrentStage();
+    return;
+  }
+
+  /* Clear all */
+  if (target.id === "btn-log-clear-all") {
+    if (confirm("Are you sure you want to delete ALL experiment log records? This cannot be undone.")) {
+      expLogClearAll();
+      renderCurrentStage();
+    }
+    return;
+  }
+
+  /* Back from detail */
+  if (target.id === "btn-log-back-from-detail") {
+    state.logScreen = "list";
+    state.logDetailId = null;
+    renderCurrentStage();
+    return;
+  }
+}
+
+/* ---- M10: Log Creation Hooks ---- */
+
+function expLogCreateFromPractical() {
+  var exp = state.experiment;
+  if (!exp) return;
+  var record = expLogBuildPracticalRecord(exp, state);
+  expLogAdd(record);
+}
+
+function expLogCreateFromMystery() {
+  var s = state.mysterySession;
+  if (!s) return;
+  var record = expLogBuildMysteryRecord(s);
+  expLogAdd(record);
 }
 
 /* ==============================================================

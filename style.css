@@ -772,3 +772,110 @@ body {
 #btn-enter-mystery {
   background: #6a1b9a !important;
 }
+
+/* ============================================================
+   EXPERIMENT LOG STYLES (M10)
+   ============================================================ */
+
+.log-panel {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.log-empty {
+  text-align: center;
+  padding: 2rem;
+  background: var(--color-bg, #f9f9f9);
+  border: 2px dashed var(--color-border);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.log-card {
+  padding: 0.85rem 1rem;
+  margin: 0.5rem 0;
+  background: var(--color-card-bg, #fff);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  transition: box-shadow 0.2s;
+}
+
+.log-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.log-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.log-detail-meta {
+  padding: 0.75rem 1rem;
+  background: var(--color-bg, #f9f9f9);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.log-detail-meta p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.log-detail-section {
+  margin: 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.log-detail-section:last-of-type {
+  border-bottom: none;
+}
+
+.log-detail-section h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-primary);
+}
+
+.log-detail-section ul,
+.log-detail-section ol {
+  margin: 0.25rem 0;
+  padding-left: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.log-detail-section li {
+  margin: 0.2rem 0;
+}
+
+.log-evidence-entry {
+  padding: 0.5rem 0.75rem;
+  margin: 0.35rem 0;
+  background: var(--color-bg, #f9f9f9);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.log-sim-notice {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: #fff3e0;
+  border: 1px solid #ffe0b2;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #e65100;
+}
+
+#btn-enter-log {
+  background: #1565c0 !important;
+}
+
+#btn-log-open {
+  background: #1565c0 !important;
+}

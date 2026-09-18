@@ -19,13 +19,13 @@ This uploaded PDF is the authoritative source selected for the ChemSim PBA matri
 
 **Phase:** Implementation
 
-**Overall implementation:** Milestone 9 complete, awaiting review
+**Overall implementation:** Milestone 10 complete, awaiting review
 
-**Current milestone:** Milestone 9 — Mystery Lab (Unknown Sample Identification)
+**Current milestone:** Milestone 10 — Experiment Log
 
-**Next milestone:** Milestone 10 — further practicals or features
+**Next milestone:** Milestone 11 — further practicals or features
 
-**Milestone 9 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+**Milestone 10 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
 
 ## Completed Decisions
 
@@ -803,6 +803,104 @@ Descriptive feedback (not numerical PBA scoring):
 - 161 M9 tests performed
 - 161/161 passed
 - 153 M8 regression tests: 153/153 passed
+- A1–A5 regression: ALL PASS
+- M7.1–M7.8 regression: ALL PASS
+- JavaScript syntax: VALID
+- No React/Vue/Angular: CONFIRMED
+- SIMULATED educational values: PRESENT
+
+---
+
+## Milestone 10 — Experiment Log
+
+**Status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+
+**Date:** 2026-09-18
+
+### Summary
+
+Implemented a persistent-in-browser Experiment Log for ChemSim. Students can record and review their completed practical investigations and Mystery Lab investigations. Records are stored in localStorage under the key `chemsim_experiment_log`.
+
+**Label:** ChemSim Experiment Log — Educational Simulation (not an official FBISE assessment component)
+
+### Storage Architecture
+
+- **Key:** `chemsim_experiment_log` (namespaced, no collision with other data)
+- **Format:** JSON array of record objects
+- **Persistence:** localStorage (browser-local only)
+- **Safety:** Defensive handling for missing storage, malformed JSON, non-array values, write failures
+- **Graceful degradation:** App remains usable if localStorage is unavailable
+
+### Record Model
+
+**Practical records:**
+```javascript
+{
+  id, experimentId, title, section, type: "practical",
+  date, time, slos, objective, apparatus, materials, procedure,
+  observations, measurements, calculations, result, conclusion,
+  sourceLabel, simulatedNotice
+}
+```
+
+**Mystery Lab records:**
+```javascript
+{
+  id, experimentId: "mystery", title: "Mystery Lab Investigation",
+  section: "investigation", type: "mystery",
+  date, time, sampleId, sampleIdentity, testsPerformed, evidence,
+  hypothesis, identification, identified, conclusion,
+  sourceLabel, simulatedNotice
+}
+```
+
+### Navigation
+
+Main menu: Practical Lab | PBA Practice | Mystery Lab | **Experiment Log**
+
+Log screens:
+- Menu (entry point with record count)
+- List (record cards with View/Delete + Clear All)
+- Detail (full record display with Delete + Back)
+
+### Practical Integration
+
+Records are created automatically when the student clicks "Finish Experiment" on the COMPLETE stage. Each Finish action creates exactly one record. Rendering does not create records. Revisiting COMPLETE does not silently duplicate.
+
+Supported practicals: A1–A5, M7.1–M7.8 (all 13 existing experiments).
+
+### Mystery Lab Integration
+
+**Integrated cleanly.** When the student clicks "Finish Mystery Lab" on the COMPLETE stage, a `type: "mystery"` record is created with sample ID, evidence, hypothesis, identification, and conclusion. Clearly labelled as "Mystery Lab Investigation" — distinct from prescribed practical records.
+
+### PBA Practice
+
+**Unchanged.** PBA Practice attempts are not turned into Experiment Log records. PBA remains an assessment/practice mode.
+
+### Deletion
+
+- **Individual delete:** Each record has a Delete button (in list and detail views)
+- **Clear All:** Requires explicit `confirm()` dialog before deletion
+- **Safe:** Deleting records does not affect experiment engine state
+
+### Accessibility
+
+- All buttons keyboard accessible
+- Semantic HTML headings
+- Labels for controls
+- Responsive layout
+- No canvas-only interactions
+
+### Files Modified
+
+- `script.js` — M10 state variables, storage layer (6 functions), record builders (3 functions), 3 renderers, stage router, event handler, 2 log creation hooks, navigation wiring
+- `style.css` — M10-specific styles (log-panel, log-empty, log-card, log-badge, log-detail-meta, log-detail-section, log-evidence-entry, log-sim-notice)
+
+### Regression Tests
+
+- 139 M10 tests performed: 139/139 passed
+- 153 M8 regression: 153/153 passed
+- 161 M9 regression: 161/161 passed
 - A1–A5 regression: ALL PASS
 - M7.1–M7.8 regression: ALL PASS
 - JavaScript syntax: VALID
