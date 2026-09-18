@@ -650,3 +650,125 @@ body {
   padding: 0.5rem 0.75rem;
   font-size: 0.9rem;
 }
+
+/* ============================================================
+   MYSTERY LAB STYLES (M9)
+   ============================================================ */
+
+.mystery-panel {
+  max-width: 700px;
+  margin: 0 auto 1rem auto;
+  padding: 1.25rem;
+  background: var(--color-card-bg, #fff);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.mystery-panel-header {
+  background: #f3e5f5;
+  border-color: #ce93d8;
+}
+
+.mystery-sample-card {
+  padding: 1.25rem;
+  background: #f3e5f5;
+  border: 2px dashed #ce93d8;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.mystery-test-btn {
+  display: inline-block;
+  margin: 0.35rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  border-radius: 6px;
+}
+
+.mystery-evidence-entry {
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  background: var(--color-bg, #f9f9f9);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 4px;
+}
+
+.mystery-evidence-header {
+  margin-bottom: 0.35rem;
+}
+
+.mystery-textarea {
+  width: 100%;
+  padding: 0.5rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.mystery-textarea:focus {
+  outline: 2px solid var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.mystery-test-visual {
+  margin: 1rem 0;
+}
+
+.mystery-animation {
+  padding: 1rem;
+}
+
+.mystery-observation-card,
+.mystery-interpretation-card {
+  margin: 0.5rem 0;
+}
+
+.mystery-complete {
+  text-align: center;
+}
+
+.mystery-summary-table {
+  margin: 1rem auto;
+  max-width: 500px;
+}
+
+.mystery-summary-table .measure-table {
+  width: 100%;
+}
+
+.mystery-summary-table .measure-table td,
+.mystery-summary-table .measure-table th {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.mystery-feedback {
+  text-align: left;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.mystery-feedback ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+
+.mystery-feedback li {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+#btn-mystery-start {
+  background: #6a1b9a !important;
+}
+
+#btn-mystery-finish {
+  background: #6a1b9a !important;
+}
+
+#btn-enter-mystery {
+  background: #6a1b9a !important;
+}

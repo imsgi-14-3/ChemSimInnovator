@@ -19,13 +19,13 @@ This uploaded PDF is the authoritative source selected for the ChemSim PBA matri
 
 **Phase:** Implementation
 
-**Overall implementation:** Milestone 8 complete, awaiting review
+**Overall implementation:** Milestone 9 complete, awaiting review
 
-**Current milestone:** Milestone 8 — PBA Practice Mode
+**Current milestone:** Milestone 9 — Mystery Lab (Unknown Sample Identification)
 
-**Next milestone:** Milestone 9 — further practicals or features
+**Next milestone:** Milestone 10 — further practicals or features
 
-**Milestone 8 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+**Milestone 9 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
 
 ## Completed Decisions
 
@@ -698,3 +698,113 @@ Duration: 2 hours (tracked with elapsed timer).
 - No React/Vue/Angular: CONFIRMED
 - SIMULATED educational values: PRESENT
 - 13 EXPERIMENTS / 13 SIMULATION_CONFIG / 13 PBA_QUESTIONS: VERIFIED
+
+---
+
+## Milestone 9 — Mystery Lab (Unknown Sample Identification)
+
+**Status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+
+**Date:** 2026-09-18
+
+### Summary
+
+Implemented Mystery Lab — an exploratory unknown sample identification mode where students investigate an unknown substance using virtual tests, collect evidence, form hypotheses, and identify the sample.
+
+**Label:** ChemSim Mystery Lab — Educational Simulation (not an official FBISE practical)
+
+### Sample Pool (6 unknowns)
+
+| Sample ID | Identity | Formula | Category | Diagnostic Test(s) |
+|-----------|----------|---------|----------|---------------------|
+| MX-01 | Distilled Water | H₂O | liquid | Boiling Point, Water Test |
+| MX-02 | Sodium Chloride Solution | NaCl (aq) | liquid | Flame Test |
+| MX-03 | Copper Sulphate Solution | CuSO₄ (aq) | liquid | Flame Test |
+| MX-04 | Ethyl Alcohol | C₂H₅OH | liquid | Boiling Point, Water Test |
+| MX-05 | Naphthalene | C₁₀H₈ | solid | Melting Point, Flame Test |
+| MX-06 | Dilute Hydrochloric Acid | HCl (aq) | liquid | Litmus Test |
+
+### Test Pool (5 tests)
+
+| Test ID | Name | Applies To | Source |
+|---------|------|-----------|--------|
+| flame | Flame Test | liquid, solid | ChemSim educational choice (based on M7.2) |
+| water_test | Water Test | liquid | Source-backed: M7.7 |
+| litmus | Litmus Test | liquid | ChemSim educational choice |
+| melting_point | Melting Point | solid | Source-backed: M7.4 |
+| boiling_point | Boiling Point | liquid | Source-backed: M7.5 |
+
+### Evidence Model
+
+Each sample has a deterministic evidence model: `sample → test → observation + interpretation`. Every sample has at least 1 diagnostic test. All 6 samples are distinguishable.
+
+### Investigation Flow
+
+```
+Menu → Intro → Investigation → Test Execute → Observe → Record → Back to Investigation → (repeat) → Identify → Submit → (correct: Complete | incorrect: back to Investigation) → Finish
+```
+
+### Identification Validation
+
+- Correct: shows "Identification Confirmed", proceeds to COMPLETE
+- Incorrect: shows "Identification not confirmed", returns to investigation loop
+- Empty guess: blocked with feedback message
+
+### Conclusion
+
+Required before completion. Student writes an evidence-based conclusion connecting test evidence, interpretation, and final identification.
+
+### Evidence Quality
+
+- None: 0 tests performed
+- Some: tests performed but none diagnostic
+- Sufficient: at least 1 diagnostic test performed
+
+### Scoring
+
+Descriptive feedback (not numerical PBA scoring):
+- Tests performed
+- Useful diagnostic tests
+- Identification result
+- Conclusion quality
+- Evidence quality level
+
+### COMPLETE/Finish
+
+- COMPLETE shows investigation summary, evidence, hypothesis, feedback
+- "Finish Mystery Lab" returns to main menu
+- No page reload, no auto-start of new mystery, no M10 jump
+
+### Navigation
+
+- Main menu: Practical Lab | PBA Practice | Mystery Lab
+- Lab select screen: also has Mystery Lab entry point
+- Sidebar hidden in Mystery Lab mode
+- Back button returns to investigation from identify/conclusion screens
+
+### Files Modified
+
+- `script.js` — MYSTERY_TESTS (5), MYSTERY_SAMPLES (6), M9 state, 13 engine functions, 11 renderers, 1 stage router, event handlers, navigation wiring
+- `style.css` — M9-specific styles (mystery-panel, sample-card, test-btn, evidence-entry, textarea, complete, feedback)
+
+### Source Discipline
+
+| Sample | Source-backed | Educational Choice |
+|--------|--------------|-------------------|
+| MX-01 Water | Water test (M7.7), BP (M7.5) | Litmus neutrality |
+| MX-02 NaCl | Flame test Na⁺ (M7.2) | BP elevation |
+| MX-03 CuSO₄ | Flame test Cu²⁺ (M7.2) | Slightly acidic |
+| MX-04 Ethanol | BP 78°C (M7.5), Water test (M7.7) | Organic flame |
+| MX-05 Naphthalene | MP 80°C (M7.4) | Sooty flame |
+| MX-06 HCl | Litmus acidity | BP azeotrope |
+
+### Regression Tests
+
+- 161 M9 tests performed
+- 161/161 passed
+- 153 M8 regression tests: 153/153 passed
+- A1–A5 regression: ALL PASS
+- M7.1–M7.8 regression: ALL PASS
+- JavaScript syntax: VALID
+- No React/Vue/Angular: CONFIRMED
+- SIMULATED educational values: PRESENT

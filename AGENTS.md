@@ -198,6 +198,7 @@ Current state:
 - Milestone 6 — A5 Gas Detection (NH₃, CO₂, Cl₂): complete
 - Milestone 7 — 8 Minor Practicals (M7.1–M7.8): complete, awaiting review
 - Milestone 8 — PBA Practice Mode: complete, awaiting review
+- Milestone 9 — Mystery Lab (Unknown Sample Identification): complete, awaiting review
 
 Milestone 1 is NOT automatically approved for implementation.
 

@@ -999,11 +999,15 @@ var state = {
   m7ObservationDone: false,
 
   // -- PBA Practice Mode (M8) --
-  appMode: "lab",                   // "lab" | "pba"
+  appMode: "lab",                   // "lab" | "pba" | "mystery"
   pbaScreen: "menu",               // "menu" | "mode_select" | "generating" | "section_a" | "section_b" | "review" | "result"
   pbaSession: null,                // { sessionId, startedAt, mode, majorQuestions, minorQuestions, answers, marks, totalMarks, submitted, timerStarted, timerElapsed }
   pbaCurrentSection: "A",          // "A" | "B"
-  pbaCurrentIndex: 0               // Current question index within section
+  pbaCurrentIndex: 0,              // Current question index within section
+
+  // -- Mystery Lab (M9) --
+  mysteryScreen: "menu",           // "menu" | "intro" | "investigation" | "test_execute" | "observe" | "interpret" | "identify" | "conclusion" | "complete"
+  mysterySession: null             // { sampleId, sampleLabel, testsPerformed, evidence, hypothesis, identified, conclusion, completed, startedAt }
 };
 
 /* ==============================================================
@@ -1224,13 +1228,15 @@ function renderPBAMenu() {
   html += '<div style="margin-top:2rem;">';
   html += '<button class="btn btn-primary" id="btn-enter-lab" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;">Practical Lab</button>';
   html += '<button class="btn btn-accent" id="btn-enter-pba" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;">PBA Practice</button>';
+  html += '<button class="btn btn-primary" id="btn-enter-mystery" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#6a1b9a;">Mystery Lab</button>';
   html += '</div>';
   html += '<div class="sim-note" style="max-width:300px;margin:2rem auto;text-align:left;">';
   html += 'PBA Practice simulates the FBISE Chemistry Practical Based Assessment.<br><br>';
   html += '<strong>PBA Structure:</strong><br>';
   html += 'Section A — Major: 2 × 6 = 12 marks (60%)<br>';
   html += 'Section B — Minor: 2 × 4 = 8 marks (40%)<br>';
-  html += 'Total: 20 marks | Duration: 2 hours';
+  html += 'Total: 20 marks | Duration: 2 hours<br><br>';
+  html += '<strong>Mystery Lab:</strong> Investigate an unknown sample using virtual tests.';
   html += '</div>';
   html += '</div>';
   return html;
@@ -1478,6 +1484,12 @@ function onPBAClick(e) {
     renderCurrentStage();
     return;
   }
+  if (target.id === "btn-enter-mystery") {
+    state.appMode = "mystery";
+    state.mysteryScreen = "menu";
+    renderCurrentStage();
+    return;
+  }
 
   // Mode select buttons
   if (target.id === "btn-pba-full" || target.id === "btn-pba-major" || target.id === "btn-pba-minor") {
@@ -1670,6 +1682,10 @@ function cacheDom() {
 function renderCurrentStage() {
   if (state.appMode === "pba") {
     renderPBAStage();
+    return;
+  }
+  if (state.appMode === "mystery") {
+    renderMysteryStage();
     return;
   }
   // Restore sidebar when in lab mode
@@ -1940,6 +1956,7 @@ function renderSelectContent() {
   return '<h3>Select a Practical</h3>' +
     '<p>Choose an experiment from the sidebar to begin.</p>' +
     '<button class="btn btn-accent" id="btn-enter-pba-from-lab" style="margin-bottom:1rem;">PBA Practice →</button>' +
+    '<button class="btn btn-primary" id="btn-enter-mystery-from-lab" style="margin-bottom:1rem;background:#6a1b9a;">Mystery Lab →</button>' +
     '<p><strong>Major Practicals:</strong></p><ul>' +
     '<li><strong>A1</strong> — Fractional Distillation</li>' +
     '<li><strong>A2</strong> — Paper Chromatography</li>' +
@@ -4074,6 +4091,10 @@ function onBtnNext() {
     }
     return;
   }
+  if (state.appMode === "mystery") {
+    // Mystery Lab navigation handled by onMysteryClick
+    return;
+  }
   var id = state.experiment ? state.experiment.id : "";
   if ((id === "A2" || id === "A3") && state.currentStage === "run" && state.simulation && !state.simulation.done) {
     return;
@@ -4096,6 +4117,19 @@ function onBtnBack() {
       state.pbaCurrentIndex--;
       var allQ = pbaGetAllQuestions();
       state.pbaCurrentSection = allQ[state.pbaCurrentIndex].section;
+      renderCurrentStage();
+    }
+    return;
+  }
+  if (state.appMode === "mystery") {
+    if (state.mysteryScreen === "investigation" || state.mysteryScreen === "test_execute" || state.mysteryScreen === "observe" || state.mysteryScreen === "interpret") {
+      state.mysteryScreen = "investigation";
+      renderCurrentStage();
+    } else if (state.mysteryScreen === "identify") {
+      state.mysteryScreen = "investigation";
+      renderCurrentStage();
+    } else if (state.mysteryScreen === "conclusion") {
+      state.mysteryScreen = "investigation";
       renderCurrentStage();
     }
     return;
@@ -4257,6 +4291,12 @@ function onStageContentClick(e) {
   if (target.id === "btn-enter-pba-from-lab") {
     state.appMode = "pba";
     state.pbaScreen = "menu";
+    renderCurrentStage();
+    return;
+  }
+  if (target.id === "btn-enter-mystery-from-lab") {
+    state.appMode = "mystery";
+    state.mysteryScreen = "menu";
     renderCurrentStage();
     return;
   }
@@ -5038,6 +5078,797 @@ function checkRfValues() {
       if (fbEl) { fbEl.textContent = "✓ Correct"; fbEl.className = "rf-feedback rf-correct"; }
     } else {
       if (fbEl) { fbEl.textContent = "✗ Expected ~" + expectedRf.toFixed(3); fbEl.className = "rf-feedback rf-incorrect"; }
+    }
+  }
+}
+
+/* ==============================================================
+   SECTION 9B: MYSTERY LAB (M9)
+   ============================================================== */
+
+/* ---- Mystery Lab: Available Tests ---- */
+
+var MYSTERY_TESTS = [
+  {
+    id: "flame",
+    name: "Flame Test",
+    purpose: "Identify metallic ions by their characteristic flame colour.",
+    appliesTo: ["liquid", "solid"],
+    description: "Hold a clean platinum wire in the sample, then place it in a Bunsen flame. Observe the flame colour.",
+    source: "ChemSim educational simulation choice — based on standard flame test technique from M7.2"
+  },
+  {
+    id: "water_test",
+    name: "Water Test",
+    purpose: "Detect the presence of water using anhydrous copper sulphate.",
+    appliesTo: ["liquid"],
+    description: "Add a small amount of the sample to white anhydrous CuSO₄ powder. Observe any colour change.",
+    source: "Source-backed: M7.7 prescribed practical (water test using anhydrous CuSO₄)"
+  },
+  {
+    id: "litmus",
+    name: "Litmus Test",
+    purpose: "Determine whether the sample is acidic, basic, or neutral.",
+    appliesTo: ["liquid"],
+    description: "Place a drop of the sample on red and blue litmus paper. Observe any colour changes.",
+    source: "ChemSim educational simulation choice — standard litmus test technique"
+  },
+  {
+    id: "melting_point",
+    name: "Melting Point",
+    purpose: "Determine the temperature at which a solid sample melts.",
+    appliesTo: ["solid"],
+    description: "Heat the solid sample slowly and record the temperature at which it completely melts.",
+    source: "Source-backed: M7.4 prescribed practical (melting point of naphthalene)"
+  },
+  {
+    id: "boiling_point",
+    name: "Boiling Point",
+    purpose: "Determine the temperature at which a liquid sample boils.",
+    appliesTo: ["liquid"],
+    description: "Heat the liquid sample slowly and record the temperature at which it boils steadily.",
+    source: "Source-backed: M7.5 prescribed practical (boiling point of ethyl alcohol)"
+  }
+];
+
+/* ---- Mystery Lab: Unknown Sample Pool ---- */
+
+var MYSTERY_SAMPLES = [
+  {
+    id: "MX-01",
+    identity: "Distilled Water",
+    formula: "H₂O",
+    category: "liquid",
+    label: "A clear, colourless liquid with no detectable odour.",
+    minTestsForDiagnosis: 1,
+    diagnosticTests: ["boiling_point", "water_test"],
+    hypothesisOptions: ["Distilled Water", "Ethyl Alcohol", "Dilute Hydrochloric Acid", "Sodium Chloride Solution", "Copper Sulphate Solution", "Naphthalene"],
+    evidence: {
+      flame: { observation: "No characteristic flame colour observed. The flame remains pale blue.", interpretation: "No metallic ions detected in the sample." },
+      water_test: { observation: "White anhydrous CuSO₄ powder turns blue upon adding the sample.", interpretation: "Water is present in the sample." },
+      litmus: { observation: "No colour change observed in either red or blue litmus paper.", interpretation: "The sample is neutral (neither acidic nor basic)." },
+      melting_point: { observation: "Sample remains liquid at 0°C; no solid phase observed.", interpretation: "Melting point is below 0°C, consistent with a liquid at room temperature." },
+      boiling_point: { observation: "Liquid boils steadily at approximately 100°C.", interpretation: "Boiling point of 100°C is consistent with distilled water." }
+    }
+  },
+  {
+    id: "MX-02",
+    identity: "Sodium Chloride Solution",
+    formula: "NaCl (aq)",
+    category: "liquid",
+    label: "A clear, colourless liquid with no detectable odour.",
+    minTestsForDiagnosis: 1,
+    diagnosticTests: ["flame"],
+    hypothesisOptions: ["Distilled Water", "Ethyl Alcohol", "Dilute Hydrochloric Acid", "Sodium Chloride Solution", "Copper Sulphate Solution", "Naphthalene"],
+    evidence: {
+      flame: { observation: "Intense yellow flame observed when the sample is introduced into the Bunsen flame.", interpretation: "Sodium ions (Na⁺) are present in the sample." },
+      water_test: { observation: "White anhydrous CuSO₄ powder turns blue upon adding the sample.", interpretation: "Water is present — this is an aqueous solution." },
+      litmus: { observation: "No colour change observed in either red or blue litmus paper.", interpretation: "The solution is neutral, consistent with a neutral salt solution." },
+      melting_point: { observation: "Sample remains liquid at 0°C; no solid phase observed.", interpretation: "Melting point is below 0°C — sample is a liquid at room temperature." },
+      boiling_point: { observation: "Liquid boils at approximately 103°C.", interpretation: "Boiling point elevated above 100°C, indicating a dissolved solute raises the boiling point." }
+    }
+  },
+  {
+    id: "MX-03",
+    identity: "Copper Sulphate Solution",
+    formula: "CuSO₄ (aq)",
+    category: "liquid",
+    label: "A clear, blue-coloured liquid.",
+    minTestsForDiagnosis: 1,
+    diagnosticTests: ["flame"],
+    hypothesisOptions: ["Distilled Water", "Ethyl Alcohol", "Dilute Hydrochloric Acid", "Sodium Chloride Solution", "Copper Sulphate Solution", "Naphthalene"],
+    evidence: {
+      flame: { observation: "Green (blue-green) flame observed when the sample is introduced into the Bunsen flame.", interpretation: "Copper ions (Cu²⁺) are present in the sample." },
+      water_test: { observation: "White anhydrous CuSO₄ powder turns blue upon adding the sample.", interpretation: "Water is present — this is an aqueous solution." },
+      litmus: { observation: "Blue litmus paper turns slightly red. Red litmus remains unchanged.", interpretation: "The solution is slightly acidic, consistent with copper sulphate hydrolysis." },
+      melting_point: { observation: "Sample remains liquid at 0°C; no solid phase observed.", interpretation: "Melting point is below 0°C — sample is a liquid at room temperature." },
+      boiling_point: { observation: "Liquid boils at approximately 102°C.", interpretation: "Boiling point elevated above 100°C, indicating a dissolved solute raises the boiling point." }
+    }
+  },
+  {
+    id: "MX-04",
+    identity: "Ethyl Alcohol",
+    formula: "C₂H₅OH",
+    category: "liquid",
+    label: "A clear, colourless liquid with a characteristic sweet smell.",
+    minTestsForDiagnosis: 1,
+    diagnosticTests: ["boiling_point", "water_test"],
+    hypothesisOptions: ["Distilled Water", "Ethyl Alcohol", "Dilute Hydrochloric Acid", "Sodium Chloride Solution", "Copper Sulphate Solution", "Naphthalene"],
+    evidence: {
+      flame: { observation: "Pale blue flame observed, not characteristic of any metallic ion. No coloured flame.", interpretation: "No metallic ions detected — likely an organic (non-metallic) substance." },
+      water_test: { observation: "White anhydrous CuSO₄ powder remains white. No colour change.", interpretation: "No water detected in the sample — this is a non-aqueous liquid." },
+      litmus: { observation: "No colour change observed in either red or blue litmus paper.", interpretation: "The sample is neutral." },
+      melting_point: { observation: "Sample remains liquid at 0°C; no solid phase observed.", interpretation: "Melting point is below 0°C — sample is a liquid at room temperature." },
+      boiling_point: { observation: "Liquid boils at approximately 78°C.", interpretation: "Boiling point of 78°C is significantly below 100°C, consistent with ethyl alcohol (ethanol)." }
+    }
+  },
+  {
+    id: "MX-05",
+    identity: "Naphthalene",
+    formula: "C₁₀H₈",
+    category: "solid",
+    label: "A white crystalline solid with a characteristic mothball-like odour.",
+    minTestsForDiagnosis: 1,
+    diagnosticTests: ["melting_point", "flame"],
+    hypothesisOptions: ["Distilled Water", "Ethyl Alcohol", "Dilute Hydrochloric Acid", "Sodium Chloride Solution", "Copper Sulphate Solution", "Naphthalene"],
+    evidence: {
+      flame: { observation: "Sooty yellow flame with visible black smoke when heated.", interpretation: "Organic/aromatic compound — sooty flame indicates high carbon content." },
+      water_test: { observation: "White anhydrous CuSO₄ powder remains white when sample is added.", interpretation: "No water detected — sample is a dry solid." },
+      litmus: { observation: "No colour change observed in either red or blue litmus paper.", interpretation: "The sample is neutral." },
+      melting_point: { observation: "Solid crystals melt at approximately 80°C.", interpretation: "Melting point of 80°C is consistent with naphthalene (C₁₀H₈)." },
+      boiling_point: { observation: "Sample is solid at room temperature — boiling point test not applicable.", interpretation: "Sample is a solid, not a liquid. Boiling point determination requires a liquid sample." }
+    }
+  },
+  {
+    id: "MX-06",
+    identity: "Dilute Hydrochloric Acid",
+    formula: "HCl (aq)",
+    category: "liquid",
+    label: "A clear, colourless liquid with a sharp, pungent odour.",
+    minTestsForDiagnosis: 1,
+    diagnosticTests: ["litmus"],
+    hypothesisOptions: ["Distilled Water", "Ethyl Alcohol", "Dilute Hydrochloric Acid", "Sodium Chloride Solution", "Copper Sulphate Solution", "Naphthalene"],
+    evidence: {
+      flame: { observation: "No characteristic flame colour observed. The flame remains pale blue.", interpretation: "No metallic ions detected in the sample." },
+      water_test: { observation: "White anhydrous CuSO₄ powder turns blue upon adding the sample.", interpretation: "Water is present — this is an aqueous solution." },
+      litmus: { observation: "Blue litmus paper turns red. Red litmus remains unchanged.", interpretation: "The sample is acidic — blue litmus turns red in the presence of an acid." },
+      melting_point: { observation: "Sample remains liquid at 0°C; no solid phase observed.", interpretation: "Melting point is below 0°C — sample is a liquid at room temperature." },
+      boiling_point: { observation: "Liquid boils at approximately 108°C.", interpretation: "Boiling point elevated above 100°C — consistent with a dilute acid solution (azeotrope behaviour)." }
+    }
+  }
+];
+
+/* ---- Mystery Lab: Session Engine ---- */
+
+function mysteryShuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i];
+    a[i] = a[j];
+    a[j] = tmp;
+  }
+  return a;
+}
+
+function mysteryGenerateSession() {
+  var shuffled = mysteryShuffle(MYSTERY_SAMPLES);
+  var chosen = shuffled[0];
+  return {
+    sampleId: chosen.id,
+    sampleLabel: chosen.label,
+    testsPerformed: [],
+    evidence: [],
+    hypothesis: null,
+    identified: false,
+    conclusion: "",
+    completed: false,
+    startedAt: Date.now()
+  };
+}
+
+function mysteryGetSample() {
+  if (!state.mysterySession) return null;
+  for (var i = 0; i < MYSTERY_SAMPLES.length; i++) {
+    if (MYSTERY_SAMPLES[i].id === state.mysterySession.sampleId) return MYSTERY_SAMPLES[i];
+  }
+  return null;
+}
+
+function mysteryGetTestById(testId) {
+  for (var i = 0; i < MYSTERY_TESTS.length; i++) {
+    if (MYSTERY_TESTS[i].id === testId) return MYSTERY_TESTS[i];
+  }
+  return null;
+}
+
+function mysteryIsTestPerformed(testId) {
+  if (!state.mysterySession) return false;
+  return state.mysterySession.testsPerformed.indexOf(testId) !== -1;
+}
+
+function mysteryGetAvailableTests() {
+  var sample = mysteryGetSample();
+  if (!sample) return [];
+  var cat = sample.category;
+  var available = [];
+  for (var i = 0; i < MYSTERY_TESTS.length; i++) {
+    if (MYSTERY_TESTS[i].appliesTo.indexOf(cat) !== -1) {
+      available.push(MYSTERY_TESTS[i]);
+    }
+  }
+  return available;
+}
+
+function mysteryPerformTest(testId) {
+  var sample = mysteryGetSample();
+  if (!sample || !state.mysterySession) return null;
+  if (mysteryIsTestPerformed(testId)) return null;
+  var evidenceData = sample.evidence[testId];
+  if (!evidenceData) return null;
+  var testInfo = mysteryGetTestById(testId);
+  state.mysterySession.testsPerformed.push(testId);
+  var entry = {
+    testId: testId,
+    testName: testInfo ? testInfo.name : testId,
+    observation: evidenceData.observation,
+    interpretation: evidenceData.interpretation,
+    studentObservation: "",
+    studentInterpretation: ""
+  };
+  state.mysterySession.evidence.push(entry);
+  return entry;
+}
+
+function mysteryGetEvidenceCount() {
+  if (!state.mysterySession) return 0;
+  return state.mysterySession.evidence.length;
+}
+
+function mysteryHasDiagnosticEvidence() {
+  var sample = mysteryGetSample();
+  if (!sample) return false;
+  var evidence = state.mysterySession.evidence;
+  for (var i = 0; i < evidence.length; i++) {
+    if (sample.diagnosticTests.indexOf(evidence[i].testId) !== -1) return true;
+  }
+  return false;
+}
+
+function mysteryGetEvidenceQuality() {
+  var count = mysteryGetEvidenceCount();
+  if (count === 0) return "none";
+  if (mysteryHasDiagnosticEvidence()) return "sufficient";
+  return "some";
+}
+
+function mysteryValidateIdentification(guess) {
+  var sample = mysteryGetSample();
+  if (!sample) return false;
+  return guess.toLowerCase().trim() === sample.identity.toLowerCase().trim();
+}
+
+function mysteryScoreInvestigation() {
+  if (!state.mysterySession) return { tests: 0, useful: 0, identified: false, conclusionWritten: false, quality: "none" };
+  var tests = state.mysterySession.testsPerformed.length;
+  var sample = mysteryGetSample();
+  var useful = 0;
+  if (sample) {
+    for (var i = 0; i < state.mysterySession.testsPerformed.length; i++) {
+      if (sample.diagnosticTests.indexOf(state.mysterySession.testsPerformed[i]) !== -1) useful++;
+    }
+  }
+  return {
+    tests: tests,
+    useful: useful,
+    identified: state.mysterySession.identified,
+    conclusionWritten: state.mysterySession.conclusion.length > 10,
+    quality: mysteryGetEvidenceQuality()
+  };
+}
+
+function mysteryFormatTime(ms) {
+  var totalSec = Math.floor(ms / 1000);
+  var h = Math.floor(totalSec / 3600);
+  var m = Math.floor((totalSec % 3600) / 60);
+  var s = totalSec % 60;
+  return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+}
+
+/* ---- Mystery Lab: Renderers ---- */
+
+function renderMysteryMenu() {
+  var html = '<div style="text-align:center;padding:2rem;">';
+  html += '<h2>Mystery Lab</h2>';
+  html += '<p class="subtitle">Unknown Sample Identification</p>';
+  html += '<p style="max-width:450px;margin:1rem auto;color:var(--color-text-secondary);">You will receive an unknown sample. Use the available virtual tests to investigate, collect evidence, form a hypothesis, and identify the substance.</p>';
+  html += '<div style="margin-top:2rem;">';
+  html += '<button class="btn btn-primary" id="btn-mystery-start" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#6a1b9a;">Start Investigation</button>';
+  html += '<button class="btn btn-secondary" id="btn-mystery-back-to-menu" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:0.75rem;">← Back to Main Menu</button>';
+  html += '</div>';
+  html += '<div class="sim-note" style="max-width:400px;margin:2rem auto;text-align:left;">';
+  html += '<strong>How it works:</strong><br>';
+  html += '1. Receive an unknown sample<br>';
+  html += '2. Choose and perform virtual tests<br>';
+  html += '3. Record your observations<br>';
+  html += '4. Interpret the evidence<br>';
+  html += '5. Form and revise your hypothesis<br>';
+  html += '6. Identify the sample and write a conclusion<br><br>';
+  html += '<em>ChemSim Mystery Lab — Educational Simulation</em>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderMysteryIntro() {
+  var s = state.mysterySession;
+  var html = '<div class="mystery-panel">';
+  html += '<div class="label">ChemSim Mystery Lab — Educational Simulation</div>';
+  html += '<h3>Unknown Sample Received</h3>';
+  html += '<div class="mystery-sample-card">';
+  html += '<p><strong>Sample ID:</strong> ' + s.sampleId + '</p>';
+  html += '<p>' + escapeHtml(s.sampleLabel) + '</p>';
+  html += '</div>';
+  html += '<p style="margin-top:1rem;">Your task: Use the available tests to identify this unknown.</p>';
+  html += '<p>You may perform multiple tests. Choose wisely — each test reveals evidence.</p>';
+  html += '<div style="margin-top:1.5rem;">';
+  html += '<button class="btn btn-primary" id="btn-mystery-begin" style="padding:0.75rem 2rem;font-size:1rem;">Begin Investigation →</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderMysteryInvestigation() {
+  var s = state.mysterySession;
+  var sample = mysteryGetSample();
+  var available = mysteryGetAvailableTests();
+  var quality = mysteryGetEvidenceQuality();
+  var elapsed = Date.now() - s.startedAt;
+
+  var html = '<div class="mystery-investigation">';
+
+  /* Header: unknown sample */
+  html += '<div class="mystery-panel mystery-panel-header">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">';
+  html += '<div><strong>UNKNOWN SAMPLE</strong> — ' + s.sampleId + '</div>';
+  html += '<div style="color:var(--color-text-secondary);font-size:0.85rem;">Time: ' + mysteryFormatTime(elapsed) + ' | Evidence: ' + mysteryGetEvidenceCount() + ' test(s) | Quality: ' + quality + '</div>';
+  html += '</div>';
+  html += '</div>';
+
+  /* Available tests */
+  html += '<div class="mystery-panel">';
+  html += '<h4>Available Tests</h4>';
+  var anyAvail = false;
+  for (var i = 0; i < available.length; i++) {
+    var t = available[i];
+    var done = mysteryIsTestPerformed(t.id);
+    anyAvail = true;
+    html += '<button class="btn btn-tool mystery-test-btn" data-mystery-test="' + t.id + '"' + (done ? ' disabled style="opacity:0.5;cursor:default;"' : '') + '>';
+    html += escapeHtml(t.name);
+    if (done) html += ' ✓';
+    html += '</button>';
+  }
+  if (!anyAvail) html += '<p style="color:var(--color-text-secondary);">No tests available for this sample type.</p>';
+  html += '</div>';
+
+  /* Evidence Board */
+  html += renderMysteryEvidenceBoard();
+
+  /* Hypothesis */
+  html += renderMysteryHypothesisPanel();
+
+  /* Action buttons */
+  html += '<div class="mystery-panel" style="text-align:center;">';
+  html += '<button class="btn btn-primary" id="btn-mystery-identify" style="margin:0.5rem;padding:0.75rem 2rem;">Identify Sample</button>';
+  html += '</div>';
+
+  html += '</div>';
+  return html;
+}
+
+function renderMysteryEvidenceBoard() {
+  var s = state.mysterySession;
+  if (!s || s.evidence.length === 0) {
+    return '<div class="mystery-panel"><h4>Evidence Board</h4><p style="color:var(--color-text-secondary);">No evidence collected yet. Perform a test to begin.</p></div>';
+  }
+  var html = '<div class="mystery-panel">';
+  html += '<h4>Evidence Board (' + s.evidence.length + ' test' + (s.evidence.length !== 1 ? 's' : '') + ')</h4>';
+  for (var i = 0; i < s.evidence.length; i++) {
+    var e = s.evidence[i];
+    html += '<div class="mystery-evidence-entry">';
+    html += '<div class="mystery-evidence-header">';
+    html += '<strong>Test ' + (i + 1) + ': ' + escapeHtml(e.testName) + '</strong>';
+    html += '</div>';
+    html += '<p><em>Simulated Observation:</em> ' + escapeHtml(e.observation) + '</p>';
+    html += '<p><em>Chemical Interpretation:</em> ' + escapeHtml(e.interpretation) + '</p>';
+    html += '<div style="margin-top:0.5rem;">';
+    html += '<label style="font-size:0.85rem;display:block;margin-bottom:0.25rem;">Your observation notes:</label>';
+    html += '<textarea class="mystery-textarea" data-evidence-idx="' + i + '" data-evidence-field="obs" rows="2" placeholder="Record what you observed...">' + escapeHtml(e.studentObservation) + '</textarea>';
+    html += '</div>';
+    html += '<div style="margin-top:0.5rem;">';
+    html += '<label style="font-size:0.85rem;display:block;margin-bottom:0.25rem;">Your interpretation:</label>';
+    html += '<textarea class="mystery-textarea" data-evidence-idx="' + i + '" data-evidence-field="interp" rows="2" placeholder="What does this evidence suggest?">' + escapeHtml(e.studentInterpretation) + '</textarea>';
+    html += '</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderMysteryHypothesisPanel() {
+  var s = state.mysterySession;
+  var sample = mysteryGetSample();
+  if (!sample) return '';
+  var html = '<div class="mystery-panel">';
+  html += '<h4>Form Your Hypothesis</h4>';
+  html += '<p style="font-size:0.9rem;color:var(--color-text-secondary);">What do you think the unknown sample is? You can revise your hypothesis as you collect more evidence.</p>';
+  html += '<div style="margin:0.75rem 0;">';
+  html += '<select id="mystery-hypothesis-select" style="padding:0.5rem;font-size:1rem;width:100%;max-width:400px;">';
+  html += '<option value="">— Select your hypothesis —</option>';
+  for (var i = 0; i < sample.hypothesisOptions.length; i++) {
+    var opt = sample.hypothesisOptions[i];
+    var sel = (s.hypothesis === opt) ? ' selected' : '';
+    html += '<option value="' + escapeHtml(opt) + '"' + sel + '>' + escapeHtml(opt) + '</option>';
+  }
+  html += '</select>';
+  html += '</div>';
+  html += '<button class="btn btn-secondary" id="btn-mystery-record-hypothesis" style="padding:0.5rem 1.5rem;">Record Hypothesis</button>';
+  if (s.hypothesis) {
+    html += '<p style="margin-top:0.5rem;font-size:0.9rem;"><strong>Current hypothesis:</strong> ' + escapeHtml(s.hypothesis) + '</p>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderMysteryTestExecute() {
+  var s = state.mysterySession;
+  var lastTest = s.testsPerformed[s.testsPerformed.length - 1];
+  var testInfo = mysteryGetTestById(lastTest);
+  var html = '<div class="mystery-panel">';
+  html += '<div class="label">ChemSim Mystery Lab — Performing Test</div>';
+  html += '<h3>' + escapeHtml(testInfo.name) + '</h3>';
+  html += '<p><strong>Purpose:</strong> ' + escapeHtml(testInfo.purpose) + '</p>';
+  html += '<p style="margin-top:0.75rem;">' + escapeHtml(testInfo.description) + '</p>';
+  html += '<div class="mystery-test-visual">';
+  html += '<div style="text-align:center;padding:2rem;background:var(--color-bg);border-radius:8px;border:1px solid var(--color-border);">';
+  html += '<p style="font-size:1.1rem;margin-bottom:1rem;">🔬 Performing ' + escapeHtml(testInfo.name) + '...</p>';
+  html += '<div class="mystery-animation">';
+  html += '<p style="font-size:2rem;">⚗️</p>';
+  html += '<p style="font-size:0.85rem;color:var(--color-text-secondary);">SIMULATED EDUCATIONAL VALUES — not real laboratory measurements</p>';
+  html += '</div>';
+  html += '</div>';
+  html += '</div>';
+  html += '<div style="text-align:center;margin-top:1.5rem;">';
+  html += '<button class="btn btn-primary" id="btn-mystery-view-observation" style="padding:0.75rem 2rem;font-size:1rem;">View Observation →</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderMysteryObserve() {
+  var s = state.mysterySession;
+  var lastEvidence = s.evidence[s.evidence.length - 1];
+  if (!lastEvidence) {
+    state.mysteryScreen = "investigation";
+    return renderMysteryInvestigation();
+  }
+  var html = '<div class="mystery-panel">';
+  html += '<div class="label">ChemSim Mystery Lab — Observation</div>';
+  html += '<h3>Simulated Observation: ' + escapeHtml(lastEvidence.testName) + '</h3>';
+  html += '<div class="mystery-observation-card">';
+  html += '<p><strong>What happened:</strong></p>';
+  html += '<p style="padding:1rem;background:var(--color-bg);border-left:3px solid var(--color-primary);border-radius:4px;">' + escapeHtml(lastEvidence.observation) + '</p>';
+  html += '</div>';
+  html += '<div class="mystery-interpretation-card" style="margin-top:1rem;">';
+  html += '<p><strong>Chemical interpretation:</strong></p>';
+  html += '<p style="padding:1rem;background:#e8f5e9;border-left:3px solid var(--color-success);border-radius:4px;">' + escapeHtml(lastEvidence.interpretation) + '</p>';
+  html += '</div>';
+  html += '<p style="margin-top:1rem;font-size:0.85rem;color:var(--color-text-secondary);">SIMULATED EDUCATIONAL VALUES — not real laboratory measurements</p>';
+  html += '<div style="text-align:center;margin-top:1.5rem;">';
+  html += '<button class="btn btn-primary" id="btn-mystery-record-evidence" style="padding:0.75rem 2rem;font-size:1rem;">Record Evidence & Continue →</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderMysteryInterpret() {
+  return renderMysteryInvestigation();
+}
+
+function renderMysteryIdentify() {
+  var s = state.mysterySession;
+  var sample = mysteryGetSample();
+  if (!sample) return '';
+  var html = '<div class="mystery-panel">';
+  html += '<div class="label">ChemSim Mystery Lab — Final Identification</div>';
+  html += '<h3>Identify the Unknown Sample</h3>';
+  html += '<p>You have collected ' + mysteryGetEvidenceCount() + ' piece(s) of evidence.</p>';
+  html += '<div style="margin:1rem 0;">';
+  html += '<p><strong>Select your identification:</strong></p>';
+  html += '<select id="mystery-identify-select" style="padding:0.5rem;font-size:1rem;width:100%;max-width:400px;">';
+  html += '<option value="">— Select the unknown substance —</option>';
+  for (var i = 0; i < sample.hypothesisOptions.length; i++) {
+    var opt = sample.hypothesisOptions[i];
+    html += '<option value="' + escapeHtml(opt) + '">' + escapeHtml(opt) + '</option>';
+  }
+  html += '</select>';
+  html += '</div>';
+  html += '<div style="margin:1rem 0;">';
+  html += '<label style="display:block;margin-bottom:0.5rem;"><strong>Evidence-based conclusion:</strong></label>';
+  html += '<textarea id="mystery-conclusion-input" class="mystery-textarea" rows="4" placeholder="The evidence from [test 1] and [test 2] supports the identification of [substance] because [reasoning]...">' + escapeHtml(s.conclusion) + '</textarea>';
+  html += '</div>';
+  html += '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;margin-top:1rem;">';
+  html += '<button class="btn btn-primary" id="btn-mystery-submit-identification" style="padding:0.75rem 2rem;">Submit Identification</button>';
+  html += '<button class="btn btn-secondary" id="btn-mystery-back-investigation" style="padding:0.75rem 2rem;">← Back to Investigation</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderMysteryComplete() {
+  var s = state.mysterySession;
+  var sample = mysteryGetSample();
+  var score = mysteryScoreInvestigation();
+  var elapsed = Date.now() - s.startedAt;
+
+  var html = '<div class="mystery-panel mystery-complete">';
+  html += '<div class="label">ChemSim Mystery Lab — Investigation Complete</div>';
+  html += '<h3>Investigation Summary</h3>';
+  html += '<div style="text-align:center;margin:1.5rem 0;">';
+  html += '<p style="font-size:2rem;font-weight:bold;color:var(--color-success);">✓ Identification Confirmed</p>';
+  html += '<p style="font-size:1.1rem;">The unknown sample is: <strong>' + escapeHtml(sample.identity) + '</strong> (' + escapeHtml(sample.formula) + ')</p>';
+  html += '</div>';
+  html += '<div class="mystery-summary-table">';
+  html += '<table class="measure-table">';
+  html += '<thead><tr><th>Detail</th><th>Result</th></tr></thead><tbody>';
+  html += '<tr><td>Sample ID</td><td>' + s.sampleId + '</td></tr>';
+  html += '<tr><td>Identity</td><td>' + escapeHtml(sample.identity) + '</td></tr>';
+  html += '<tr><td>Tests Performed</td><td>' + score.tests + '</td></tr>';
+  html += '<tr><td>Useful Diagnostic Tests</td><td>' + score.useful + '</td></tr>';
+  html += '<tr><td>Evidence Quality</td><td>' + score.quality + '</td></tr>';
+  html += '<tr><td>Identification</td><td style="color:var(--color-success);">Correct</td></tr>';
+  html += '<tr><td>Conclusion Written</td><td>' + (score.conclusionWritten ? 'Yes' : 'Not recorded') + '</td></tr>';
+  html += '<tr><td>Time Taken</td><td>' + mysteryFormatTime(elapsed) + '</td></tr>';
+  html += '</tbody></table>';
+  html += '</div>';
+
+  /* Evidence Summary */
+  html += '<h4 style="margin-top:1.5rem;">Evidence Summary</h4>';
+  for (var i = 0; i < s.evidence.length; i++) {
+    var e = s.evidence[i];
+    var isDiagnostic = sample.diagnosticTests.indexOf(e.testId) !== -1;
+    html += '<div class="mystery-evidence-entry">';
+    html += '<p>' + (isDiagnostic ? '✓' : '○') + ' <strong>' + escapeHtml(e.testName) + '</strong></p>';
+    html += '<p style="font-size:0.9rem;">' + escapeHtml(e.observation) + '</p>';
+    html += '</div>';
+  }
+
+  /* Conclusion */
+  if (s.conclusion) {
+    html += '<h4 style="margin-top:1rem;">Your Conclusion</h4>';
+    html += '<div style="padding:1rem;background:var(--color-bg);border-left:3px solid var(--color-primary);border-radius:4px;">';
+    html += '<p>' + escapeHtml(s.conclusion) + '</p>';
+    html += '</div>';
+  }
+
+  /* Hypothesis */
+  if (s.hypothesis) {
+    html += '<h4 style="margin-top:1rem;">Your Hypothesis</h4>';
+    html += '<p>' + escapeHtml(s.hypothesis) + (s.hypothesis === sample.identity ? ' (correct)' : ' (revised before identification)') + '</p>';
+  }
+
+  /* Feedback */
+  html += '<div class="mystery-feedback" style="margin-top:1.5rem;">';
+  html += '<h4>Investigation Feedback</h4>';
+  html += '<ul>';
+  html += '<li>Tests performed: ' + score.tests + '</li>';
+  html += '<li>Useful evidence: ' + score.useful + ' diagnostic test(s)</li>';
+  html += '<li>Identification: Correct</li>';
+  html += '<li>Conclusion: ' + (score.conclusionWritten ? 'Evidence-based conclusion recorded' : 'No conclusion recorded') + '</li>';
+  html += '</ul>';
+  html += '</div>';
+
+  html += '<div style="text-align:center;margin-top:1.5rem;">';
+  html += '<button class="btn btn-primary" id="btn-mystery-finish" style="padding:0.75rem 2rem;font-size:1rem;background:#6a1b9a;">Finish Mystery Lab</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+/* ---- Mystery Lab: Stage Router ---- */
+
+function renderMysteryStage() {
+  var stageContent = document.getElementById("stage-content");
+  var stageTitle = document.getElementById("stage-title");
+  var stageProgress = document.getElementById("stage-progress");
+  var simulationArea = document.getElementById("simulation-area");
+  var userInputArea = document.getElementById("user-input-area");
+  var feedbackArea = document.getElementById("feedback-area");
+  var btnBack = document.getElementById("btn-back");
+  var btnNext = document.getElementById("btn-next");
+  var sidebar = document.getElementById("sidebar");
+
+  sidebar.style.display = "none";
+  simulationArea.classList.add("hidden");
+  userInputArea.innerHTML = "";
+  feedbackArea.innerHTML = "";
+  btnBack.style.display = "none";
+  btnNext.style.display = "none";
+
+  if (state.mysteryScreen === "menu") {
+    stageTitle.textContent = "";
+    stageProgress.innerHTML = "";
+    stageContent.innerHTML = renderMysteryMenu();
+    stageContent.onclick = onMysteryClick;
+  } else if (state.mysteryScreen === "intro") {
+    stageTitle.textContent = "Mystery Lab";
+    stageProgress.innerHTML = '<span class="label">New Investigation</span>';
+    stageContent.innerHTML = renderMysteryIntro();
+    stageContent.onclick = onMysteryClick;
+  } else if (state.mysteryScreen === "investigation") {
+    stageTitle.textContent = "Mystery Lab — Investigation";
+    stageProgress.innerHTML = '<span class="label">' + state.mysterySession.sampleId + ' | Evidence: ' + mysteryGetEvidenceCount() + '</span>';
+    stageContent.innerHTML = renderMysteryInvestigation();
+    stageContent.onclick = onMysteryClick;
+    userInputArea.onclick = onMysteryClick;
+  } else if (state.mysteryScreen === "test_execute") {
+    stageTitle.textContent = "Mystery Lab — Performing Test";
+    stageProgress.innerHTML = '<span class="label">' + state.mysterySession.sampleId + '</span>';
+    stageContent.innerHTML = renderMysteryTestExecute();
+    stageContent.onclick = onMysteryClick;
+  } else if (state.mysteryScreen === "observe") {
+    stageTitle.textContent = "Mystery Lab — Observation";
+    stageProgress.innerHTML = '<span class="label">' + state.mysterySession.sampleId + '</span>';
+    stageContent.innerHTML = renderMysteryObserve();
+    stageContent.onclick = onMysteryClick;
+  } else if (state.mysteryScreen === "identify") {
+    stageTitle.textContent = "Mystery Lab — Identification";
+    stageProgress.innerHTML = '<span class="label">' + state.mysterySession.sampleId + ' | Evidence: ' + mysteryGetEvidenceCount() + '</span>';
+    stageContent.innerHTML = renderMysteryIdentify();
+    stageContent.onclick = onMysteryClick;
+  } else if (state.mysteryScreen === "complete") {
+    stageTitle.textContent = "Mystery Lab — Complete";
+    stageProgress.innerHTML = '';
+    stageContent.innerHTML = renderMysteryComplete();
+    stageContent.onclick = onMysteryClick;
+  }
+}
+
+/* ---- Mystery Lab: Event Handler ---- */
+
+function onMysteryClick(e) {
+  var target = e.target;
+
+  /* Main menu */
+  if (target.id === "btn-mystery-start") {
+    state.mysterySession = mysteryGenerateSession();
+    state.mysteryScreen = "intro";
+    renderCurrentStage();
+    return;
+  }
+  if (target.id === "btn-mystery-back-to-menu") {
+    state.appMode = "pba";
+    state.mysteryScreen = "menu";
+    renderCurrentStage();
+    return;
+  }
+
+  /* Intro */
+  if (target.id === "btn-mystery-begin") {
+    state.mysteryScreen = "investigation";
+    renderCurrentStage();
+    return;
+  }
+
+  /* Test selection */
+  if (target.classList.contains("mystery-test-btn") && target.getAttribute("data-mystery-test")) {
+    var testId = target.getAttribute("data-mystery-test");
+    if (!mysteryIsTestPerformed(testId)) {
+      mysteryPerformTest(testId);
+      state.mysteryScreen = "test_execute";
+      renderCurrentStage();
+    }
+    return;
+  }
+
+  /* View observation */
+  if (target.id === "btn-mystery-view-observation") {
+    state.mysteryScreen = "observe";
+    renderCurrentStage();
+    return;
+  }
+
+  /* Record evidence and continue */
+  if (target.id === "btn-mystery-record-evidence") {
+    state.mysteryScreen = "investigation";
+    renderCurrentStage();
+    return;
+  }
+
+  /* Record hypothesis */
+  if (target.id === "btn-mystery-record-hypothesis") {
+    var sel = document.getElementById("mystery-hypothesis-select");
+    if (sel && sel.value) {
+      state.mysterySession.hypothesis = sel.value;
+      renderCurrentStage();
+    }
+    return;
+  }
+
+  /* Make identification */
+  if (target.id === "btn-mystery-identify") {
+    state.mysteryScreen = "identify";
+    renderCurrentStage();
+    return;
+  }
+
+  /* Submit identification */
+  if (target.id === "btn-mystery-submit-identification") {
+    var identifySel = document.getElementById("mystery-identify-select");
+    var conclusionInput = document.getElementById("mystery-conclusion-input");
+    var guess = identifySel ? identifySel.value : "";
+    var conclusion = conclusionInput ? conclusionInput.value : "";
+    state.mysterySession.conclusion = conclusion;
+    if (!guess) {
+      var fb = document.getElementById("feedback-area");
+      if (fb) fb.textContent = "Please select an identification before submitting.";
+      return;
+    }
+    if (mysteryValidateIdentification(guess)) {
+      state.mysterySession.identified = true;
+      state.mysterySession.completed = true;
+      state.mysteryScreen = "complete";
+      renderCurrentStage();
+    } else {
+      var fbEl = document.getElementById("feedback-area");
+      if (fbEl) fbEl.textContent = "Identification not confirmed. Review your evidence and perform another useful test.";
+      state.mysteryScreen = "investigation";
+      renderCurrentStage();
+    }
+    return;
+  }
+
+  /* Back to investigation from identify */
+  if (target.id === "btn-mystery-back-investigation") {
+    var ci2 = document.getElementById("mystery-conclusion-input");
+    if (ci2) state.mysterySession.conclusion = ci2.value;
+    state.mysteryScreen = "investigation";
+    renderCurrentStage();
+    return;
+  }
+
+  /* Finish */
+  if (target.id === "btn-mystery-finish") {
+    state.mysterySession = null;
+    state.mysteryScreen = "menu";
+    state.appMode = "pba";
+    renderCurrentStage();
+    renderSidebar();
+    return;
+  }
+
+  /* Evidence textareas */
+  if (target.classList.contains("mystery-textarea")) {
+    var idx = parseInt(target.getAttribute("data-evidence-idx"), 10);
+    var field = target.getAttribute("data-evidence-field");
+    if (state.mysterySession && state.mysterySession.evidence[idx]) {
+      if (field === "obs") state.mysterySession.evidence[idx].studentObservation = target.value;
+      else if (field === "interp") state.mysterySession.evidence[idx].studentInterpretation = target.value;
+    }
+    return;
+  }
+}
+
+/* ---- Mystery Lab: Input Handler ---- */
+
+function onMysteryInput(e) {
+  var target = e.target;
+  if (target.classList.contains("mystery-textarea")) {
+    var idx = parseInt(target.getAttribute("data-evidence-idx"), 10);
+    var field = target.getAttribute("data-evidence-field");
+    if (state.mysterySession && state.mysterySession.evidence[idx]) {
+      if (field === "obs") state.mysterySession.evidence[idx].studentObservation = target.value;
+      else if (field === "interp") state.mysterySession.evidence[idx].studentInterpretation = target.value;
     }
   }
 }
