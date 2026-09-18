@@ -19,13 +19,13 @@ This uploaded PDF is the authoritative source selected for the ChemSim PBA matri
 
 **Phase:** Implementation
 
-**Overall implementation:** Milestone 6 complete, awaiting review
+**Overall implementation:** Milestone 7 complete, awaiting review
 
-**Current milestone:** Milestone 6 — A5 Gas Detection (NH₃, CO₂, Cl₂)
+**Current milestone:** Milestone 7 — 8 Minor Practicals
 
-**Next milestone:** Milestone 7 — additional practicals or features
+**Next milestone:** Milestone 8 — further practicals or features
 
-**Milestone 6 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+**Milestone 7 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
 
 ## Completed Decisions
 
@@ -551,7 +551,70 @@ A5 is a new experiment type (gas detection) that doesn't reuse A2/A3's chromatog
 
 ## Next Action
 
-Await user review of M6 implementation.
+Await user review of M7 implementation.
 
 After approval:
-1. Proceed to Milestone 7 — additional practicals or features as specified.
+1. Proceed to Milestone 8 — further practicals or features as specified.
+
+---
+
+## Milestone 7 — 8 Minor Practicals (M7.1–M7.8)
+
+**Status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+
+**Date:** 2026-09-18
+
+### Summary
+
+Implemented all 8 Minor Practicals from the FBISE prescribed list:
+
+| ID | Practical | SLOs |
+|----|-----------|------|
+| M7_1 | Separate naphthalene/sand/salt by sublimation | C-10-B-08, C-09-10-G-13 |
+| M7_2 | Identify Na⁺, K⁺, Ca²⁺, Cu²⁺, Ba²⁺ by flame test | C-09-F-16 |
+| M7_3 | Prepare CuSO₄·5H₂O crystals | C-09-F-12, C-09-F-11 |
+| M7_4 | Determine melting point of Naphthalene | C-09-F-14 |
+| M7_5 | Determine boiling point of Ethyl Alcohol | C-09-F-14 |
+| M7_6 | Demonstrate metal displacement reaction | C-09-G-12 |
+| M7_7 | Investigate water test using anhydrous CuSO₄ | C-09-10-G-12, C-09-D-12 |
+| M7_8 | Test purity of water (MP + BP) | C-09-D-13, C-09-D-14, C-09-F-14 |
+
+### What was built
+
+- 8 EXPERIMENTS entries with authoritative FBISE data (titles, sections, SLOs, objectives, apparatus, materials, procedures, stages)
+- 8 SIMULATION_CONFIG entries (all labelled SIMULATED EDUCATIONAL VALUES)
+- 4 new state variables: m7_ionIndex, m7_ionResults, m7ActionDone, m7ObservationDone
+- ~20 new renderers (M7ObserveContent, M7RecordContent, M7InterpretContent, M7ConcludeContent, M7CompleteContent, M7HeatContent, M7CollectContent, M7SelectIonContent, M7IdentifyContent, M7NextIonContent, M7DissolveContent, M7ConcentrateContent, M7CrystallizeContent, M7MonitorContent, M7SelectMaterialsContent, M7PerformReactionContent, M7SelectSampleContent, M7MPTestContent, M7RecordMPContent, M7BPTestContent, M7RecordBPContent)
+- M7 canvas drawing, user input, buttons
+- M7 event handlers (btn-m7-start, btn-m7-confirm-ion, btn-m7-record, btn-m7-interpret, data-ion click)
+- M7_2 count-based validation (5 ions) and M7_8 dual-test validation (MP + BP)
+- Summary stage for M7_2 (ion table) and generic M7
+- Helper functions: isM7, m7AllDone, m7_5ionAllDone
+
+### Engine wiring
+
+- renderStageContent: 15 new case statements + 5 existing cases updated with M7 dispatch
+- getSimStages: 8 new experiment entries
+- renderUserInput: M7 dispatch added
+- drawCanvas: M7 dispatch added
+- renderButtons: M7 dispatch added
+- onBtnNext: M7 simulation block added
+- resetExperimentState: M7 state reset added
+- renderSelectContent: Minor Practicals section added
+- renderSummaryContent: M7_2 and generic M7 handling added
+
+### Files modified
+
+- `script.js` — all M7 additions (EXPERIMENTS, SIMULATION_CONFIG, state, renderers, engine wiring, event handlers)
+
+### Regression Tests
+
+- 204 tests performed (95 M7 identity/data, 30 M7 simulation config, 4 M7 state, 30 M7 engine integration, 32 M7 engine wiring, 9 M7 event handlers, 9 M7 select screen, 4 M7 summary, 6 M7 data completeness, 4 M7 canvas, 3 M7 complete, 6 M7 validation, 19 regression, 7 technical)
+- 204/204 passed
+- A1 regression: PASS
+- A2 regression: PASS
+- A3 regression: PASS
+- A4 regression: PASS
+- A5 regression: PASS
+- JavaScript syntax: VALID
+- No existing functionality broken

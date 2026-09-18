@@ -2657,7 +2657,7 @@ function renderM7CompleteContent(exp) {
   html += '<p><strong>Observation:</strong> ' + escapeHtml(state.interpretation || "—") + '</p>';
   html += '<p><strong>Interpretation:</strong> ' + escapeHtml(state.interpretation || "—") + '</p>';
   html += '<p><strong>Conclusion:</strong> ' + escapeHtml(state.conclusion || "—") + '</p>';
-  html += '<div class="sim-note">All observations are simulated educational values.</div>';
+  html += '<div class="sim-note">SIMULATED EDUCATIONAL VALUES — not real laboratory measurements.</div>';
   html += '<button class="btn btn-primary" id="btn-finish-experiment" style="margin-top:1rem;">Finish Experiment</button>';
   return html;
 }

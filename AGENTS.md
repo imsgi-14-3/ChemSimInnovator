@@ -195,7 +195,8 @@ Current state:
 - Milestone 3 — Fractional Distillation: complete
 - Milestone 4 — NaOH Molarity by Titration: complete
 - Milestone 5 — A3 Pb²⁺/Cd²⁺ Paper Chromatography: complete
-- Milestone 6 — A5 Gas Detection (NH₃, CO₂, Cl₂): complete, awaiting review
+- Milestone 6 — A5 Gas Detection (NH₃, CO₂, Cl₂): complete
+- Milestone 7 — 8 Minor Practicals (M7.1–M7.8): complete, awaiting review
 
 Milestone 1 is NOT automatically approved for implementation.
 
