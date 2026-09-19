@@ -1264,3 +1264,94 @@ Perform the final competition-readiness audit and release freeze for ChemSim. M1
 - Canvas fixed at 500x600 (documented at release freeze)
 - Some :focus-visible styles missing on secondary elements (cosmetic, documented at release freeze)
 - A3 baseline click target may be near canvas bottom edge on small displays (cosmetic)
+
+---
+
+## Visual Design & Responsive Enhancement
+
+**Date:** 2026-09-19
+
+**Status:** COMPLETE
+
+### Changes Implemented
+
+#### 1. CSS Design System Overhaul
+- Replaced flat design with layered shadow system (`shadow-xs`, `shadow-sm`, `shadow-md`, `shadow-lg`, `shadow-xl`)
+- Added transition variables (`transition-fast`, `transition-base`, `transition-slow`)
+- Improved typography hierarchy with better font weights and letter-spacing
+- Refined color palette with improved contrast ratios
+- Added `--color-primary-ghost` for subtle hover backgrounds
+- Consistent `border-radius` system (`radius-sm` through `radius-xl`)
+
+#### 2. Home Page Card Layout
+- Replaced plain inline-styled buttons with interactive card grid
+- Each module has icon, title, and description
+- Color-coded left border accent per module type
+- Responsive grid: `repeat(auto-fit, minmax(220px, 1fr))`
+- Hover effects: border color change, shadow elevation, translateY lift
+- Keyboard accessible: tabindex, role="button", Enter/Space support
+- Event delegation via `closest()` for reliable click handling
+
+#### 3. Canvas Responsive Scaling
+- Added `max-width: 100%; height: auto;` to `#sim-canvas`
+- Canvas displays at container width while preserving 500x600 logical coordinates
+- `onCanvasClick` coordinate conversion via `getBoundingClientRect()` + scale factors continues to work correctly
+- No changes to experiment engine or logical canvas dimensions
+
+#### 4. Responsive Breakpoints
+- **1024px**: Reduced workspace padding
+- **768px**: Sidebar becomes horizontal, workspace goes single-column, canvas min-height reduced
+- **480px**: Smaller header, tighter padding, reduced canvas min-height
+
+#### 5. Button System
+- Added `box-shadow` to buttons
+- Added `active` state with `translateY(1px)` for press feedback
+- Improved `disabled` state with `opacity: 0.4`
+- Hover effects with shadow elevation
+- Focus-visible outlines for keyboard navigation
+
+#### 6. Stage Content
+- Added border and border-radius to stage content panel
+- Improved heading hierarchy and spacing
+- Better visual separation between instruction and simulation areas
+
+#### 7. Event Handler Updates
+- `onPBAClick`: Added `closest()` delegation for home cards
+- `onStageContentClick`: Added home card handlers with `closest()` delegation
+- `init()`: Added keyboard handler for Enter/Space on home cards
+
+### Files Modified
+- `style.css` — Complete visual redesign (1115 → 1115 lines)
+- `script.js` — Home page rendering, event handlers, keyboard support
+- `index.html` — No changes
+
+### Test Results
+- M13 regression: 71/71 passed
+- M12 regression: 47/47 passed
+- M11 regression: 98/98 passed
+- M10 regression: 139/139 passed
+- M7 defect verification: 23/23 passed
+- Visual verification: 52/52 passed
+- JavaScript syntax: VALID
+- **Total: 430/430 passed**
+
+### Previous Defect Fixes Verified
+- A3 progression: intact
+- A4 Complete Step: intact
+- M7.4 apparatus/conclusion: intact
+- M7.5 apparatus/conclusion: intact
+- M7.6 setup validation: intact
+- M7.7 Start Test/conclusion: intact
+- M7.8 Start Test/conclusion: intact
+- Home navigation: intact (cards with closest delegation)
+- Finish Experiment: intact
+- Experiment Log: intact
+- PBA Practice: intact
+- Mystery Lab: intact
+- Learning & Revision: intact
+- Demo Mode: intact
+
+### Remaining Limitations
+- Canvas logical size remains 500x600 (display scales via CSS)
+- Some apparatus in M7 experiments are small due to simple canvas rendering (not a CSS issue)
+- A3 baseline click target may be near canvas bottom edge on very small displays (cosmetic)

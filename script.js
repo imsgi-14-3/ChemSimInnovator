@@ -1,4 +1,4 @@
-/* ================================================================
+﻿/* ================================================================
    ChemSim — script.js
    Milestone 3: Fractional Distillation + Paper Chromatography
    ================================================================ */
@@ -1239,29 +1239,52 @@ function pbaFormatTime(ms) {
 /* ── PBA Renderers ─────────────────────────── */
 
 function renderPBAMenu() {
-  var html = '<div style="text-align:center;padding:2rem;">';
-  html += '<h2>ChemSim</h2>';
+  var html = '<div class="home-container">';
+  html += '<div class="home-brand">';
+  html += '<h2>CHEMSIM</h2>';
   html += '<p class="subtitle">Interactive Virtual Chemistry Laboratory</p>';
-  html += '<div style="margin-top:2rem;">';
-  html += '<button class="btn btn-primary" id="btn-enter-lab" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;">Practical Lab</button>';
-  html += '<button class="btn btn-accent" id="btn-enter-pba" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;">PBA Practice</button>';
-  html += '<button class="btn btn-primary" id="btn-enter-mystery" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#6a1b9a;">Mystery Lab</button>';
-  html += '<button class="btn btn-primary" id="btn-enter-log" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#1565c0;">Experiment Log</button>';
-  html += '<button class="btn btn-primary" id="btn-enter-revision" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#00695c;">Learning & Revision</button>';
-  html += '<button class="btn btn-primary" id="btn-enter-demo" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#e65100;">Demo Mode</button>';
-  html += '<p style="font-size:0.75rem;color:var(--color-text-light);margin-top:0.25rem;">Guided presentation of ChemSim\'s key features</p>';
   html += '</div>';
-  html += '<div class="sim-note" style="max-width:300px;margin:2rem auto;text-align:left;">';
-  html += 'PBA Practice simulates the FBISE Chemistry Practical Based Assessment.<br><br>';
-  html += '<strong>PBA Structure:</strong><br>';
-  html += 'Section A — Major: 2 × 6 = 12 marks (60%)<br>';
-  html += 'Section B — Minor: 2 × 4 = 8 marks (40%)<br>';
-  html += 'Total: 20 marks | Duration: 2 hours<br><br>';
-  html += '<strong>Mystery Lab:</strong> Investigate an unknown sample using virtual tests.';
+  html += '<div class="home-modules">';
+  html += '<div class="home-card home-card-accent" id="btn-enter-lab" tabindex="0" role="button" aria-label="Open Practical Lab">';
+  html += '<div class="home-card-icon">&#128300;</div>';
+  html += '<div class="home-card-title">Practical Lab</div>';
+  html += '<div class="home-card-desc">Hands-on experiments: distillation, chromatography, titration, gas tests.</div>';
+  html += '</div>';
+  html += '<div class="home-card home-card-accent pba" id="btn-enter-pba" tabindex="0" role="button" aria-label="Open PBA Practice">';
+  html += '<div class="home-card-icon">&#128203;</div>';
+  html += '<div class="home-card-title">PBA Practice</div>';
+  html += '<div class="home-card-desc">Simulate the FBISE Chemistry Practical Based Assessment.</div>';
+  html += '</div>';
+  html += '<div class="home-card home-card-accent mystery" id="btn-enter-mystery" tabindex="0" role="button" aria-label="Open Mystery Lab">';
+  html += '<div class="home-card-icon">&#128270;</div>';
+  html += '<div class="home-card-title">Mystery Lab</div>';
+  html += '<div class="home-card-desc">Investigate an unknown sample using virtual tests.</div>';
+  html += '</div>';
+  html += '<div class="home-card home-card-accent log" id="btn-enter-log" tabindex="0" role="button" aria-label="Open Experiment Log">';
+  html += '<div class="home-card-icon">&#128214;</div>';
+  html += '<div class="home-card-title">Experiment Log</div>';
+  html += '<div class="home-card-desc">Review completed experiments and recorded results.</div>';
+  html += '</div>';
+  html += '<div class="home-card home-card-accent revision" id="btn-enter-revision" tabindex="0" role="button" aria-label="Open Learning and Revision Hub">';
+  html += '<div class="home-card-icon">&#128218;</div>';
+  html += '<div class="home-card-title">Learning & Revision</div>';
+  html += '<div class="home-card-desc">Browse all practicals, apparatus, procedures and SLOs.</div>';
+  html += '</div>';
+  html += '<div class="home-card home-card-accent demo" id="btn-enter-demo" tabindex="0" role="button" aria-label="Start Demo Mode">';
+  html += '<div class="home-card-icon">&#9654;</div>';
+  html += '<div class="home-card-title">Demo Mode</div>';
+  html += '<div class="home-card-desc">Guided presentation of ChemSim\'s key features.</div>';
+  html += '</div>';
+  html += '</div>';
+  html += '<div class="home-note">';
+  html += '<div class="sim-note">';
+  html += '<strong>PBA Structure:</strong> Section A (Major) 2 x 6 = 12 marks (60%) &middot; Section B (Minor) 2 x 4 = 8 marks (40%) &middot; Total: 20 marks | Duration: 2 hours';
+  html += '</div>';
   html += '</div>';
   html += '</div>';
   return html;
 }
+
 
 function renderPBAModeSelect() {
   var html = '<div style="text-align:center;padding:2rem;">';
@@ -1490,35 +1513,37 @@ function pbaUpdateTimer() {
 
 function onPBAClick(e) {
   var target = e.target;
+  var card = target.closest ? target.closest(".home-card") : null;
+  var id = (card && card.id) ? card.id : target.id;
 
   // Main menu buttons
-  if (target.id === "btn-enter-lab") {
+  if (id === "btn-enter-lab") {
     state.appMode = "lab";
     state.currentStage = "select";
     renderCurrentStage();
     renderSidebar();
     return;
   }
-  if (target.id === "btn-enter-pba") {
+  if (id === "btn-enter-pba") {
     state.appMode = "pba";
     state.pbaScreen = "mode_select";
     renderCurrentStage();
     return;
   }
-  if (target.id === "btn-enter-mystery") {
+  if (id === "btn-enter-mystery") {
     state.appMode = "mystery";
     state.mysteryScreen = "menu";
     renderCurrentStage();
     return;
   }
-  if (target.id === "btn-enter-log") {
+  if (id === "btn-enter-log") {
     state.appMode = "log";
     state.logScreen = "list";
     state.logDetailId = null;
     renderCurrentStage();
     return;
   }
-  if (target.id === "btn-enter-revision") {
+  if (id === "btn-enter-revision") {
     state.appMode = "revision";
     state.revisionScreen = "list";
     state.revisionFilter = "all";
@@ -1527,7 +1552,7 @@ function onPBAClick(e) {
     renderCurrentStage();
     return;
   }
-  if (target.id === "btn-enter-demo") {
+  if (id === "btn-enter-demo") {
     state.appMode = "demo";
     state.demoActive = true;
     state.demoScreen = "intro";
@@ -4516,6 +4541,56 @@ function handleMeasureClick(g, mx, my) {
 
 function onStageContentClick(e) {
   var target = e.target;
+  var card = target.closest ? target.closest(".home-card") : null;
+  var id = (card && card.id) ? card.id : target.id;
+
+  // Main menu home cards
+  if (id === "btn-enter-lab") {
+    state.appMode = "lab";
+    state.currentStage = "select";
+    renderCurrentStage();
+    renderSidebar();
+    return;
+  }
+  if (id === "btn-enter-pba") {
+    state.appMode = "pba";
+    state.pbaScreen = "mode_select";
+    renderCurrentStage();
+    return;
+  }
+  if (id === "btn-enter-mystery") {
+    state.appMode = "mystery";
+    state.mysteryScreen = "menu";
+    renderCurrentStage();
+    return;
+  }
+  if (id === "btn-enter-log") {
+    state.appMode = "log";
+    state.logScreen = "list";
+    state.logDetailId = null;
+    renderCurrentStage();
+    return;
+  }
+  if (id === "btn-enter-revision") {
+    state.appMode = "revision";
+    state.revisionScreen = "list";
+    state.revisionFilter = "all";
+    state.revisionSearch = "";
+    state.revisionSelectedId = null;
+    renderCurrentStage();
+    return;
+  }
+  if (id === "btn-enter-demo") {
+    state.appMode = "demo";
+    state.demoActive = true;
+    state.demoScreen = "intro";
+    state.demoStep = 0;
+    state.demoPracticalFinished = false;
+    renderCurrentStage();
+    return;
+  }
+
+  // Lab select screen navigation
   if (target.id === "btn-enter-pba-from-lab") {
     state.appMode = "pba";
     state.pbaScreen = "menu";
@@ -7262,6 +7337,15 @@ function init() {
   dom.btnBack.addEventListener("click", onBtnBack);
   dom.canvas.addEventListener("click", onCanvasClick);
   dom.stageContent.addEventListener("click", onStageContentClick);
+  dom.stageContent.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" || e.key === " ") {
+      var card = e.target.closest ? e.target.closest(".home-card") : null;
+      if (card) {
+        e.preventDefault();
+        card.click();
+      }
+    }
+  });
   dom.userInputArea.addEventListener("click", onUserInputClick);
 }
 
