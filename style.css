@@ -1077,3 +1077,39 @@ body {
   padding-top: 0.75rem;
   border-top: 1px dashed var(--color-border);
 }
+
+/* ==============================================================
+   M13: DEMO MODE
+   ============================================================== */
+
+.demo-panel {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.demo-instruction {
+  background: var(--color-bg);
+  border-left: 3px solid #e65100;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+#btn-enter-demo {
+  background: #e65100 !important;
+}
+
+#btn-demo-start {
+  background: #e65100 !important;
+}
+
+#btn-demo-launch-practical {
+  background: var(--color-primary) !important;
+}
+
+#btn-demo-next-step {
+  background: #e65100 !important;
+}

@@ -1018,7 +1018,13 @@ var state = {
   revisionScreen: "list",          // "list" | "detail"
   revisionFilter: "all",           // "all" | "major" | "minor"
   revisionSearch: "",
-  revisionSelectedId: null
+  revisionSelectedId: null,
+
+  // -- Demo Mode (M13) --
+  demoActive: false,                 // true when in demo flow
+  demoScreen: "intro",              // "intro" | "practical" | "log" | "revision" | "mystery" | "pba" | "complete"
+  demoStep: 0,                      // current step index (0-based)
+  demoPracticalFinished: false      // set true when A2 finish is detected
 };
 
 /* ==============================================================
@@ -1242,6 +1248,8 @@ function renderPBAMenu() {
   html += '<button class="btn btn-primary" id="btn-enter-mystery" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#6a1b9a;">Mystery Lab</button>';
   html += '<button class="btn btn-primary" id="btn-enter-log" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#1565c0;">Experiment Log</button>';
   html += '<button class="btn btn-primary" id="btn-enter-revision" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#00695c;">Learning & Revision</button>';
+  html += '<button class="btn btn-primary" id="btn-enter-demo" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#e65100;">Demo Mode</button>';
+  html += '<p style="font-size:0.75rem;color:var(--color-text-light);margin-top:0.25rem;">Guided presentation of ChemSim\'s key features</p>';
   html += '</div>';
   html += '<div class="sim-note" style="max-width:300px;margin:2rem auto;text-align:left;">';
   html += 'PBA Practice simulates the FBISE Chemistry Practical Based Assessment.<br><br>';
@@ -1519,6 +1527,15 @@ function onPBAClick(e) {
     renderCurrentStage();
     return;
   }
+  if (target.id === "btn-enter-demo") {
+    state.appMode = "demo";
+    state.demoActive = true;
+    state.demoScreen = "intro";
+    state.demoStep = 0;
+    state.demoPracticalFinished = false;
+    renderCurrentStage();
+    return;
+  }
 
   // Mode select buttons
   if (target.id === "btn-pba-full" || target.id === "btn-pba-major" || target.id === "btn-pba-minor") {
@@ -1726,6 +1743,10 @@ function renderCurrentStage() {
   }
   if (state.appMode === "revision") {
     renderRevisionStage();
+    return;
+  }
+  if (state.appMode === "demo") {
+    renderDemoStage();
     return;
   }
   // Restore sidebar when in lab mode
@@ -4155,6 +4176,10 @@ function onBtnNext() {
     // Revision navigation handled by onRevisionClick
     return;
   }
+  if (state.appMode === "demo") {
+    // Demo navigation handled by onDemoClick
+    return;
+  }
   var id = state.experiment ? state.experiment.id : "";
   if ((id === "A2" || id === "A3") && state.currentStage === "run" && state.simulation && !state.simulation.done) {
     return;
@@ -4212,6 +4237,17 @@ function onBtnBack() {
     if (state.revisionScreen === "detail") {
       state.revisionScreen = "list";
       state.revisionSelectedId = null;
+      renderCurrentStage();
+    }
+    return;
+  }
+  if (state.appMode === "demo") {
+    if (state.demoScreen !== "intro") {
+      state.demoScreen = "intro";
+      state.demoStep = 0;
+      state.demoActive = false;
+      state.appMode = "pba";
+      state.pbaScreen = "menu";
       renderCurrentStage();
     }
     return;
@@ -4629,6 +4665,7 @@ function onUserInputClick(e) {
       state.selectedExperimentId = null;
       state.experiment = null;
       renderCurrentStage();
+      demoCheckPracticalFinish();
     } else {
       nextStage();
     }
@@ -6751,6 +6788,358 @@ function expLogCreateFromMystery() {
   var record = expLogBuildMysteryRecord(s);
   expLogAdd(record);
 }
+
+/* ==============================================================
+   SECTION 9E: DEMO MODE (M13)
+   ============================================================== */
+
+/* ---- M13: Demo Flow Definition ---- */
+
+var DEMO_STEPS = [
+  { id: "practical", label: "Practical Lab", instruction: "Demonstrate the experiment workflow. Complete the paper chromatography practical to see how ChemSim guides students through apparatus, setup, observation, and conclusion." },
+  { id: "log", label: "Experiment Log", instruction: "Show how the completed practical is automatically recorded in the browser's local storage." },
+  { id: "revision", label: "Learning & Revision", instruction: "Show how students can browse and review all 13 prescribed practicals with search and filtering." },
+  { id: "mystery", label: "Mystery Lab", instruction: "Demonstrate the investigation interface: choose tests, collect evidence, form a hypothesis, and identify the unknown sample." },
+  { id: "pba", label: "PBA Practice", instruction: "Demonstrate the practical-skills assessment workflow with timed questions and scoring." }
+];
+
+/* ---- M13: Renderers ---- */
+
+function renderDemoStage() {
+  var stageContent = document.getElementById("stage-content");
+  var stageTitle = document.getElementById("stage-title");
+  var stageProgress = document.getElementById("stage-progress");
+  var simulationArea = document.getElementById("simulation-area");
+  var userInputArea = document.getElementById("user-input-area");
+  var feedbackArea = document.getElementById("feedback-area");
+  var btnBack = document.getElementById("btn-back");
+  var btnNext = document.getElementById("btn-next");
+  var sidebar = document.getElementById("sidebar");
+
+  sidebar.style.display = "none";
+  simulationArea.classList.add("hidden");
+  userInputArea.innerHTML = "";
+  feedbackArea.innerHTML = "";
+  btnBack.style.display = "none";
+  btnNext.style.display = "none";
+
+  if (state.demoScreen === "intro") {
+    stageTitle.textContent = "";
+    stageProgress.innerHTML = "";
+    stageContent.innerHTML = renderDemoIntro();
+    stageContent.onclick = onDemoClick;
+  } else if (state.demoScreen === "practical") {
+    stageTitle.textContent = "Demo: Practical Lab";
+    stageProgress.innerHTML = renderDemoProgress(0);
+    stageContent.innerHTML = renderDemoStepPractical();
+    stageContent.onclick = onDemoClick;
+  } else if (state.demoScreen === "log") {
+    stageTitle.textContent = "Demo: Experiment Log";
+    stageProgress.innerHTML = renderDemoProgress(1);
+    stageContent.innerHTML = renderDemoStepLog();
+    stageContent.onclick = onDemoClick;
+  } else if (state.demoScreen === "revision") {
+    stageTitle.textContent = "Demo: Learning & Revision";
+    stageProgress.innerHTML = renderDemoProgress(2);
+    stageContent.innerHTML = renderDemoStepRevision();
+    stageContent.onclick = onDemoClick;
+  } else if (state.demoScreen === "mystery") {
+    stageTitle.textContent = "Demo: Mystery Lab";
+    stageProgress.innerHTML = renderDemoProgress(3);
+    stageContent.innerHTML = renderDemoStepMystery();
+    stageContent.onclick = onDemoClick;
+  } else if (state.demoScreen === "pba") {
+    stageTitle.textContent = "Demo: PBA Practice";
+    stageProgress.innerHTML = renderDemoProgress(4);
+    stageContent.innerHTML = renderDemoStepPBA();
+    stageContent.onclick = onDemoClick;
+  } else if (state.demoScreen === "complete") {
+    stageTitle.textContent = "";
+    stageProgress.innerHTML = "";
+    stageContent.innerHTML = renderDemoComplete();
+    stageContent.onclick = onDemoClick;
+  }
+}
+
+function renderDemoIntro() {
+  var html = '<div style="text-align:center;padding:2rem;max-width:500px;margin:0 auto;">';
+  html += '<h2 style="margin-bottom:0.5rem;">ChemSim Demonstration Mode</h2>';
+  html += '<p style="color:var(--color-text-secondary);margin-bottom:1.5rem;">A guided tour of ChemSim\'s interactive virtual chemistry laboratory.</p>';
+  html += '<div style="background:var(--color-bg);border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;text-align:left;">';
+  html += '<p style="font-size:0.9rem;margin-bottom:0.75rem;">This demonstration walks through ChemSim\'s key features:</p>';
+  html += '<ol style="font-size:0.9rem;padding-left:1.25rem;">';
+  for (var i = 0; i < DEMO_STEPS.length; i++) {
+    html += '<li style="margin-bottom:0.35rem;"><strong>' + DEMO_STEPS[i].label + '</strong></li>';
+  }
+  html += '</ol>';
+  html += '<p style="font-size:0.85rem;color:var(--color-text-secondary);margin-top:0.75rem;">The demonstration uses existing educational simulations. You may interact with each module normally.</p>';
+  html += '</div>';
+  html += '<button class="btn btn-primary" id="btn-demo-start" style="padding:0.75rem 2rem;font-size:1rem;background:#e65100;">Start Demo</button>';
+  html += '<br>';
+  html += '<button class="btn btn-secondary" id="btn-demo-exit" style="margin-top:0.75rem;">Exit Demo</button>';
+  html += '</div>';
+  return html;
+}
+
+function renderDemoProgress(stepIndex) {
+  var html = '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:0.5rem;">';
+  for (var i = 0; i < DEMO_STEPS.length; i++) {
+    var cls = "progress-dot";
+    if (i < stepIndex) cls += " completed";
+    else if (i === stepIndex) cls += " active";
+    html += '<span class="' + cls + '" title="' + DEMO_STEPS[i].label + '"></span>';
+  }
+  html += '<span class="label" style="margin-left:0.5rem;">Step ' + (stepIndex + 1) + ' of ' + DEMO_STEPS.length + ': ' + DEMO_STEPS[stepIndex].label + '</span>';
+  html += '</div>';
+  return html;
+}
+
+function renderDemoStepPractical() {
+  var html = '<div class="demo-panel">';
+  html += '<div class="demo-instruction">';
+  html += '<strong>Presenter:</strong> ' + DEMO_STEPS[0].instruction;
+  html += '</div>';
+  html += '<div style="text-align:center;margin:1.5rem 0;">';
+  html += '<h3>Paper Chromatography (A2)</h3>';
+  html += '<p style="color:var(--color-text-secondary);margin:0.5rem 0 1rem 0;">Separate a mixture of inks by paper chromatography</p>';
+  if (state.demoPracticalFinished) {
+    html += '<div class="feedback-correct" style="max-width:400px;margin:0 auto 1rem auto;">Practical completed! The record has been saved to the Experiment Log.</div>';
+    html += '<button class="btn btn-primary" id="btn-demo-next-step" style="padding:0.75rem 2rem;background:#e65100;">Continue Demo →</button>';
+  } else {
+    html += '<button class="btn btn-primary" id="btn-demo-launch-practical" style="padding:0.75rem 2rem;">Launch Practical →</button>';
+  }
+  html += '</div>';
+  html += '<div style="text-align:center;margin-top:1rem;">';
+  html += '<button class="btn btn-secondary" id="btn-demo-exit" style="font-size:0.85rem;">Exit Demo</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderDemoStepLog() {
+  var records = expLogLoad();
+  var html = '<div class="demo-panel">';
+  html += '<div class="demo-instruction">';
+  html += '<strong>Presenter:</strong> ' + DEMO_STEPS[1].instruction;
+  html += '</div>';
+  html += '<div style="text-align:center;margin:1.5rem 0;">';
+  html += '<h3>Experiment Log</h3>';
+  if (records.length > 0) {
+    html += '<p style="color:var(--color-text-secondary);margin:0.5rem 0;">' + records.length + ' record(s) saved locally in this browser.</p>';
+    html += '<div style="text-align:left;max-width:400px;margin:1rem auto;">';
+    for (var i = 0; i < Math.min(records.length, 3); i++) {
+      var r = records[i];
+      html += '<div class="log-card" style="margin-bottom:0.5rem;">';
+      html += '<strong>' + escapeHtml(r.title) + '</strong><br>';
+      html += '<small style="color:var(--color-text-secondary);">' + escapeHtml(r.date) + ' ' + escapeHtml(r.time) + '</small>';
+      html += '</div>';
+    }
+    if (records.length > 3) html += '<p style="font-size:0.85rem;color:var(--color-text-secondary);">...and ' + (records.length - 3) + ' more</p>';
+    html += '</div>';
+  } else {
+    html += '<p style="color:var(--color-text-secondary);">No records yet. Complete a practical to see it logged here.</p>';
+  }
+  html += '<button class="btn btn-primary" id="btn-demo-next-step" style="padding:0.75rem 2rem;margin-top:1rem;background:#e65100;">Continue Demo →</button>';
+  html += '</div>';
+  html += '<div style="text-align:center;margin-top:1rem;">';
+  html += '<button class="btn btn-secondary" id="btn-demo-exit" style="font-size:0.85rem;">Exit Demo</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderDemoStepRevision() {
+  var html = '<div class="demo-panel">';
+  html += '<div class="demo-instruction">';
+  html += '<strong>Presenter:</strong> ' + DEMO_STEPS[2].instruction;
+  html += '</div>';
+  html += '<div style="text-align:center;margin:1.5rem 0;">';
+  html += '<h3>Learning & Revision Hub</h3>';
+  html += '<p style="color:var(--color-text-secondary);margin:0.5rem 0 1rem 0;">Browse all 13 prescribed practicals (5 Major + 8 Minor)</p>';
+  html += '<div style="text-align:left;max-width:400px;margin:0 auto;background:var(--color-bg);border-radius:var(--radius);padding:1rem;">';
+  html += '<p style="font-size:0.85rem;margin-bottom:0.5rem;"><strong>Features:</strong></p>';
+  html += '<ul style="font-size:0.85rem;padding-left:1.25rem;">';
+  html += '<li>Search by title, SLO, or keyword</li>';
+  html += '<li>Filter by Major / Minor</li>';
+  html += '<li>View full practical details</li>';
+  html += '<li>Launch any practical directly</li>';
+  html += '</ul>';
+  html += '</div>';
+  html += '<button class="btn btn-primary" id="btn-demo-open-revision" style="padding:0.75rem 2rem;margin-top:1rem;">Open Revision Hub →</button>';
+  html += '<br>';
+  html += '<button class="btn btn-primary" id="btn-demo-next-step" style="padding:0.75rem 2rem;margin-top:0.75rem;background:#e65100;">Continue Demo →</button>';
+  html += '</div>';
+  html += '<div style="text-align:center;margin-top:1rem;">';
+  html += '<button class="btn btn-secondary" id="btn-demo-exit" style="font-size:0.85rem;">Exit Demo</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderDemoStepMystery() {
+  var html = '<div class="demo-panel">';
+  html += '<div class="demo-instruction">';
+  html += '<strong>Presenter:</strong> ' + DEMO_STEPS[3].instruction;
+  html += '</div>';
+  html += '<div style="text-align:center;margin:1.5rem 0;">';
+  html += '<h3>Mystery Lab</h3>';
+  html += '<p style="color:var(--color-text-secondary);margin:0.5rem 0 1rem 0;">Investigate an unknown sample using virtual tests</p>';
+  html += '<div style="text-align:left;max-width:400px;margin:0 auto;background:var(--color-bg);border-radius:var(--radius);padding:1rem;">';
+  html += '<p style="font-size:0.85rem;margin-bottom:0.5rem;"><strong>Investigation process:</strong></p>';
+  html += '<ul style="font-size:0.85rem;padding-left:1.25rem;">';
+  html += '<li>Choose from 5 virtual tests</li>';
+  html += '<li>Record observations and evidence</li>';
+  html += '<li>Form a hypothesis</li>';
+  html += '<li>Identify the unknown sample</li>';
+  html += '</ul>';
+  html += '</div>';
+  html += '<button class="btn btn-primary" id="btn-demo-open-mystery" style="padding:0.75rem 2rem;margin-top:1rem;background:#6a1b9a;">Open Mystery Lab →</button>';
+  html += '<br>';
+  html += '<button class="btn btn-primary" id="btn-demo-next-step" style="padding:0.75rem 2rem;margin-top:0.75rem;background:#e65100;">Continue Demo →</button>';
+  html += '</div>';
+  html += '<div style="text-align:center;margin-top:1rem;">';
+  html += '<button class="btn btn-secondary" id="btn-demo-exit" style="font-size:0.85rem;">Exit Demo</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderDemoStepPBA() {
+  var html = '<div class="demo-panel">';
+  html += '<div class="demo-instruction">';
+  html += '<strong>Presenter:</strong> ' + DEMO_STEPS[4].instruction;
+  html += '</div>';
+  html += '<div style="text-align:center;margin:1.5rem 0;">';
+  html += '<h3>PBA Practice</h3>';
+  html += '<p style="color:var(--color-text-secondary);margin:0.5rem 0 1rem 0;">Practical-skills assessment workflow</p>';
+  html += '<div style="text-align:left;max-width:400px;margin:0 auto;background:var(--color-bg);border-radius:var(--radius);padding:1rem;">';
+  html += '<p style="font-size:0.85rem;margin-bottom:0.5rem;"><strong>PBA features:</strong></p>';
+  html += '<ul style="font-size:0.85rem;padding-left:1.25rem;">';
+  html += '<li>20-mark timed assessment</li>';
+  html += '<li>Major and Minor question sections</li>';
+  html += '<li>Multiple question types</li>';
+  html += '<li>Instant scoring and review</li>';
+  html += '</ul>';
+  html += '</div>';
+  html += '<button class="btn btn-accent" id="btn-demo-open-pba" style="padding:0.75rem 2rem;margin-top:1rem;">Open PBA Practice →</button>';
+  html += '<br>';
+  html += '<button class="btn btn-primary" id="btn-demo-next-step" style="padding:0.75rem 2rem;margin-top:0.75rem;background:#e65100;">Continue Demo →</button>';
+  html += '</div>';
+  html += '<div style="text-align:center;margin-top:1rem;">';
+  html += '<button class="btn btn-secondary" id="btn-demo-exit" style="font-size:0.85rem;">Exit Demo</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderDemoComplete() {
+  var html = '<div style="text-align:center;padding:2rem;max-width:500px;margin:0 auto;">';
+  html += '<h2 style="margin-bottom:0.5rem;">Demonstration Complete</h2>';
+  html += '<p style="color:var(--color-text-secondary);margin-bottom:1.5rem;">You have explored ChemSim\'s key features:</p>';
+  html += '<div style="text-align:left;max-width:350px;margin:0 auto 1.5rem 0;background:var(--color-bg);border-radius:var(--radius);padding:1rem;">';
+  html += '<ul style="font-size:0.9rem;padding-left:1.25rem;">';
+  html += '<li><strong>Practical Lab</strong> — Interactive experiments with simulation</li>';
+  html += '<li><strong>PBA Practice</strong> — Timed assessment workflow</li>';
+  html += '<li><strong>Mystery Lab</strong> — Unknown sample investigation</li>';
+  html += '<li><strong>Experiment Log</strong> — Local record keeping</li>';
+  html += '<li><strong>Learning & Revision</strong> — Practical reference hub</li>';
+  html += '</ul>';
+  html += '</div>';
+  html += '<p style="font-size:0.85rem;color:var(--color-text-secondary);margin-bottom:1.5rem;">ChemSim is an educational simulation for FBISE SSC Chemistry Practical Based Assessment preparation.</p>';
+  html += '<button class="btn btn-primary" id="btn-demo-restart" style="padding:0.75rem 2rem;margin-right:0.5rem;">Restart Demo</button>';
+  html += '<button class="btn btn-secondary" id="btn-demo-exit-complete" style="padding:0.75rem 2rem;">Return to Main Menu</button>';
+  html += '</div>';
+  return html;
+}
+
+/* ---- M13: Event Handler ---- */
+
+function onDemoClick(e) {
+  var target = e.target;
+
+  if (target.id === "btn-demo-start") {
+    state.demoScreen = "practical";
+    state.demoStep = 0;
+    renderCurrentStage();
+    return;
+  }
+
+  if (target.id === "btn-demo-exit" || target.id === "btn-demo-exit-complete") {
+    state.appMode = "pba";
+    state.pbaScreen = "menu";
+    state.demoActive = false;
+    state.demoScreen = "intro";
+    state.demoStep = 0;
+    state.demoPracticalFinished = false;
+    renderCurrentStage();
+    return;
+  }
+
+  if (target.id === "btn-demo-launch-practical") {
+    state.appMode = "lab";
+    state.currentStage = "select";
+    state.demoActive = true;
+    renderCurrentStage();
+    renderSidebar();
+    return;
+  }
+
+  if (target.id === "btn-demo-next-step") {
+    state.demoStep++;
+    if (state.demoStep >= DEMO_STEPS.length) {
+      state.demoScreen = "complete";
+    } else {
+      state.demoScreen = DEMO_STEPS[state.demoStep].id;
+    }
+    renderCurrentStage();
+    return;
+  }
+
+  if (target.id === "btn-demo-open-revision") {
+    state.appMode = "revision";
+    state.revisionScreen = "list";
+    state.revisionFilter = "all";
+    state.revisionSearch = "";
+    state.revisionSelectedId = null;
+    renderCurrentStage();
+    return;
+  }
+
+  if (target.id === "btn-demo-open-mystery") {
+    state.appMode = "mystery";
+    state.mysteryScreen = "menu";
+    renderCurrentStage();
+    return;
+  }
+
+  if (target.id === "btn-demo-open-pba") {
+    state.appMode = "pba";
+    state.pbaScreen = "mode_select";
+    renderCurrentStage();
+    return;
+  }
+
+  if (target.id === "btn-demo-restart") {
+    state.demoScreen = "intro";
+    state.demoStep = 0;
+    state.demoPracticalFinished = false;
+    renderCurrentStage();
+    return;
+  }
+}
+
+/* ---- M13: Demo Finish Detection ---- */
+
+function demoCheckPracticalFinish() {
+  if (state.demoActive && state.demoScreen === "practical" && state.currentStage === "select" && !state.experiment) {
+    if (!state.demoPracticalFinished) {
+      state.demoPracticalFinished = true;
+      renderCurrentStage();
+    }
+  }
+}
+
+
 
 /* ==============================================================
    SECTION 10: INITIALIZATION

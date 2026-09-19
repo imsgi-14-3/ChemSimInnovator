@@ -19,13 +19,13 @@ This uploaded PDF is the authoritative source selected for the ChemSim PBA matri
 
 **Phase:** Implementation
 
-**Overall implementation:** Milestone 12 complete, awaiting review
+**Overall implementation:** Milestone 13 complete, awaiting review
 
-**Current milestone:** Milestone 12 — Quality, Accessibility & Demo Polish
+**Current milestone:** Milestone 13 — Demonstration / Presentation Mode
 
-**Next milestone:** M13 — further practicals or features (if approved)
+**Next milestone:** M14 — further practicals or features (if approved)
 
-**Milestone 12 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+**Milestone 13 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
 
 ## Completed Decisions
 
@@ -1056,3 +1056,62 @@ Full application audit identified issues across CSS, JavaScript, HTML, accessibi
 - Canvas is still hardcoded at 500x600 (responsive canvas resizing would require significant refactoring)
 - Full live browser testing not possible in Node.js test environment
 - Some `!important` overrides remain for button colors (intentional per-module theming)
+
+---
+
+## Milestone 13 — Demonstration / Presentation Mode
+
+### Objective
+
+Implement a lightweight ChemSim Demonstration Mode designed for a live school/competition presentation. A presenter can quickly demonstrate ChemSim's strongest capabilities without modifying existing modules.
+
+### Demo Flow
+
+1. **Demo Intro** — explains the tour, Start/Exit buttons
+2. **Practical Lab** — launches A2 (paper chromatography) through existing engine
+3. **Experiment Log** — shows the completed practical record
+4. **Learning & Revision** — shows the practical reference hub
+5. **Mystery Lab** — shows the investigation interface
+6. **PBA Practice** — shows the assessment workflow
+7. **Demo Complete** — summary with Restart/Return buttons
+
+### Representative Practical
+
+**A2: Separate given mixture of inks by paper chromatography** — chosen because it demonstrates apparatus, setup, user interaction, simulated observation, measurement, Rf calculation, interpretation, conclusion, completion, and Experiment Log integration.
+
+### State Isolation
+
+Separate `demoActive`, `demoScreen`, `demoStep`, `demoPracticalFinished` state variables. Demo state does not modify PBA, Mystery Lab, or Experiment Log state. Exit clears only demo state.
+
+### Navigation Integration
+
+- 6th main menu button: "Demo Mode" (orange, #e65100)
+- `appMode: "demo"` routes to `renderDemoStage()`
+- Back button returns to main menu from demo
+- Next button ignored in demo mode
+- Finish detection via `demoCheckPracticalFinish()` called after `btn-finish-experiment`
+
+### Files Modified
+
+- `script.js` — demo state, DEMO_STEPS array, 9 renderers, onDemoClick handler, demoCheckPracticalFinish, navigation wiring
+- `style.css` — demo-panel, demo-instruction, button color styles
+- `AGENTS.md` — M13 marked complete
+- `DEVELOPMENT_LOG.md` — M13 entry added
+
+### Tests Performed
+
+- 71 M13 tests: 71/71 passed
+- 47 M12 regression: 47/47 passed
+- 98 M11 regression: 98/98 passed
+- 139 M10 regression: 139/139 passed
+- A1–A5 regression: ALL PASS
+- M7.1–M7.8 regression: ALL PASS
+- JavaScript syntax: VALID
+- No React/Vue/Angular: CONFIRMED
+- SIMULATED educational values: PRESENT
+
+### Known Limitations
+
+- Demo practical completion detection relies on state transitions (finish → select screen)
+- Mystery Lab and PBA steps open the real modules; presenter must navigate back to continue demo
+- No automatic progression through Mystery Lab/PBA (by design — presenter controls pacing)
