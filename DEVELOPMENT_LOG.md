@@ -1206,3 +1206,61 @@ Perform the final competition-readiness audit and release freeze for ChemSim. M1
 ### Release Status
 
 **RELEASE FROZEN.** Repository is ready for competition/demo release. No further implementation milestone is authorized.
+
+---
+
+## Post-Release Maintenance — Experiment UI and Flow Defects
+
+**Date:** 2026-09-19
+
+**Status:** FIXES APPLIED
+
+### Defects Fixed
+
+#### BUG A — M7 conclude stage blocked (all M7 experiments)
+- **Root cause:** `btn-m7-record` handler set `state.m7ActionDone = false`, but `m7AllDone()` required it to be `true` to enable the Next button at conclude stage
+- **Fix:** Removed `state.m7ActionDone = false` from `btn-m7-record` handler; added `renderButtons()` to conclusion and interpretation textarea listeners
+- **Affected:** M7.4, M7.5, M7.6, M7.7, M7.8
+
+#### BUG B — M7 prepare stage showed distillation content
+- **Root cause:** `renderStageContent` prepare case had no M7 check, fell through to `renderPrepareDistillContent`
+- **Fix:** Added `else if (isM7(id))` check routing to new `renderM7PrepareContent` function
+- **Affected:** M7.4, M7.5, M7.7, M7.8
+
+#### BUG C — No canvas apparatus for M7.4, M7.5, M7.7, M7.8
+- **Root cause:** `drawM7Canvas` only handled M7_2, M7_3, M7_6; all others showed title text only
+- **Fix:** Added canvas branches for M7_4 (thermometer + capillary), M7_5 (flask + thermometer), M7_7 (watch glass + CuSO₄), M7_8 (beaker + thermometer), and M7_6 pre-reaction state
+- **Affected:** M7.4, M7.5, M7.6, M7.7, M7.8
+
+#### BUG D — M7.7 performTest showed A5 gas content
+- **Root cause:** `case "performTest"` called `renderPerformTestContent` (A5 gas test) with no M7 check
+- **Fix:** Added M7_7 check routing to new `renderM7PerformTestContent` function (Add Water → CuSO₄ colour change)
+- **Affected:** M7.7
+
+#### BUG E — M7.6 reaction fires without visible apparatus
+- **Root cause:** Canvas showed nothing before reaction; user couldn't see what they were operating on
+- **Fix:** Added canvas rendering showing CuSO₄ solution with "Add Zn granules" prompt before reaction starts
+- **Affected:** M7.6
+
+### Affected Practicals
+- A2, A3: Verified working — no functional defects found
+- A4: Verified working — no functional defects found
+- M7.4: Fixed conclude flow + canvas apparatus
+- M7.5: Fixed conclude flow + canvas apparatus
+- M7.6: Fixed canvas apparatus + pre-reaction visual
+- M7.7: Fixed performTest content + canvas apparatus + conclude flow
+- M7.8: Fixed canvas apparatus + conclude flow
+
+### Test Results
+- M13 regression: 71/71 passed
+- M12 regression: 47/47 passed
+- M11 regression: 98/98 passed
+- M10 regression: 139/139 passed
+- M7 defect verification: 23/23 passed
+- JavaScript syntax: VALID
+- Total: 378/378 passed
+
+### Remaining Limitations
+- Canvas fixed at 500x600 (documented at release freeze)
+- Some :focus-visible styles missing on secondary elements (cosmetic, documented at release freeze)
+- A3 baseline click target may be near canvas bottom edge on small displays (cosmetic)

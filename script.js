@@ -1937,6 +1937,7 @@ function renderStageContent() {
       if (id === "A2" || id === "A3") html = renderPrepareChromContent(exp);
       else if (id === "A4") html = renderPrepareTitrationContent(exp);
       else if (id === "A5") html = renderPrepareGasContent(exp);
+      else if (isM7(id)) html = renderM7PrepareContent(exp);
       else html = renderPrepareDistillContent(exp);
       break;
     case "baseline":     html = renderBaselineContent(exp); break;
@@ -1999,7 +2000,10 @@ function renderStageContent() {
       break;
     case "selectGas":    html = renderSelectGasContent(exp); break;
     case "selectTest":   html = renderSelectTestContent(exp); break;
-    case "performTest":  html = renderPerformTestContent(exp); break;
+    case "performTest":
+      if (id === "M7_7") html = renderM7PerformTestContent(exp);
+      else html = renderPerformTestContent(exp);
+      break;
     case "confirm":      html = renderConfirmGasContent(exp); break;
     case "nextGas":      html = renderNextGasContent(exp); break;
     case "summary":      html = renderSummaryContent(exp); break;
@@ -2811,12 +2815,14 @@ function attachInputListeners() {
   if (interp) {
     interp.addEventListener("input", function() {
       state.interpretation = interp.value;
+      renderButtons();
     });
   }
   var conc = document.getElementById("conclusion-input");
   if (conc) {
     conc.addEventListener("input", function() {
       state.conclusion = conc.value;
+      renderButtons();
     });
   }
   var rfInputs = document.querySelectorAll(".rf-input");
@@ -3628,6 +3634,16 @@ function m7_5ionAllDone() {
 
 /* ── Shared M7 stage renderers ────────────────── */
 
+function renderM7PrepareContent(exp) {
+  if (!exp) return "";
+  var html = '<h3>Prepare</h3>';
+  html += '<p><strong>' + escapeHtml(exp.title) + '</strong></p>';
+  html += '<p>Gather the required apparatus and materials listed in the previous step.</p>';
+  html += '<p>Once ready, click <strong>Next</strong> to proceed.</p>';
+  html += '<div class="sim-note">This is an educational simulation.</div>';
+  return html;
+}
+
 function renderM7ObserveContent(exp) {
   if (!exp) return "";
   var html = '<h3>Observe</h3>';
@@ -3841,6 +3857,19 @@ function renderM7PerformReactionContent(exp) {
 
 /* ── M7.7 Water Test ──────────────────────────── */
 
+function renderM7PerformTestContent(exp) {
+  if (!exp) return "";
+  var html = '<h3>Perform Water Test</h3>';
+  html += '<p>Add distilled water to the anhydrous CuSO₄ powder on the watch glass.</p>';
+  if (state.m7ActionDone && state.simulation && state.simulation.done) {
+    html += '<div class="feedback-correct">Water added. CuSO₄ turned from white to blue.</div>';
+    html += '<div class="sim-note">This is a simulated educational value.</div>';
+  } else {
+    html += '<p>Click <strong>Add Water</strong> to perform the test.</p>';
+  }
+  return html;
+}
+
 function renderM7SelectSampleContent(exp) {
   if (!exp) return "";
   var html = '<h3>Select Sample</h3>';
@@ -3939,6 +3968,87 @@ function drawM7Canvas(ctx, cw, ch) {
       ctx.fillRect(cx - 30, ch / 2 - 20, 60, 40);
       ctx.fillStyle = "#333";
       ctx.fillText("Colour changed", cx, ch / 2 + 40);
+    } else {
+      ctx.fillStyle = "#4488cc";
+      ctx.fillRect(cx - 25, ch / 2 - 30, 50, 50);
+      ctx.fillStyle = "#333";
+      ctx.fillText("CuSO₄ solution", cx, ch / 2 + 40);
+      ctx.fillStyle = "#888";
+      ctx.fillText("Add Zn granules to begin", cx, ch / 2 + 60);
+    }
+  } else if (id === "M7_4") {
+    ctx.fillText("Melting Point — Naphthalene", cx, 30);
+    ctx.fillStyle = "#ddd";
+    ctx.fillRect(cx - 60, ch / 2 - 40, 120, 80);
+    ctx.fillStyle = "#cc3333";
+    ctx.fillRect(cx - 5, ch / 2 - 35, 10, 70);
+    ctx.fillStyle = "#333";
+    ctx.fillText("Thermometer", cx + 70, ch / 2);
+    ctx.fillStyle = "#aab";
+    ctx.fillRect(cx - 15, ch / 2 + 10, 30, 25);
+    ctx.fillStyle = "#333";
+    ctx.fillText("Capillary tube", cx + 70, ch / 2 + 25);
+    if (state.m7ActionDone && state.simulation && state.simulation.done) {
+      ctx.fillStyle = "#28a745";
+      ctx.fillText("MP observed: 80°C (simulated)", cx, ch / 2 + 80);
+    }
+  } else if (id === "M7_5") {
+    ctx.fillText("Boiling Point — Ethyl Alcohol", cx, 30);
+    ctx.fillStyle = "#ddd";
+    ctx.beginPath();
+    ctx.arc(cx, ch / 2 + 10, 40, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#88ccee";
+    ctx.beginPath();
+    ctx.arc(cx, ch / 2 + 10, 35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#cc3333";
+    ctx.fillRect(cx - 3, ch / 2 - 50, 6, 45);
+    ctx.fillStyle = "#333";
+    ctx.fillText("Thermometer", cx + 60, ch / 2 - 20);
+    ctx.fillText("Round-bottom flask", cx, ch / 2 + 65);
+    if (state.m7ActionDone && state.simulation && state.simulation.done) {
+      ctx.fillStyle = "#28a745";
+      ctx.fillText("BP observed: 78°C (simulated)", cx, ch / 2 + 85);
+    }
+  } else if (id === "M7_7") {
+    ctx.fillText("Water Test — Anhydrous CuSO₄", cx, 30);
+    ctx.fillStyle = "#f5f5f0";
+    ctx.beginPath();
+    ctx.arc(cx, ch / 2, 50, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#999";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    if (state.m7ActionDone && state.simulation && state.simulation.done) {
+      ctx.fillStyle = "#3366cc";
+      ctx.beginPath();
+      ctx.arc(cx, ch / 2, 45, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#333";
+      ctx.fillText("CuSO₄ turned blue (water detected)", cx, ch / 2 + 70);
+    } else {
+      ctx.fillStyle = "#eee";
+      ctx.beginPath();
+      ctx.arc(cx, ch / 2, 45, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#333";
+      ctx.fillText("Watch glass with white CuSO₄ powder", cx, ch / 2 + 70);
+    }
+  } else if (id === "M7_8") {
+    ctx.fillText("Water Purity Test (MP + BP)", cx, 30);
+    ctx.fillStyle = "#ddd";
+    ctx.fillRect(cx - 80, ch / 2 - 20, 60, 50);
+    ctx.fillStyle = "#88ccee";
+    ctx.fillRect(cx - 75, ch / 2 - 15, 50, 40);
+    ctx.fillStyle = "#cc3333";
+    ctx.fillRect(cx - 52, ch / 2 - 45, 6, 35);
+    ctx.fillStyle = "#333";
+    ctx.fillText("Beaker + Thermometer", cx + 30, ch / 2);
+    if (state.currentStage === "meltingPointTest" || state.currentStage === "recordMP") {
+      ctx.fillText("Measuring melting point...", cx, ch / 2 + 60);
+    } else if (state.currentStage === "boilingPointTest" || state.currentStage === "recordBP") {
+      ctx.fillText("Measuring boiling point...", cx, ch / 2 + 60);
     }
   } else {
     ctx.fillText(exp.title.substring(0, 40), cx, 30);
@@ -4608,7 +4718,6 @@ function onUserInputClick(e) {
     } else {
       state.currentStage = "interpret";
     }
-    state.m7ActionDone = false;
     renderCurrentStage();
   }
   if (target.id === "btn-m7-interpret") {
