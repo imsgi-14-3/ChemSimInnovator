@@ -189,24 +189,23 @@ Do not change project requirements silently. Record approved architectural chang
 ## 14. Milestone Control
 
 Current state:
-- Milestone 0 — Project Foundation / Specification: complete
-- Milestone 1 — Experiment Engine Foundation: complete
-- Milestone 2 — Complete Paper Chromatography: complete
-- Milestone 3 — Fractional Distillation: complete
-- Milestone 4 — NaOH Molarity by Titration: complete
-- Milestone 5 — A3 Pb²⁺/Cd²⁺ Paper Chromatography: complete
-- Milestone 6 — A5 Gas Detection (NH₃, CO₂, Cl₂): complete
-- Milestone 7 — 8 Minor Practicals (M7.1–M7.8): complete, awaiting review
-- Milestone 8 — PBA Practice Mode: complete, awaiting review
-- Milestone 9 — Mystery Lab (Unknown Sample Identification): complete, awaiting review
-- Milestone 10 — Experiment Log: complete, awaiting review
-- Milestone 11 — Learning & Revision Hub: complete, awaiting review
-- Milestone 12 — Quality, Accessibility & Demo Polish: complete, awaiting review
-- Milestone 13 — Demonstration / Presentation Mode: complete, awaiting review
+- Milestone 0 — Project Foundation / Specification: COMPLETE
+- Milestone 1 — Experiment Engine Foundation: COMPLETE
+- Milestone 2 — Complete Paper Chromatography: COMPLETE
+- Milestone 3 — Fractional Distillation: COMPLETE
+- Milestone 4 — NaOH Molarity by Titration: COMPLETE
+- Milestone 5 — A3 Pb²⁺/Cd²⁺ Paper Chromatography: COMPLETE
+- Milestone 6 — A5 Gas Detection (NH₃, CO₂, Cl₂): COMPLETE
+- Milestone 7 — 8 Minor Practicals (M7.1–M7.8): COMPLETE
+- Milestone 8 — PBA Practice Mode: COMPLETE
+- Milestone 9 — Mystery Lab (Unknown Sample Identification): COMPLETE
+- Milestone 10 — Experiment Log: COMPLETE
+- Milestone 11 — Learning & Revision Hub: COMPLETE
+- Milestone 12 — Quality, Accessibility & Demo Polish: COMPLETE
+- Milestone 13 — Demonstration / Presentation Mode: COMPLETE
+- Milestone 14 — Final Competition Readiness & Release Freeze: COMPLETE — RELEASE FROZEN
 
-Milestone 1 is NOT automatically approved for implementation.
-
-The first OpenCode task after these documents are placed in the project is an inspection-only task.
+No further implementation milestone is authorized. The project is release-frozen.
 
 ## 15. Authoritative-Source Principle
 

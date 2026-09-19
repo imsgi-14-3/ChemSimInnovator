@@ -190,7 +190,7 @@ var EXPERIMENTS = [
   {
     id: "A4",
     title: "Determine the exact molarity of the NaOH solution Volumetrically",
-    section: "Major Practical",
+    section: "major",
     slos: ["C-10-B-13", "C-09-F-04", "C-09-F-09"],
     objective:
       "To determine the exact molarity of a NaOH solution by titrating it against a standard HCl solution of known concentration.",
@@ -249,7 +249,7 @@ var EXPERIMENTS = [
   {
     id: "A5",
     title: "Detection and confirmation of gases: NH₃, CO₂, Cl₂",
-    section: "Major Practical",
+    section: "major",
     slos: ["C-09-F-15", "C-09-10-G-10"],
     objective:
       "To detect and confirm the presence of NH₃, CO₂, and Cl₂ gases using appropriate chemical tests.",
@@ -301,7 +301,7 @@ var EXPERIMENTS = [
   {
     id: "M7_1",
     title: "Separate naphthalene from given mixture of sand and salt by sublimation",
-    section: "Minor Practical",
+    section: "minor",
     slos: ["C-10-B-08", "C-09-10-G-13"],
     objective: "To separate naphthalene from a given mixture of sand and salt by sublimation.",
     apparatus: [
@@ -333,7 +333,7 @@ var EXPERIMENTS = [
   {
     id: "M7_2",
     title: "Identify Na⁺, K⁺, Ca²⁺, Cu²⁺, Ba²⁺ by flame test",
-    section: "Minor Practical",
+    section: "minor",
     slos: ["C-09-F-16"],
     objective: "To identify Na⁺, K⁺, Ca²⁺, Cu²⁺, and Ba²⁺ ions by flame test.",
     apparatus: [
@@ -366,7 +366,7 @@ var EXPERIMENTS = [
   {
     id: "M7_3",
     title: "Prepare pure crystals CuSO₄·5H₂O",
-    section: "Minor Practical",
+    section: "minor",
     slos: ["C-09-F-12", "C-09-F-11"],
     objective: "To prepare pure crystals of copper(II) sulphate pentahydrate (CuSO₄·5H₂O).",
     apparatus: [
@@ -398,7 +398,7 @@ var EXPERIMENTS = [
   {
     id: "M7_4",
     title: "Determine melting point of Naphthalene",
-    section: "Minor Practical",
+    section: "minor",
     slos: ["C-09-F-14"],
     objective: "To determine the melting point of naphthalene.",
     apparatus: [
@@ -429,7 +429,7 @@ var EXPERIMENTS = [
   {
     id: "M7_5",
     title: "Determine boiling point of Ethyl Alcohol",
-    section: "Minor Practical",
+    section: "minor",
     slos: ["C-09-F-14"],
     objective: "To determine the boiling point of ethyl alcohol (ethanol).",
     apparatus: [
@@ -459,7 +459,7 @@ var EXPERIMENTS = [
   {
     id: "M7_6",
     title: "Demonstrate a metal displacement reaction in aqueous medium",
-    section: "Minor Practical",
+    section: "minor",
     slos: ["C-09-G-12"],
     objective: "To demonstrate a metal displacement reaction in aqueous medium.",
     apparatus: [
@@ -487,7 +487,7 @@ var EXPERIMENTS = [
   {
     id: "M7_7",
     title: "Investigate chemical tests for presence of water using anhydrous copper(II) sulfate",
-    section: "Minor Practical",
+    section: "minor",
     slos: ["C-09-10-G-12", "C-09-D-12"],
     objective: "To investigate chemical tests for the presence of water using anhydrous copper(II) sulfate.",
     apparatus: [
@@ -514,7 +514,7 @@ var EXPERIMENTS = [
   {
     id: "M7_8",
     title: "Test purity of water using melting point and boiling point",
-    section: "Minor Practical",
+    section: "minor",
     slos: ["C-09-D-13", "C-09-D-14", "C-09-F-14"],
     objective: "To test the purity of water using melting point and boiling point determination.",
     apparatus: [

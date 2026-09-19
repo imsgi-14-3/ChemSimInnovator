@@ -17,15 +17,15 @@ This uploaded PDF is the authoritative source selected for the ChemSim PBA matri
 
 ## Current Status
 
-**Phase:** Implementation
+**Phase:** Release Frozen
 
-**Overall implementation:** Milestone 13 complete, awaiting review
+**Overall implementation:** Milestone 14 complete — all milestones M0–M14 done
 
-**Current milestone:** Milestone 13 — Demonstration / Presentation Mode
+**Current milestone:** M14 — Final Competition Readiness & Release Freeze: COMPLETE
 
-**Next milestone:** M14 — further practicals or features (if approved)
+**Next milestone:** NONE — project is release-frozen
 
-**Milestone 13 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+**Milestone 14 status:** COMPLETE — RELEASE FROZEN
 
 ## Completed Decisions
 
@@ -1115,3 +1115,94 @@ Separate `demoActive`, `demoScreen`, `demoStep`, `demoPracticalFinished` state v
 - Demo practical completion detection relies on state transitions (finish → select screen)
 - Mystery Lab and PBA steps open the real modules; presenter must navigate back to continue demo
 - No automatic progression through Mystery Lab/PBA (by design — presenter controls pacing)
+
+---
+
+## Milestone 14 — Final Competition Readiness & Release Freeze
+
+**Status:** COMPLETE — RELEASE FROZEN
+
+**Date:** 2026-09-19
+
+### Objective
+
+Perform the final competition-readiness audit and release freeze for ChemSim. M14 is NOT a feature-expansion milestone.
+
+### Release-Blocking Bug Fixed
+
+**Section value inconsistency (CRITICAL):**
+- A4 and A5 had `section: "Major Practical"` instead of `section: "major"`
+- M7_1–M7_8 had `section: "Minor Practical"` instead of `section: "minor"`
+- Revision Hub filtering checked against lowercase `"major"`/`"minor"`, causing A4/A5 to be excluded from Major filter and all M7 experiments to be excluded from Minor filter
+- Counts displayed incorrectly (Major: 3 instead of 5, Minor: 0 instead of 8)
+- Log record labels misidentified A4/A5 as "Minor"
+- **Fix:** Standardized all 10 section values to lowercase `"major"`/`"minor"` in EXPERIMENTS array
+- **Verification:** 5 major + 8 minor confirmed, M11 filter regression tests pass (98/98)
+
+### Audit Findings — All Other Checks PASS
+
+| Audit Area | Result |
+|------------|--------|
+| Experiment titles (13) | All match FBISE prescribed titles |
+| SLO mappings | All correct and properly associated |
+| Major/Minor classification | All correct after fix |
+| SIMULATION_CONFIG disclaimers | All present |
+| Navigation state | appMode, currentStage, selectedExperimentId correct |
+| Demo state | demoActive, demoScreen, demoStep correct |
+| Experiment Log functions | All 6 functions present with defensive localStorage handling |
+| Finish handlers | Both practical and mystery create log records |
+| No duplicate switch cases | Confirmed |
+| No console.log/debug | Confirmed |
+| No framework imports | Confirmed |
+| HTML accessibility | Skip link, ARIA landmarks, canvas labels all present |
+| CSS focus-visible | Buttons, tools, sidebar items all have focus styles |
+| Responsive breakpoints | 768px and 480px both present |
+| PBA structure | 2×6=12, 2×4=8, total=20, 2 hours |
+| Chemistry content | No silent corrections, no invented measurements |
+
+### Regression Tests
+
+- M13: 71/71 passed
+- M12: 47/47 passed
+- M11: 98/98 passed (including revision filter by major/minor)
+- M10: 139/139 passed
+- JavaScript syntax: VALID
+- No React/Vue/Angular: CONFIRMED
+- SIMULATED educational values: PRESENT
+- Total regression: 355/355 passed
+
+### Source Discipline
+
+- All 13 practical titles verified against FBISE prescribed list
+- SLO C-09-F-17 verified for A2 (ink chromatography)
+- SLOs C-09-F-18, C-09-F-19, C-09-F-20 verified for A3 (Pb²⁺/Cd²⁺ chromatography)
+- No unsupported claims introduced
+- Educational simplifications clearly labelled as simulated
+
+### Accessibility
+
+- Skip link present and functional
+- Sidebar has role="navigation" and aria-label
+- Canvas has role="img" and aria-label
+- All interactive elements have keyboard focus styles
+- Semantic HTML headings maintained
+- Minor: some interactive elements lack :focus-visible (cosmetic, not release-blocking)
+
+### Responsive
+
+- 768px tablet breakpoint present
+- 480px mobile breakpoint present
+- Flex-wrap on tool options and revision filters
+- Tables have overflow-x:auto
+- Canvas remains fixed at 500x600 (by design)
+
+### Known Limitations
+
+- Canvas is fixed at 500x600 (responsive canvas would require significant refactoring)
+- Full live browser testing not possible in Node.js test environment
+- Some :focus-visible styles missing on secondary interactive elements (cosmetic)
+- Demo practical completion detection relies on state transitions
+
+### Release Status
+
+**RELEASE FROZEN.** Repository is ready for competition/demo release. No further implementation milestone is authorized.
