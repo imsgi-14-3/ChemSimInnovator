@@ -7,13 +7,14 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <a href="#stage-content" class="skip-link">Skip to main content</a>
   <header id="app-header">
     <h1>ChemSim</h1>
     <p class="subtitle">Interactive Virtual Chemistry Laboratory</p>
   </header>
 
   <main id="app-main">
-    <div id="sidebar">
+    <div id="sidebar" role="navigation" aria-label="Experiment navigation">
       <h2>Experiments</h2>
       <ul id="practical-list"></ul>
     </div>
@@ -27,7 +28,7 @@
       <div id="stage-content"></div>
 
       <div id="simulation-area">
-        <canvas id="sim-canvas" width="500" height="600"></canvas>
+        <canvas id="sim-canvas" width="500" height="600" role="img" aria-label="Chemistry simulation visualization"></canvas>
       </div>
 
       <div id="feedback-area"></div>

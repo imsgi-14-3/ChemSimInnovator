@@ -1004,6 +1004,7 @@ var state = {
   pbaSession: null,                // { sessionId, startedAt, mode, majorQuestions, minorQuestions, answers, marks, totalMarks, submitted, timerStarted, timerElapsed }
   pbaCurrentSection: "A",          // "A" | "B"
   pbaCurrentIndex: 0,              // Current question index within section
+  pbaTimerInterval: null,          // setInterval reference for live timer
 
   // -- Mystery Lab (M9) --
   mysteryScreen: "menu",           // "menu" | "intro" | "investigation" | "test_execute" | "observe" | "interpret" | "identify" | "conclusion" | "complete"
@@ -1320,7 +1321,7 @@ function renderPBAQuestion() {
         for (var k = 0; k < userOrder.length; k++) {
           var stepIdx = userOrder[k];
           html += '<div class="procedure-step" data-qid="' + q.id + '" data-part="' + i + '" data-step="' + stepIdx + '">';
-          html += '<span class="step-num">' + (k + 1) + '</span>';
+          html += '<span class="step-number">' + (k + 1) + '</span>';
           html += '<span>' + steps[stepIdx] + '</span>';
           html += '<span style="margin-left:auto;">';
           if (k > 0) html += '<button class="btn btn-tool" data-qid="' + q.id + '" data-part="' + i + '" data-move="-1" data-pos="' + k + '">▲</button> ';
@@ -1535,6 +1536,8 @@ function onPBAClick(e) {
       state.pbaScreen = "question";
       state.pbaSession.timerStarted = Date.now();
       state.pbaSession.timerElapsed = 0;
+      if (state.pbaTimerInterval) clearInterval(state.pbaTimerInterval);
+      state.pbaTimerInterval = setInterval(pbaUpdateTimer, 1000);
       renderCurrentStage();
     }, 800);
     return;
@@ -1603,6 +1606,7 @@ function onPBAClick(e) {
     state.pbaSession = null;
     state.pbaCurrentIndex = 0;
     state.pbaCurrentSection = "A";
+    if (state.pbaTimerInterval) { clearInterval(state.pbaTimerInterval); state.pbaTimerInterval = null; }
     renderCurrentStage();
     renderSidebar();
     return;
@@ -1871,13 +1875,19 @@ function renderSidebar() {
   var html = "";
   for (var i = 0; i < EXPERIMENTS.length; i++) {
     var exp = EXPERIMENTS[i];
-    html += '<li data-id="' + exp.id + '">' + exp.id + ". " +
+    html += '<li data-id="' + exp.id + '" tabindex="0" role="button" aria-label="' + escapeHtml(exp.title) + '">' + exp.id + ". " +
       capitalizeFirst(exp.section) + " — " + truncate(exp.title, 40) + "</li>";
   }
   dom.practicalList.innerHTML = html;
   var items = dom.practicalList.querySelectorAll("li");
   for (var j = 0; j < items.length; j++) {
     items[j].addEventListener("click", onPracticalSelect);
+    items[j].addEventListener("keydown", function(e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onPracticalSelect.call(this, e);
+      }
+    });
   }
 }
 
@@ -1916,7 +1926,10 @@ function renderStageContent() {
     case "setUp":        html = renderSetUpDistillContent(exp); break;
     case "checkSetup":   html = renderCheckSetupContent(exp); break;
     case "startHeating": html = renderStartHeatingContent(exp); break;
-    case "monitor":      html = renderMonitorContent(exp); break;
+    case "monitor":
+      if (id && id.indexOf("M7") === 0) html = renderM7MonitorContent(exp);
+      else html = renderMonitorContent(exp);
+      break;
     case "run":          html = renderRunContent(exp); break;
     case "observe":
       if (id === "A2" || id === "A3") html = renderObserveChromContent(exp);
@@ -1925,7 +1938,10 @@ function renderStageContent() {
       else html = renderObserveDistillContent(exp);
       break;
     case "markFront":    html = renderMarkFrontContent(exp); break;
-    case "collect":      html = renderCollectContent(exp); break;
+    case "collect":
+      if (id && id.indexOf("M7") === 0) html = renderM7CollectContent(exp);
+      else html = renderCollectContent(exp);
+      break;
     case "measure":      html = renderMeasureContent(exp); break;
     case "titrate":      html = renderTitrateContent(exp); break;
     case "endpoint":     html = renderEndpointContent(exp); break;
@@ -1967,14 +1983,12 @@ function renderStageContent() {
     case "nextGas":      html = renderNextGasContent(exp); break;
     case "summary":      html = renderSummaryContent(exp); break;
     case "heat":         html = renderM7HeatContent(exp); break;
-    case "collect":      html = renderM7CollectContent(exp); break;
     case "selectIon":    html = renderM7SelectIonContent(exp); break;
     case "identify":     html = renderM7IdentifyContent(exp); break;
     case "nextIon":      html = renderM7NextIonContent(exp); break;
     case "dissolve":     html = renderM7DissolveContent(exp); break;
     case "concentrate":  html = renderM7ConcentrateContent(exp); break;
     case "crystallize":  html = renderM7CrystallizeContent(exp); break;
-    case "monitor":      if (id && id.indexOf("M7") === 0) html = renderM7MonitorContent(exp); else html = renderMonitorContent(exp); break;
     case "selectMaterials": html = renderM7SelectMaterialsContent(exp); break;
     case "performReaction": html = renderM7PerformReactionContent(exp); break;
     case "selectSample": html = renderM7SelectSampleContent(exp); break;
@@ -4168,7 +4182,10 @@ function onBtnBack() {
     return;
   }
   if (state.appMode === "mystery") {
-    if (state.mysteryScreen === "investigation" || state.mysteryScreen === "test_execute" || state.mysteryScreen === "observe" || state.mysteryScreen === "interpret") {
+    if (state.mysteryScreen === "intro") {
+      state.mysteryScreen = "menu";
+      renderCurrentStage();
+    } else if (state.mysteryScreen === "investigation" || state.mysteryScreen === "test_execute" || state.mysteryScreen === "observe" || state.mysteryScreen === "interpret") {
       state.mysteryScreen = "investigation";
       renderCurrentStage();
     } else if (state.mysteryScreen === "identify") {
@@ -4176,6 +4193,9 @@ function onBtnBack() {
       renderCurrentStage();
     } else if (state.mysteryScreen === "conclusion") {
       state.mysteryScreen = "investigation";
+      renderCurrentStage();
+    } else if (state.mysteryScreen === "complete") {
+      state.mysteryScreen = "menu";
       renderCurrentStage();
     }
     return;
@@ -5789,6 +5809,7 @@ function renderMysteryStage() {
     stageProgress.innerHTML = '<span class="label">' + state.mysterySession.sampleId + ' | Evidence: ' + mysteryGetEvidenceCount() + '</span>';
     stageContent.innerHTML = renderMysteryInvestigation();
     stageContent.onclick = onMysteryClick;
+    stageContent.oninput = onMysteryInput;
     userInputArea.onclick = onMysteryClick;
   } else if (state.mysteryScreen === "test_execute") {
     stageTitle.textContent = "Mystery Lab — Performing Test";
@@ -5800,11 +5821,13 @@ function renderMysteryStage() {
     stageProgress.innerHTML = '<span class="label">' + state.mysterySession.sampleId + '</span>';
     stageContent.innerHTML = renderMysteryObserve();
     stageContent.onclick = onMysteryClick;
+    stageContent.oninput = onMysteryInput;
   } else if (state.mysteryScreen === "identify") {
     stageTitle.textContent = "Mystery Lab — Identification";
     stageProgress.innerHTML = '<span class="label">' + state.mysterySession.sampleId + ' | Evidence: ' + mysteryGetEvidenceCount() + '</span>';
     stageContent.innerHTML = renderMysteryIdentify();
     stageContent.onclick = onMysteryClick;
+    stageContent.oninput = onMysteryInput;
   } else if (state.mysteryScreen === "complete") {
     stageTitle.textContent = "Mystery Lab — Complete";
     stageProgress.innerHTML = '';

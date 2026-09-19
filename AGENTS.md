@@ -201,6 +201,7 @@ Current state:
 - Milestone 9 — Mystery Lab (Unknown Sample Identification): complete, awaiting review
 - Milestone 10 — Experiment Log: complete, awaiting review
 - Milestone 11 — Learning & Revision Hub: complete, awaiting review
+- Milestone 12 — Quality, Accessibility & Demo Polish: complete, awaiting review
 
 Milestone 1 is NOT automatically approved for implementation.
 

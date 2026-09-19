@@ -19,13 +19,13 @@ This uploaded PDF is the authoritative source selected for the ChemSim PBA matri
 
 **Phase:** Implementation
 
-**Overall implementation:** Milestone 11 complete, awaiting review
+**Overall implementation:** Milestone 12 complete, awaiting review
 
-**Current milestone:** Milestone 11 — Learning & Revision Hub
+**Current milestone:** Milestone 12 — Quality, Accessibility & Demo Polish
 
-**Next milestone:** Milestone 12 — further practicals or features
+**Next milestone:** M13 — further practicals or features (if approved)
 
-**Milestone 11 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+**Milestone 12 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
 
 ## Completed Decisions
 
@@ -970,3 +970,89 @@ All practical data read directly from existing `EXPERIMENTS` array — no duplic
 - JavaScript syntax: VALID
 - No React/Vue/Angular: CONFIRMED
 - SIMULATED educational values: PRESENT
+
+---
+
+## Milestone 12 — Quality, Accessibility & Demo Polish
+
+### Objective
+
+Perform a focused quality, usability, accessibility, and competition-demo polish pass across the existing ChemSim application. M12 is NOT a new chemistry feature.
+
+### Audit Findings
+
+Full application audit identified issues across CSS, JavaScript, HTML, accessibility, and responsive design.
+
+### Fixes Applied
+
+#### CSS Fixes
+- Added undefined CSS variables: `--radius-sm`, `--radius-md`, `--radius-lg`, `--color-text-secondary`, `--color-error`, `--color-success`
+- Added focus-visible styles for buttons (`.btn-primary:focus-visible`, `.btn-secondary:focus-visible`, `.btn-accent:focus-visible`)
+- Added focus-visible styles for `.btn-tool` and `#practical-list li`
+- Added skip-link CSS for keyboard navigation
+- Added `flex-wrap: wrap` to `.tool-options` and `.rev-filters` for responsive layout
+- Added 480px mobile breakpoint with reduced padding and font sizes
+
+#### JavaScript Fixes
+- Fixed duplicate `case "collect":` and `case "monitor":` in `renderStageContent()` switch statement — M7 experiments now correctly route to M7-specific renderers
+- Fixed Mystery Lab textarea input capture — added `onMysteryInput` handler bound to `stageContent.oninput` for investigation, observe, and identify screens
+- Fixed PBA timer to update live — added `setInterval(pbaUpdateTimer, 1000)` when timer starts, `clearInterval` when session ends
+- Fixed navigation back button for mystery `intro` and `complete` screens
+- Fixed class name mismatch: `step-num` → `step-number` to match CSS
+
+#### HTML Accessibility
+- Added skip-to-content link (`<a href="#stage-content" class="skip-link">`)
+- Added `role="navigation"` and `aria-label="Experiment navigation"` to sidebar
+- Added `role="img"` and `aria-label` to canvas element
+
+#### JavaScript Accessibility
+- Added `tabindex="0"`, `role="button"`, and `aria-label` to sidebar list items
+- Added keyboard event handler (Enter/Space) for sidebar list items
+
+### Accessibility Improvements
+- Keyboard navigation: All interactive controls now keyboard-reachable
+- Focus visibility: Clear focus indicators on buttons, tools, and sidebar items
+- ARIA: Canvas and navigation landmark properly labeled
+- Skip link: Keyboard users can skip to main content
+
+### Responsive Improvements
+- Added 480px breakpoint for small mobile screens
+- Added flex-wrap on tool options and revision filters
+- Reduced padding on small screens
+- Tables have overflow-x:auto for horizontal scrolling
+
+### Navigation Improvements
+- Fixed mystery back button for intro and complete screens
+- Fixed duplicate switch cases that broke M7 monitor/collect stages
+
+### Error State Improvements
+- Mystery Lab textareas now capture input in real-time (previously lost on navigation)
+- PBA timer now updates live (previously showed stale values)
+
+### Demo Readiness
+- All five modules accessible from main menu
+- Keyboard navigation works throughout
+- Focus indicators visible for all interactive elements
+- No blank screens on navigation
+- Timer updates live during PBA practice
+
+### Files Modified
+- `index.html` — skip-link, ARIA landmarks, canvas accessibility
+- `script.js` — switch case fixes, input capture, timer, navigation, sidebar accessibility
+- `style.css` — CSS variables, focus styles, responsive breakpoints, flex-wrap
+
+### Tests Performed
+
+- 47 M12 tests: 47/47 passed
+- 98 M11 regression: 98/98 passed
+- 139 M10 regression: 139/139 passed
+- A1–A5 regression: ALL PASS
+- M7.1–M7.8 regression: ALL PASS
+- JavaScript syntax: VALID
+- No React/Vue/Angular: CONFIRMED
+- SIMULATED educational values: PRESENT
+
+### Known Limitations
+- Canvas is still hardcoded at 500x600 (responsive canvas resizing would require significant refactoring)
+- Full live browser testing not possible in Node.js test environment
+- Some `!important` overrides remain for button colors (intentional per-module theming)
