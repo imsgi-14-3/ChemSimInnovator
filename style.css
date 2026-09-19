@@ -879,3 +879,118 @@ body {
 #btn-log-open {
   background: #1565c0 !important;
 }
+
+/* ==============================================================
+   M11: LEARNING & REVISION HUB
+   ============================================================== */
+
+.rev-panel {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+}
+
+.rev-search-bar {
+  margin-bottom: 1rem;
+}
+
+.rev-search-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-sizing: border-box;
+}
+
+.rev-search-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.rev-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.rev-filter-btn.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.rev-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rev-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  transition: border-color 0.15s ease;
+}
+
+.rev-card:hover {
+  border-color: var(--color-primary);
+}
+
+.rev-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.rev-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-secondary);
+}
+
+.rev-section {
+  margin-bottom: 1rem;
+}
+
+.rev-section h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.3rem;
+}
+
+.rev-section p,
+.rev-section li {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.rev-section ul,
+.rev-section ol {
+  margin: 0.25rem 0 0 1.25rem;
+  padding: 0;
+}
+
+.rev-section li {
+  margin-bottom: 0.2rem;
+}
+
+.rev-sim-notice {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--color-border);
+}

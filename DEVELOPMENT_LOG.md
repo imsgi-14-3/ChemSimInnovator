@@ -19,13 +19,13 @@ This uploaded PDF is the authoritative source selected for the ChemSim PBA matri
 
 **Phase:** Implementation
 
-**Overall implementation:** Milestone 10 complete, awaiting review
+**Overall implementation:** Milestone 11 complete, awaiting review
 
-**Current milestone:** Milestone 10 — Experiment Log
+**Current milestone:** Milestone 11 — Learning & Revision Hub
 
-**Next milestone:** Milestone 11 — further practicals or features
+**Next milestone:** Milestone 12 — further practicals or features
 
-**Milestone 10 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
+**Milestone 11 status:** IMPLEMENTED / TESTED / AWAITING REVIEW
 
 ## Completed Decisions
 
@@ -901,6 +901,70 @@ Supported practicals: A1–A5, M7.1–M7.8 (all 13 existing experiments).
 - 139 M10 tests performed: 139/139 passed
 - 153 M8 regression: 153/153 passed
 - 161 M9 regression: 161/161 passed
+- A1–A5 regression: ALL PASS
+- M7.1–M7.8 regression: ALL PASS
+- JavaScript syntax: VALID
+- No React/Vue/Angular: CONFIRMED
+- SIMULATED educational values: PRESENT
+
+---
+
+## Milestone 11 — Learning & Revision Hub
+
+### What Changed
+
+Added a 5th main menu mode: **Learning & Revision Hub** — a browsing/review interface for all 13 prescribed practicals.
+
+### Features
+
+- **Main menu button:** "Learning & Revision" (teal, #00695c) added as 5th option
+- **Lab select screen:** Added "Learning & Revision" button alongside "Experiment Log"
+- **Revision mode (`appMode: "revision"`):** Separate state variables (`revisionScreen`, `revisionFilter`, `revisionSearch`, `revisionSelectedId`)
+- **List view:** Filter by All/Major/Minor + live search by title, SLO, or keyword; card-based display with section badge and SLOs
+- **Detail view:** Full practical reference showing title, SLOs, objective, apparatus, materials, procedure, observations, calculations, result, conclusion, and simulation notice
+- **Start Practical:** Button launches the selected experiment through the existing lab nav engine
+- **Navigation:** Back buttons return to list; Next/Back buttons correctly ignored in revision mode
+
+### State Variables Added
+
+- `revisionScreen` — `"list"` | `"browsing"` | `"detail"`
+- `revisionFilter` — `"all"` | `"major"` | `"minor"`
+- `revisionSearch` — string for live search
+- `revisionSelectedId` — currently viewed experiment id
+
+### Functions Added
+
+- `revGetFilteredPracticals()` — filters and searches EXPERIMENTS array
+- `revGetExpById(id)` — finds experiment by id
+- `renderRevisionMenu()` — main menu landing
+- `renderRevisionList()` — browsable list with search and filters
+- `renderRevisionDetail()` — full practical detail
+- `renderRevisionStage()` — stage router for revision mode
+- `onRevisionClick(e)` — event handler for all revision interactions
+
+### Navigation Wiring
+
+- `onPBAClick`: handles `btn-enter-revision`
+- `onStageContentClick`: handles `btn-enter-revision-from-lab`
+- `onBtnNext`: ignores revision mode
+- `onBtnBack`: returns revision detail to browsing
+- `renderCurrentStage`: routes `appMode === "revision"` to `renderRevisionStage()`
+
+### Files Modified
+
+- `script.js` — M11 state variables, 7 functions, navigation wiring in 5 existing functions, 5th main menu button
+- `style.css` — M11 styles (rev-panel, rev-search-bar, rev-search-input, rev-filters, rev-filter-btn, rev-list, rev-card, rev-badge, rev-empty, rev-section, rev-sim-notice)
+
+### Data Source
+
+All practical data read directly from existing `EXPERIMENTS` array — no duplication.
+
+### Tests Performed
+
+- 98 M11 tests: 98/98 passed
+- 139 M10 regression: 139/139 passed
+- 161 M9 regression: 161/161 passed
+- 153 M8 regression: 153/153 passed
 - A1–A5 regression: ALL PASS
 - M7.1–M7.8 regression: ALL PASS
 - JavaScript syntax: VALID

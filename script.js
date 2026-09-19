@@ -1011,7 +1011,13 @@ var state = {
 
   // -- Experiment Log (M10) --
   logScreen: "list",               // "list" | "detail"
-  logDetailId: null                // id of record being viewed
+  logDetailId: null,               // id of record being viewed
+
+  // -- Learning & Revision (M11) --
+  revisionScreen: "list",          // "list" | "detail"
+  revisionFilter: "all",           // "all" | "major" | "minor"
+  revisionSearch: "",
+  revisionSelectedId: null
 };
 
 /* ==============================================================
@@ -1234,6 +1240,7 @@ function renderPBAMenu() {
   html += '<button class="btn btn-accent" id="btn-enter-pba" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;">PBA Practice</button>';
   html += '<button class="btn btn-primary" id="btn-enter-mystery" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#6a1b9a;">Mystery Lab</button>';
   html += '<button class="btn btn-primary" id="btn-enter-log" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#1565c0;">Experiment Log</button>';
+  html += '<button class="btn btn-primary" id="btn-enter-revision" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#00695c;">Learning & Revision</button>';
   html += '</div>';
   html += '<div class="sim-note" style="max-width:300px;margin:2rem auto;text-align:left;">';
   html += 'PBA Practice simulates the FBISE Chemistry Practical Based Assessment.<br><br>';
@@ -1502,6 +1509,15 @@ function onPBAClick(e) {
     renderCurrentStage();
     return;
   }
+  if (target.id === "btn-enter-revision") {
+    state.appMode = "revision";
+    state.revisionScreen = "list";
+    state.revisionFilter = "all";
+    state.revisionSearch = "";
+    state.revisionSelectedId = null;
+    renderCurrentStage();
+    return;
+  }
 
   // Mode select buttons
   if (target.id === "btn-pba-full" || target.id === "btn-pba-major" || target.id === "btn-pba-minor") {
@@ -1702,6 +1718,10 @@ function renderCurrentStage() {
   }
   if (state.appMode === "log") {
     renderLogStage();
+    return;
+  }
+  if (state.appMode === "revision") {
+    renderRevisionStage();
     return;
   }
   // Restore sidebar when in lab mode
@@ -1974,6 +1994,7 @@ function renderSelectContent() {
     '<button class="btn btn-accent" id="btn-enter-pba-from-lab" style="margin-bottom:1rem;">PBA Practice →</button>' +
     '<button class="btn btn-primary" id="btn-enter-mystery-from-lab" style="margin-bottom:1rem;background:#6a1b9a;">Mystery Lab →</button>' +
     '<button class="btn btn-primary" id="btn-enter-log-from-lab" style="margin-bottom:1rem;background:#1565c0;">Experiment Log →</button>' +
+    '<button class="btn btn-primary" id="btn-enter-revision-from-lab" style="margin-bottom:1rem;background:#00695c;">Learning & Revision →</button>' +
     '<p><strong>Major Practicals:</strong></p><ul>' +
     '<li><strong>A1</strong> — Fractional Distillation</li>' +
     '<li><strong>A2</strong> — Paper Chromatography</li>' +
@@ -4116,6 +4137,10 @@ function onBtnNext() {
     // Log navigation handled by onLogClick
     return;
   }
+  if (state.appMode === "revision") {
+    // Revision navigation handled by onRevisionClick
+    return;
+  }
   var id = state.experiment ? state.experiment.id : "";
   if ((id === "A2" || id === "A3") && state.currentStage === "run" && state.simulation && !state.simulation.done) {
     return;
@@ -4159,6 +4184,14 @@ function onBtnBack() {
     if (state.logScreen === "detail") {
       state.logScreen = "list";
       state.logDetailId = null;
+      renderCurrentStage();
+    }
+    return;
+  }
+  if (state.appMode === "revision") {
+    if (state.revisionScreen === "detail") {
+      state.revisionScreen = "list";
+      state.revisionSelectedId = null;
       renderCurrentStage();
     }
     return;
@@ -4333,6 +4366,15 @@ function onStageContentClick(e) {
     state.appMode = "log";
     state.logScreen = "list";
     state.logDetailId = null;
+    renderCurrentStage();
+    return;
+  }
+  if (target.id === "btn-enter-revision-from-lab") {
+    state.appMode = "revision";
+    state.revisionScreen = "list";
+    state.revisionFilter = "all";
+    state.revisionSearch = "";
+    state.revisionSelectedId = null;
     renderCurrentStage();
     return;
   }
@@ -6403,6 +6445,282 @@ function expLogCreateFromPractical() {
   var record = expLogBuildPracticalRecord(exp, state);
   expLogAdd(record);
 }
+
+/* ==============================================================
+   SECTION 9D: LEARNING & REVISION HUB (M11)
+   ============================================================== */
+
+/* ---- M11: Helpers ---- */
+
+function revGetFilteredPracticals() {
+  var filter = state.revisionFilter;
+  var search = (state.revisionSearch || "").toLowerCase();
+  var results = [];
+  for (var i = 0; i < EXPERIMENTS.length; i++) {
+    var exp = EXPERIMENTS[i];
+    if (filter === "major" && exp.section !== "major") continue;
+    if (filter === "minor" && exp.section !== "minor") continue;
+    if (search) {
+      var haystack = (exp.title + " " + (exp.slos || []).join(" ") + " " + (exp.objective || "") + " " + (exp.section || "")).toLowerCase();
+      if (haystack.indexOf(search) === -1) continue;
+    }
+    results.push(exp);
+  }
+  return results;
+}
+
+function revGetExpById(id) {
+  for (var i = 0; i < EXPERIMENTS.length; i++) {
+    if (EXPERIMENTS[i].id === id) return EXPERIMENTS[i];
+  }
+  return null;
+}
+
+/* ---- M11: Renderers ---- */
+
+function renderRevisionMenu() {
+  var count = EXPERIMENTS.length;
+  var html = '<div style="text-align:center;padding:2rem;">';
+  html += '<h2>Learning & Revision Hub</h2>';
+  html += '<p class="subtitle">Review practical skills before attempting experiments.</p>';
+  html += '<p style="max-width:450px;margin:1rem auto;color:var(--color-text-secondary);">Browse all ' + count + ' prescribed practicals (5 Major + 8 Minor). Review objectives, apparatus, procedures, and key concepts.</p>';
+  html += '<div style="margin-top:1.5rem;">';
+  html += '<button class="btn btn-primary" id="btn-rev-open" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:1rem;font-size:1.1rem;background:#00695c;">Open Revision Hub</button>';
+  html += '<button class="btn btn-secondary" id="btn-rev-back-to-menu" style="display:block;width:100%;max-width:300px;margin:0.75rem auto;padding:0.75rem;">← Back to Main Menu</button>';
+  html += '</div>';
+  html += '<div class="sim-note" style="max-width:400px;margin:2rem auto;text-align:left;">';
+  html += '<strong>About this hub:</strong><br>';
+  html += 'A ChemSim educational feature for revision. Not an official FBISE assessment component.<br><br>';
+  html += '<em>Simulation values are educationally simulated and are not real laboratory measurements.</em>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderRevisionList() {
+  var practicals = revGetFilteredPracticals();
+  var filter = state.revisionFilter;
+  var majorCount = 0, minorCount = 0;
+  for (var c = 0; c < EXPERIMENTS.length; c++) {
+    if (EXPERIMENTS[c].section === "major") majorCount++;
+    else minorCount++;
+  }
+  var html = '<div class="rev-panel">';
+  html += '<div class="rev-search-bar">';
+  html += '<label for="rev-search-input" style="font-size:0.85rem;display:block;margin-bottom:0.25rem;">Search practicals:</label>';
+  html += '<input type="text" id="rev-search-input" class="rev-search-input" placeholder="Search by title, SLO, or keyword..." value="' + escapeHtml(state.revisionSearch || '') + '">';
+  html += '</div>';
+  html += '<div class="rev-filters">';
+  html += '<button class="btn btn-tool rev-filter-btn' + (filter === "all" ? " active" : "") + '" data-rev-filter="all">All (' + EXPERIMENTS.length + ')</button>';
+  html += '<button class="btn btn-tool rev-filter-btn' + (filter === "major" ? " active" : "") + '" data-rev-filter="major">Major (' + majorCount + ')</button>';
+  html += '<button class="btn btn-tool rev-filter-btn' + (filter === "minor" ? " active" : "") + '" data-rev-filter="minor">Minor (' + minorCount + ')</button>';
+  html += '</div>';
+  if (practicals.length === 0) {
+    html += '<div class="rev-empty"><p>No practicals match your search.</p></div>';
+  } else {
+    html += '<div class="rev-list">';
+    for (var i = 0; i < practicals.length; i++) {
+      var exp = practicals[i];
+      var sLabel = exp.section === "major" ? "Major" : "Minor";
+      var sColor = exp.section === "major" ? "var(--color-primary)" : "var(--color-accent, #ff9800)";
+      html += '<div class="rev-card">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:start;gap:1rem;">';
+      html += '<div style="flex:1;min-width:0;">';
+      html += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">';
+      html += '<span class="rev-badge" style="background:' + sColor + ';">' + sLabel + '</span>';
+      html += '<strong style="font-size:0.95rem;">' + escapeHtml(exp.title) + '</strong>';
+      html += '</div>';
+      if (exp.slos && exp.slos.length > 0) {
+        html += '<p style="font-size:0.8rem;color:var(--color-text-secondary);margin:0;">SLOs: ' + exp.slos.join(", ") + '</p>';
+      }
+      html += '</div>';
+      html += '<button class="btn btn-secondary btn-rev-view" data-rev-id="' + exp.id + '" style="font-size:0.85rem;padding:0.4rem 0.75rem;flex-shrink:0;">Review</button>';
+      html += '</div></div>';
+    }
+    html += '</div>';
+  }
+  html += '<div style="text-align:center;margin-top:1rem;">';
+  html += '<button class="btn btn-secondary" id="btn-rev-back-from-list" style="padding:0.5rem 1.5rem;">← Back to Main Menu</button>';
+  html += '</div></div>';
+  return html;
+}
+
+function renderRevisionDetail() {
+  var exp = revGetExpById(state.revisionSelectedId);
+  if (!exp) { state.revisionScreen = "list"; return renderRevisionList(); }
+  var html = '<div class="rev-panel rev-detail">';
+  var sLabel = exp.section === "major" ? "Major Practical" : "Minor Practical";
+  var sColor = exp.section === "major" ? "var(--color-primary)" : "var(--color-accent, #ff9800)";
+  html += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">';
+  html += '<span class="rev-badge" style="background:' + sColor + ';">' + sLabel + '</span>';
+  html += '<h3 style="margin:0;">' + escapeHtml(exp.title) + '</h3></div>';
+  if (exp.slos && exp.slos.length > 0) {
+    html += '<p style="font-size:0.85rem;color:var(--color-text-secondary);margin:0 0 1rem 0;">SLOs: ' + exp.slos.join(", ") + '</p>';
+  }
+  if (exp.objective) { html += '<div class="rev-section"><h4>Objective</h4><p>' + escapeHtml(exp.objective) + '</p></div>'; }
+  if (exp.apparatus && exp.apparatus.length > 0) {
+    html += '<div class="rev-section"><h4>Key Apparatus</h4><ul>';
+    for (var ai = 0; ai < exp.apparatus.length; ai++) {
+      var a = exp.apparatus[ai];
+      html += '<li><strong>' + escapeHtml(a.name) + '</strong>' + (a.desc ? ' — ' + escapeHtml(a.desc) : '') + '</li>';
+    }
+    html += '</ul></div>';
+  }
+  if (exp.materials && exp.materials.length > 0) {
+    html += '<div class="rev-section"><h4>Materials</h4><ul>';
+    for (var mi = 0; mi < exp.materials.length; mi++) { html += '<li>' + escapeHtml(exp.materials[mi].name) + '</li>'; }
+    html += '</ul></div>';
+  }
+  if (exp.procedure && exp.procedure.length > 0) {
+    html += '<div class="rev-section"><h4>Procedure</h4><ol>';
+    for (var pi = 0; pi < exp.procedure.length; pi++) { html += '<li>' + escapeHtml(exp.procedure[pi]) + '</li>'; }
+    html += '</ol></div>';
+  }
+  if (exp.observations) {
+    html += '<div class="rev-section"><h4>Observations</h4>';
+    if (exp.observations.note) html += '<p>' + escapeHtml(exp.observations.note) + '</p>';
+    if (exp.observations.fields && exp.observations.fields.length > 0) {
+      html += '<ul>';
+      for (var oi = 0; oi < exp.observations.fields.length; oi++) { html += '<li>' + escapeHtml(exp.observations.fields[oi].label) + '</li>'; }
+      html += '</ul>';
+    }
+    html += '</div>';
+  }
+  if (exp.calculations && exp.calculations.length > 0) {
+    html += '<div class="rev-section"><h4>Calculations</h4>';
+    for (var ci = 0; ci < exp.calculations.length; ci++) { html += '<p>' + escapeHtml(exp.calculations[ci]) + '</p>'; }
+    html += '</div>';
+  }
+  if (exp.result) { html += '<div class="rev-section"><h4>Result</h4><p>' + escapeHtml(exp.result.note || "") + '</p></div>'; }
+  if (exp.conclusion) { html += '<div class="rev-section"><h4>Conclusion</h4><p>' + escapeHtml(exp.conclusion.note || "") + '</p></div>'; }
+  html += '<div class="rev-sim-notice"><p>SIMULATED EDUCATIONAL VALUE — NOT A REAL LABORATORY MEASUREMENT</p></div>';
+  html += '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;margin-top:1.5rem;">';
+  html += '<button class="btn btn-primary" id="btn-rev-start-practical" data-rev-start="' + exp.id + '" style="padding:0.75rem 2rem;background:#00695c;">Start Practical →</button>';
+  html += '<button class="btn btn-secondary" id="btn-rev-back-from-detail" style="padding:0.75rem 2rem;">← Back to Revision</button>';
+  html += '</div></div>';
+  return html;
+}
+
+/* ---- M11: Stage Router ---- */
+
+function renderRevisionStage() {
+  var stageContent = document.getElementById("stage-content");
+  var stageTitle = document.getElementById("stage-title");
+  var stageProgress = document.getElementById("stage-progress");
+  var simulationArea = document.getElementById("simulation-area");
+  var userInputArea = document.getElementById("user-input-area");
+  var feedbackArea = document.getElementById("feedback-area");
+  var btnBack = document.getElementById("btn-back");
+  var btnNext = document.getElementById("btn-next");
+  var sidebar = document.getElementById("sidebar");
+  sidebar.style.display = "none";
+  simulationArea.classList.add("hidden");
+  userInputArea.innerHTML = "";
+  feedbackArea.innerHTML = "";
+  btnBack.style.display = "none";
+  btnNext.style.display = "none";
+  if (state.revisionScreen === "list") {
+    stageTitle.textContent = "";
+    stageProgress.innerHTML = "";
+    stageContent.innerHTML = renderRevisionMenu();
+    stageContent.onclick = onRevisionClick;
+  } else if (state.revisionScreen === "browsing") {
+    stageTitle.textContent = "Revision Hub";
+    stageProgress.innerHTML = '<span class="label">' + revGetFilteredPracticals().length + ' practicals</span>';
+    stageContent.innerHTML = renderRevisionList();
+    stageContent.onclick = onRevisionClick;
+    var searchEl = document.getElementById("rev-search-input");
+    if (searchEl) {
+      searchEl.addEventListener("input", function() {
+        state.revisionSearch = searchEl.value;
+        stageContent.innerHTML = renderRevisionList();
+        stageContent.onclick = onRevisionClick;
+        var newSearchEl = document.getElementById("rev-search-input");
+        if (newSearchEl) {
+          var val = newSearchEl.value;
+          newSearchEl.focus();
+          newSearchEl.setSelectionRange(val.length, val.length);
+        }
+      });
+    }
+  } else if (state.revisionScreen === "detail") {
+    stageTitle.textContent = "Revision Hub";
+    stageProgress.innerHTML = '<span class="label">Practical Detail</span>';
+    stageContent.innerHTML = renderRevisionDetail();
+    stageContent.onclick = onRevisionClick;
+  }
+}
+
+/* ---- M11: Event Handler ---- */
+
+function onRevisionClick(e) {
+  var target = e.target;
+  if (target.id === "btn-rev-open") {
+    state.revisionScreen = "browsing";
+    renderCurrentStage();
+    return;
+  }
+  if (target.id === "btn-rev-back-to-menu") {
+    state.appMode = "pba";
+    state.revisionScreen = "list";
+    renderCurrentStage();
+    return;
+  }
+  if (target.id === "btn-rev-back-from-list") {
+    state.appMode = "pba";
+    state.revisionScreen = "list";
+    renderCurrentStage();
+    return;
+  }
+  if (target.classList.contains("rev-filter-btn") && target.getAttribute("data-rev-filter")) {
+    state.revisionFilter = target.getAttribute("data-rev-filter");
+    stageContent = document.getElementById("stage-content");
+    stageContent.innerHTML = renderRevisionList();
+    stageContent.onclick = onRevisionClick;
+    var sEl = document.getElementById("rev-search-input");
+    if (sEl) {
+      sEl.addEventListener("input", function() {
+        state.revisionSearch = sEl.value;
+        stageContent.innerHTML = renderRevisionList();
+        stageContent.onclick = onRevisionClick;
+        var nEl = document.getElementById("rev-search-input");
+        if (nEl) { var v = nEl.value; nEl.focus(); nEl.setSelectionRange(v.length, v.length); }
+      });
+    }
+    return;
+  }
+  if (target.classList.contains("btn-rev-view") && target.getAttribute("data-rev-id")) {
+    state.revisionSelectedId = target.getAttribute("data-rev-id");
+    state.revisionScreen = "detail";
+    renderCurrentStage();
+    return;
+  }
+  if (target.id === "btn-rev-back-from-detail") {
+    state.revisionScreen = "browsing";
+    state.revisionSelectedId = null;
+    renderCurrentStage();
+    return;
+  }
+  if (target.id === "btn-rev-start-practical" || (target.classList.contains("btn-rev-start-practical") && target.getAttribute("data-rev-start"))) {
+    var startId = target.getAttribute("data-rev-start");
+    if (startId) {
+      var expObj = revGetExpById(startId);
+      if (expObj) {
+        state.appMode = "lab";
+        state.revisionScreen = "list";
+        state.selectedExperimentId = startId;
+        state.experiment = expObj;
+        state.currentStage = "objective";
+        resetExperimentState();
+        renderCurrentStage();
+        renderSidebar();
+      }
+    }
+    return;
+  }
+}
+
+
 
 function expLogCreateFromMystery() {
   var s = state.mysterySession;
