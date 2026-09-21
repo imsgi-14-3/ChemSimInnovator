@@ -999,7 +999,7 @@ var state = {
   m7ObservationDone: false,
 
   // -- PBA Practice Mode (M8) --
-  appMode: "lab",                   // "lab" | "pba" | "mystery"
+  appMode: "pba",                   // "lab" | "pba" | "mystery"
   pbaScreen: "menu",               // "menu" | "mode_select" | "generating" | "section_a" | "section_b" | "review" | "result"
   pbaSession: null,                // { sessionId, startedAt, mode, majorQuestions, minorQuestions, answers, marks, totalMarks, submitted, timerStarted, timerElapsed }
   pbaCurrentSection: "A",          // "A" | "B"
@@ -1758,6 +1758,11 @@ function renderCurrentStage() {
     renderPBAStage();
     return;
   }
+  // Restore header/footer for all non-homepage modes
+  var header = document.getElementById("app-header");
+  var footer = document.getElementById("app-footer");
+  if (header) header.style.display = "";
+  if (footer) footer.style.display = "";
   if (state.appMode === "mystery") {
     renderMysteryStage();
     return;
@@ -1797,6 +1802,8 @@ function renderPBAStage() {
   var btnNext = document.getElementById("btn-next");
   var sidebar = document.getElementById("sidebar");
   var practicalList = document.getElementById("practical-list");
+  var header = document.getElementById("app-header");
+  var footer = document.getElementById("app-footer");
 
   sidebar.style.display = "none";
   simulationArea.classList.add("hidden");
@@ -1804,16 +1811,21 @@ function renderPBAStage() {
   feedbackArea.innerHTML = "";
 
   if (state.pbaScreen === "menu") {
+    if (header) header.style.display = "none";
+    if (footer) footer.style.display = "none";
     stageTitle.textContent = "";
     stageProgress.innerHTML = "";
     stageContent.innerHTML = renderPBAMenu();
     btnBack.style.display = "none";
     btnNext.style.display = "none";
   } else if (state.pbaScreen === "mode_select") {
+    if (header) header.style.display = "";
+    if (footer) footer.style.display = "";
     stageTitle.textContent = "PBA Practice";
     stageProgress.innerHTML = "";
     stageContent.innerHTML = renderPBAModeSelect();
-    btnBack.style.display = "none";
+    btnBack.style.display = "";
+    btnBack.textContent = "← Home";
     btnNext.style.display = "none";
   } else if (state.pbaScreen === "generating") {
     stageTitle.textContent = "Generating PBA...";
@@ -4333,7 +4345,10 @@ function onBtnNext() {
 
 function onBtnBack() {
   if (state.appMode === "pba") {
-    if (state.pbaCurrentIndex > 0) {
+    if (state.pbaScreen === "mode_select") {
+      state.pbaScreen = "menu";
+      renderCurrentStage();
+    } else if (state.pbaCurrentIndex > 0) {
       state.pbaCurrentIndex--;
       var allQ = pbaGetAllQuestions();
       state.pbaCurrentSection = allQ[state.pbaCurrentIndex].section;
