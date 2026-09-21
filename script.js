@@ -4621,7 +4621,7 @@ function onStageContentClick(e) {
       state.selectedExperimentId = expId;
       state.experiment = findExperiment(expId);
       resetExperimentState();
-      state.currentStage = state.experiment.stages[0];
+      state.currentStage = state.experiment.stages[1] || "objective";
       renderCurrentStage();
       renderSidebar();
     }
