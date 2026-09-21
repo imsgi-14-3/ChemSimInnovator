@@ -1024,7 +1024,12 @@ var state = {
   demoActive: false,                 // true when in demo flow
   demoScreen: "intro",              // "intro" | "practical" | "log" | "revision" | "mystery" | "pba" | "complete"
   demoStep: 0,                      // current step index (0-based)
-  demoPracticalFinished: false      // set true when A2 finish is detected
+  demoPracticalFinished: false,     // set true when A2 finish is detected
+
+  // -- Navigation (UI) --
+  labCategory: "all",               // "all" | "major" | "minor"
+  navHistory: [],                   // array of { appMode, pbaScreen, currentStage, selectedExperimentId, labCategory, etc. }
+  navHistoryIndex: -1               // current position in navHistory
 };
 
 /* ==============================================================
@@ -1518,25 +1523,30 @@ function onPBAClick(e) {
 
   // Main menu buttons
   if (id === "btn-enter-lab") {
+    navPush();
     state.appMode = "lab";
     state.currentStage = "select";
+    state.labCategory = "all";
     renderCurrentStage();
     renderSidebar();
     return;
   }
   if (id === "btn-enter-pba") {
+    navPush();
     state.appMode = "pba";
     state.pbaScreen = "mode_select";
     renderCurrentStage();
     return;
   }
   if (id === "btn-enter-mystery") {
+    navPush();
     state.appMode = "mystery";
     state.mysteryScreen = "menu";
     renderCurrentStage();
     return;
   }
   if (id === "btn-enter-log") {
+    navPush();
     state.appMode = "log";
     state.logScreen = "list";
     state.logDetailId = null;
@@ -1544,6 +1554,7 @@ function onPBAClick(e) {
     return;
   }
   if (id === "btn-enter-revision") {
+    navPush();
     state.appMode = "revision";
     state.revisionScreen = "list";
     state.revisionFilter = "all";
@@ -1553,6 +1564,7 @@ function onPBAClick(e) {
     return;
   }
   if (id === "btn-enter-demo") {
+    navPush();
     state.appMode = "demo";
     state.demoActive = true;
     state.demoScreen = "intro";
@@ -1756,6 +1768,8 @@ function cacheDom() {
 function renderCurrentStage() {
   if (state.appMode === "pba") {
     renderPBAStage();
+    updateHeaderTitle();
+    navUpdateButtons();
     return;
   }
   // Restore header/footer for all non-homepage modes
@@ -1765,18 +1779,26 @@ function renderCurrentStage() {
   if (footer) footer.style.display = "";
   if (state.appMode === "mystery") {
     renderMysteryStage();
+    updateHeaderTitle();
+    navUpdateButtons();
     return;
   }
   if (state.appMode === "log") {
     renderLogStage();
+    updateHeaderTitle();
+    navUpdateButtons();
     return;
   }
   if (state.appMode === "revision") {
     renderRevisionStage();
+    updateHeaderTitle();
+    navUpdateButtons();
     return;
   }
   if (state.appMode === "demo") {
     renderDemoStage();
+    updateHeaderTitle();
+    navUpdateButtons();
     return;
   }
   // Restore sidebar when in lab mode
@@ -1789,6 +1811,8 @@ function renderCurrentStage() {
   renderFeedback();
   renderButtons();
   renderSidebarActive();
+  updateHeaderTitle();
+  navUpdateButtons();
 }
 
 function renderPBAStage() {
@@ -2065,29 +2089,43 @@ function renderStageContent() {
 /* ── Shared stage renderers ────────────────────── */
 
 function renderSelectContent() {
-  return '<h3>Select a Practical</h3>' +
-    '<p>Choose an experiment from the sidebar to begin.</p>' +
-    '<button class="btn btn-accent" id="btn-enter-pba-from-lab" style="margin-bottom:1rem;">PBA Practice →</button>' +
-    '<button class="btn btn-primary" id="btn-enter-mystery-from-lab" style="margin-bottom:1rem;background:#6a1b9a;">Mystery Lab →</button>' +
-    '<button class="btn btn-primary" id="btn-enter-log-from-lab" style="margin-bottom:1rem;background:#1565c0;">Experiment Log →</button>' +
-    '<button class="btn btn-primary" id="btn-enter-revision-from-lab" style="margin-bottom:1rem;background:#00695c;">Learning & Revision →</button>' +
-    '<p><strong>Major Practicals:</strong></p><ul>' +
-    '<li><strong>A1</strong> — Fractional Distillation</li>' +
-    '<li><strong>A2</strong> — Paper Chromatography</li>' +
-    '<li><strong>A3</strong> — Paper Chromatography (Pb²⁺ / Cd²⁺)</li>' +
-    '<li><strong>A4</strong> — NaOH Molarity by Titration</li>' +
-    '<li><strong>A5</strong> — Gas Detection (NH₃, CO₂, Cl₂)</li>' +
-    '</ul>' +
-    '<p><strong>Minor Practicals:</strong></p><ul>' +
-    '<li><strong>M7.1</strong> — Sublimation (Naphthalene/Sand/Salt)</li>' +
-    '<li><strong>M7.2</strong> — Flame Tests (5 Ions)</li>' +
-    '<li><strong>M7.3</strong> — CuSO₄·5H₂O Crystals</li>' +
-    '<li><strong>M7.4</strong> — Melting Point (Naphthalene)</li>' +
-    '<li><strong>M7.5</strong> — Boiling Point (Ethyl Alcohol)</li>' +
-    '<li><strong>M7.6</strong> — Metal Displacement</li>' +
-    '<li><strong>M7.7</strong> — Water Test (Anhydrous CuSO₄)</li>' +
-    '<li><strong>M7.8</strong> — Water Purity Test</li>' +
-    '</ul>';
+  if (state.labCategory === "major") return renderLabCategoryList("major");
+  if (state.labCategory === "minor") return renderLabCategoryList("minor");
+  var html = '<h3>Practical Lab</h3>';
+  html += '<p>Select a category to browse experiments.</p>';
+  html += '<div class="lab-categories">';
+  html += '<div class="lab-cat-card" id="btn-lab-major" tabindex="0" role="button" aria-label="Open Major Practicals">';
+  html += '<div class="lab-cat-icon">&#128300;</div>';
+  html += '<div class="lab-cat-title">Major Practicals</div>';
+  html += '<div class="lab-cat-desc">Distillation, Chromatography, Titration, Gas Detection.</div>';
+  html += '<div class="lab-cat-count">5 experiments &middot; Section A</div>';
+  html += '</div>';
+  html += '<div class="lab-cat-card" id="btn-lab-minor" tabindex="0" role="button" aria-label="Open Minor Practicals">';
+  html += '<div class="lab-cat-icon">&#129514;</div>';
+  html += '<div class="lab-cat-title">Minor Practicals</div>';
+  html += '<div class="lab-cat-desc">Sublimation, Flame Tests, Crystals, Melting/Boiling Point, Displacement, Water Tests.</div>';
+  html += '<div class="lab-cat-count">8 experiments &middot; Section B</div>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderLabCategoryList(category) {
+  var html = '<h3>' + (category === "major" ? "Major Practicals" : "Minor Practicals") + '</h3>';
+  html += '<p>Click an experiment to begin.</p>';
+  html += '<div class="lab-list">';
+  for (var i = 0; i < EXPERIMENTS.length; i++) {
+    var exp = EXPERIMENTS[i];
+    if (category === "major" && exp.section !== "major") continue;
+    if (category === "minor" && exp.section !== "minor") continue;
+    html += '<div class="lab-list-item" data-exp-id="' + exp.id + '" tabindex="0" role="button" aria-label="Start ' + escapeHtml(exp.title) + '">';
+    html += '<span class="lab-list-id">' + exp.id + '</span>';
+    html += '<span class="lab-list-title">' + escapeHtml(exp.title) + '</span>';
+    html += '<span class="lab-list-section">' + (exp.section === "major" ? "Major" : "Minor") + '</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
 }
 
 function renderObjectiveContent(exp) {
@@ -4242,6 +4280,7 @@ function confirmM7Ion() {
 
 function onPracticalSelect(e) {
   var id = e.currentTarget.getAttribute("data-id");
+  navPush();
   state.selectedExperimentId = id;
   state.experiment = findExperiment(id);
   var stages = getStages();
@@ -4557,29 +4596,64 @@ function handleMeasureClick(g, mx, my) {
 function onStageContentClick(e) {
   var target = e.target;
   var card = target.closest ? target.closest(".home-card") : null;
+  var labCat = target.closest ? target.closest(".lab-cat-card") : null;
+  var labItem = target.closest ? target.closest(".lab-list-item") : null;
   var id = (card && card.id) ? card.id : target.id;
+
+  // Lab category cards
+  if (labCat && labCat.id === "btn-lab-major") {
+    state.labCategory = "major";
+    renderCurrentStage();
+    return;
+  }
+  if (labCat && labCat.id === "btn-lab-minor") {
+    state.labCategory = "minor";
+    renderCurrentStage();
+    return;
+  }
+
+  // Lab list items — start experiment
+  if (labItem) {
+    var expId = labItem.getAttribute("data-exp-id");
+    if (expId) {
+      navPush();
+      state.appMode = "lab";
+      state.selectedExperimentId = expId;
+      state.experiment = findExperiment(expId);
+      resetExperimentState();
+      state.currentStage = state.experiment.stages[0];
+      renderCurrentStage();
+      renderSidebar();
+    }
+    return;
+  }
 
   // Main menu home cards
   if (id === "btn-enter-lab") {
+    navPush();
     state.appMode = "lab";
     state.currentStage = "select";
+    state.labCategory = "all";
     renderCurrentStage();
     renderSidebar();
     return;
   }
   if (id === "btn-enter-pba") {
+    navPush();
     state.appMode = "pba";
     state.pbaScreen = "mode_select";
     renderCurrentStage();
     return;
   }
   if (id === "btn-enter-mystery") {
+    navPush();
     state.appMode = "mystery";
     state.mysteryScreen = "menu";
     renderCurrentStage();
     return;
   }
   if (id === "btn-enter-log") {
+    navPush();
     state.appMode = "log";
     state.logScreen = "list";
     state.logDetailId = null;
@@ -4587,6 +4661,7 @@ function onStageContentClick(e) {
     return;
   }
   if (id === "btn-enter-revision") {
+    navPush();
     state.appMode = "revision";
     state.revisionScreen = "list";
     state.revisionFilter = "all";
@@ -4596,6 +4671,7 @@ function onStageContentClick(e) {
     return;
   }
   if (id === "btn-enter-demo") {
+    navPush();
     state.appMode = "demo";
     state.demoActive = true;
     state.demoScreen = "intro";
@@ -7344,6 +7420,113 @@ function demoCheckPracticalFinish() {
    SECTION 10: INITIALIZATION
    ============================================================== */
 
+/* ── Navigation (UI) ────────────────────────────── */
+
+function navSnapshot() {
+  return {
+    appMode: state.appMode,
+    pbaScreen: state.pbaScreen,
+    currentStage: state.currentStage,
+    selectedExperimentId: state.selectedExperimentId,
+    labCategory: state.labCategory,
+    mysteryScreen: state.mysteryScreen,
+    logScreen: state.logScreen,
+    logDetailId: state.logDetailId,
+    revisionScreen: state.revisionScreen,
+    revisionSelectedId: state.revisionSelectedId,
+    demoActive: state.demoActive,
+    demoScreen: state.demoScreen
+  };
+}
+
+function navRestore(snap) {
+  state.appMode = snap.appMode;
+  state.pbaScreen = snap.pbaScreen;
+  state.currentStage = snap.currentStage;
+  state.selectedExperimentId = snap.selectedExperimentId;
+  state.labCategory = snap.labCategory;
+  state.mysteryScreen = snap.mysteryScreen;
+  state.logScreen = snap.logScreen;
+  state.logDetailId = snap.logDetailId;
+  state.revisionScreen = snap.revisionScreen;
+  state.revisionSelectedId = snap.revisionSelectedId;
+  state.demoActive = snap.demoActive;
+  state.demoScreen = snap.demoScreen;
+  if (snap.selectedExperimentId) {
+    state.experiment = findExperiment(snap.selectedExperimentId);
+  } else {
+    state.experiment = null;
+  }
+}
+
+function navPush() {
+  var snap = navSnapshot();
+  state.navHistory = state.navHistory.slice(0, state.navHistoryIndex + 1);
+  state.navHistory.push(snap);
+  state.navHistoryIndex = state.navHistory.length - 1;
+  navUpdateButtons();
+}
+
+function navGoBack() {
+  if (state.navHistoryIndex <= 0) return;
+  state.navHistoryIndex--;
+  navRestore(state.navHistory[state.navHistoryIndex]);
+  renderCurrentStage();
+  if (state.appMode === "lab") renderSidebar();
+  navUpdateButtons();
+}
+
+function navGoForward() {
+  if (state.navHistoryIndex >= state.navHistory.length - 1) return;
+  state.navHistoryIndex++;
+  navRestore(state.navHistory[state.navHistoryIndex]);
+  renderCurrentStage();
+  if (state.appMode === "lab") renderSidebar();
+  navUpdateButtons();
+}
+
+function navGoHome() {
+  navPush();
+  state.appMode = "pba";
+  state.pbaScreen = "menu";
+  state.labCategory = "all";
+  state.experiment = null;
+  state.selectedExperimentId = null;
+  renderCurrentStage();
+  navUpdateButtons();
+}
+
+function navUpdateButtons() {
+  var btnBack = document.getElementById("btn-nav-back");
+  var btnFwd = document.getElementById("btn-nav-forward");
+  if (btnBack) btnBack.style.display = state.navHistoryIndex > 0 ? "" : "none";
+  if (btnFwd) btnFwd.style.display = state.navHistoryIndex < state.navHistory.length - 1 ? "" : "none";
+  if (btnBack) btnBack.disabled = state.navHistoryIndex <= 0;
+  if (btnFwd) btnFwd.disabled = state.navHistoryIndex >= state.navHistory.length - 1;
+}
+
+function updateHeaderTitle() {
+  var titleEl = document.getElementById("header-title");
+  if (!titleEl) return;
+  if (state.appMode === "lab" && state.experiment) {
+    titleEl.textContent = state.experiment.id + " — " + state.experiment.title;
+  } else if (state.appMode === "lab" && state.currentStage === "select") {
+    titleEl.textContent = "Practical Lab";
+  } else if (state.appMode === "pba") {
+    titleEl.textContent = state.pbaScreen === "menu" ? "" : "PBA Practice";
+  } else if (state.appMode === "mystery") {
+    titleEl.textContent = "Mystery Lab";
+  } else if (state.appMode === "log") {
+    titleEl.textContent = "Experiment Log";
+  } else if (state.appMode === "revision") {
+    titleEl.textContent = "Learning & Revision";
+  } else if (state.appMode === "demo") {
+    titleEl.textContent = "Demo Mode";
+  } else {
+    titleEl.textContent = "";
+  }
+}
+
 function init() {
   cacheDom();
   renderSidebar();
@@ -7354,7 +7537,7 @@ function init() {
   dom.stageContent.addEventListener("click", onStageContentClick);
   dom.stageContent.addEventListener("keydown", function(e) {
     if (e.key === "Enter" || e.key === " ") {
-      var card = e.target.closest ? e.target.closest(".home-card") : null;
+      var card = e.target.closest ? (e.target.closest(".home-card") || e.target.closest(".lab-cat-card") || e.target.closest(".lab-list-item")) : null;
       if (card) {
         e.preventDefault();
         card.click();
@@ -7362,6 +7545,15 @@ function init() {
     }
   });
   dom.userInputArea.addEventListener("click", onUserInputClick);
+  // Home button
+  var btnHome = document.getElementById("btn-home");
+  if (btnHome) btnHome.addEventListener("click", navGoHome);
+  // Nav back/forward
+  var btnNavBack = document.getElementById("btn-nav-back");
+  var btnNavFwd = document.getElementById("btn-nav-forward");
+  if (btnNavBack) btnNavBack.addEventListener("click", navGoBack);
+  if (btnNavFwd) btnNavFwd.addEventListener("click", navGoForward);
+  navUpdateButtons();
 }
 
 /* ==============================================================

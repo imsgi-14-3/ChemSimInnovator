@@ -85,16 +85,83 @@ body {
 #app-header {
   background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 50%, var(--color-primary-light) 100%);
   color: #fff;
-  padding: 1rem 2rem;
+  padding: 0.6rem 1.5rem;
   box-shadow: var(--shadow-md);
   position: relative;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
 }
 
-#app-header h1 {
-  font-size: 1.5rem;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.header-brand {
+  font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.header-center h1 {
+  font-size: 0.8rem;
+  font-weight: 400;
+  opacity: 0.85;
+  letter-spacing: 0.25px;
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  padding: 0;
+  line-height: 1;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.btn-icon:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.btn-icon:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-nav {
+  font-size: 1rem;
 }
 
 #app-header .subtitle {
@@ -804,6 +871,118 @@ body {
   #action-bar {
     gap: 0.5rem;
   }
+}
+
+/* ============================================================
+   PRACTICAL LAB CATEGORY CARDS
+   ============================================================ */
+
+.lab-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+
+.lab-cat-card {
+  background: var(--color-card);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lab-cat-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.lab-cat-card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.lab-cat-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.lab-cat-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.lab-cat-desc {
+  font-size: 0.82rem;
+  color: var(--color-text-light);
+  line-height: 1.5;
+}
+
+.lab-cat-count {
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.lab-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.lab-list-item {
+  background: var(--color-card);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.lab-list-item:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-ghost);
+  box-shadow: var(--shadow-xs);
+}
+
+.lab-list-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.lab-list-id {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  min-width: 40px;
+}
+
+.lab-list-title {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.lab-list-section {
+  font-size: 0.7rem;
+  color: var(--color-text-light);
+  margin-left: auto;
+  padding: 0.15rem 0.5rem;
+  background: var(--color-accent);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
 }
 
 /* ============================================================

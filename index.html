@@ -9,8 +9,17 @@
 <body>
   <a href="#stage-content" class="skip-link">Skip to main content</a>
   <header id="app-header">
-    <h1>ChemSim</h1>
-    <p class="subtitle">Interactive Virtual Chemistry Laboratory</p>
+    <div class="header-left">
+      <button id="btn-home" class="btn-icon" title="Home" aria-label="Return to home page">&#8962;</button>
+      <span class="header-brand">ChemSim</span>
+    </div>
+    <div class="header-center">
+      <h1 id="header-title">Interactive Virtual Chemistry Laboratory</h1>
+    </div>
+    <div class="header-right">
+      <button id="btn-nav-back" class="btn-icon btn-nav" title="Back" aria-label="Go back" style="display:none;">&#8592;</button>
+      <button id="btn-nav-forward" class="btn-icon btn-nav" title="Forward" aria-label="Go forward" style="display:none;">&#8594;</button>
+    </div>
   </header>
 
   <main id="app-main">
