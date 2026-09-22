@@ -223,6 +223,8 @@ var ChemSim = (function() {
 
     btnActionBack.style.display = idx > 0 ? '' : 'none';
     btnActionReset.style.display = appState.screen === 'experiment' ? '' : 'none';
+    var hasNext = idx < total - 1 && stage !== 'complete';
+    btnActionNext.style.display = hasNext ? '' : 'none';
 
     var isLastStage = stage === 'complete';
     var stageHtml = ExperimentScreen.renderStage(exp, stage, appState.state, appState);
