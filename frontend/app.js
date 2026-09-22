@@ -782,7 +782,11 @@ var ChemSim = (function() {
     var id = appState.experimentId;
     if (id === 'A2' || id === 'A3') {
       if (appState.currentStage === 'setup') {
+        var sim = SIMULATION_CONFIG[id];
+        sim.beaker.solventLevel = parseInt(slider.value, 10) / 100;
         st.solventPositioned = true;
+        var lbl = document.getElementById('solvent-level-val');
+        if (lbl) lbl.textContent = slider.value + '%';
         renderCanvasForStage(appState.experiment, appState.currentStage);
       }
     } else if (id === 'A4') {
