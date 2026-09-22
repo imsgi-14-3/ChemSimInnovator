@@ -190,39 +190,414 @@ var DistillationRenderer = {
     var sim = SIMULATION_CONFIG['A1'];
     if (!sim) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    this.drawStand(ctx, sim.stand);
-    this.drawClamps(ctx, sim);
-    this.drawBurner(ctx, sim.burner, state);
+    this.drawStand(ctx, sim.stand, sim);
+    this.drawMantle(ctx, sim.mantle, state);
     this.drawFlask(ctx, sim.flask, state);
     this.drawColumn(ctx, sim.column, sim.flask);
     this.drawThermometer(ctx, sim.column, state);
     this.drawCondenser(ctx, sim.condenser, state);
     this.drawReceiver(ctx, sim.receiver, state);
+    this.drawClamps(ctx, sim);
     this.drawLabels(ctx, sim);
     if (state.simulation && (state.currentStage === 'monitor' || state.currentStage === 'observe' || state.currentStage === 'collect')) {
       this.drawAnimation(ctx, sim, state, canvas);
     }
   },
 
-  drawStand: function(ctx, s) {
+  drawStand: function(ctx, s, sim) {
     ctx.save();
-    ctx.fillStyle = '#3a3a3a';
-    ctx.fillRect(s.baseX, s.baseY, s.baseW, 10);
-    ctx.strokeStyle = '#2a2a2a';
+    var baseG = ctx.createLinearGradient(s.baseX, 0, s.baseX + s.baseW, 0);
+    baseG.addColorStop(0, '#2a2a2a');
+    baseG.addColorStop(0.3, '#444');
+    baseG.addColorStop(0.5, '#555');
+    baseG.addColorStop(0.7, '#444');
+    baseG.addColorStop(1, '#2a2a2a');
+    ctx.fillStyle = baseG;
+    ctx.fillRect(s.baseX, s.baseY, s.baseW, 12);
+    ctx.strokeStyle = '#1a1a1a';
     ctx.lineWidth = 1;
-    ctx.strokeRect(s.baseX, s.baseY, s.baseW, 10);
-    var g = ctx.createLinearGradient(s.rodX - 3, 0, s.rodX + 3, 0);
-    g.addColorStop(0, '#555');
-    g.addColorStop(0.4, '#aaa');
-    g.addColorStop(0.6, '#aaa');
-    g.addColorStop(1, '#555');
-    ctx.fillStyle = g;
+    ctx.strokeRect(s.baseX, s.baseY, s.baseW, 12);
+    var rodG = ctx.createLinearGradient(s.rodX - 3, 0, s.rodX + 3, 0);
+    rodG.addColorStop(0, '#666');
+    rodG.addColorStop(0.3, '#bbb');
+    rodG.addColorStop(0.5, '#ddd');
+    rodG.addColorStop(0.7, '#bbb');
+    rodG.addColorStop(1, '#666');
+    ctx.fillStyle = rodG;
     ctx.fillRect(s.rodX - 3, s.rodTop, 6, s.rodBot - s.rodTop);
-    ctx.strokeStyle = '#444';
+    ctx.strokeStyle = '#555';
     ctx.lineWidth = 0.5;
     ctx.strokeRect(s.rodX - 3, s.rodTop, 6, s.rodBot - s.rodTop);
-    ctx.fillStyle = '#666';
-    ctx.fillRect(s.rodX - 6, s.rodTop, 12, 5);
+    ctx.fillStyle = '#888';
+    ctx.fillRect(s.rodX - 5, s.rodTop, 10, 6);
+    ctx.restore();
+  },
+
+  drawMantle: function(ctx, m, state) {
+    ctx.save();
+    var cx = m.cx;
+    var left = cx - m.w / 2;
+    var top = m.cy - m.h / 2;
+    var bodyG = ctx.createLinearGradient(left, 0, left + m.w, 0);
+    bodyG.addColorStop(0, '#1a3a6a');
+    bodyG.addColorStop(0.2, '#2255a0');
+    bodyG.addColorStop(0.5, '#2a66bb');
+    bodyG.addColorStop(0.8, '#2255a0');
+    bodyG.addColorStop(1, '#1a3a6a');
+    ctx.fillStyle = bodyG;
+    ctx.beginPath();
+    ctx.moveTo(left + 8, top);
+    ctx.lineTo(left + m.w - 8, top);
+    ctx.quadraticCurveTo(left + m.w, top, left + m.w, top + 8);
+    ctx.lineTo(left + m.w, top + m.h - 4);
+    ctx.quadraticCurveTo(left + m.w, top + m.h, left + m.w - 4, top + m.h);
+    ctx.lineTo(left + 4, top + m.h);
+    ctx.quadraticCurveTo(left, top + m.h, left, top + m.h - 4);
+    ctx.lineTo(left, top + 8);
+    ctx.quadraticCurveTo(left, top, left + 8, top);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#15305a';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#c0c0c0';
+    ctx.beginPath();
+    ctx.ellipse(cx, top + 2, m.w / 2 - 4, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#f0f0f0';
+    ctx.beginPath();
+    ctx.ellipse(cx, top + 2, m.w / 2 - 8, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ddd';
+    ctx.beginPath();
+    ctx.arc(m.dialX, m.dialY, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(m.dialX, m.dialY, 4, 0, Math.PI * 2);
+    ctx.fill();
+    var angle = state.distHeating ? -0.3 : 0.8;
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(m.dialX, m.dialY);
+    ctx.lineTo(m.dialX + Math.cos(angle) * 7, m.dialY + Math.sin(angle) * 7);
+    ctx.stroke();
+    if (state.distHeating || (state.simulation && !state.simulation.done)) {
+      ctx.fillStyle = '#ff6600';
+      ctx.beginPath();
+      ctx.arc(m.dialX + 16, m.dialY - 2, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,100,0,0.3)';
+      ctx.beginPath();
+      ctx.arc(m.dialX + 16, m.dialY - 2, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  },
+
+  drawFlask: function(ctx, f, state) {
+    ctx.save();
+    var cx = f.cx;
+    var neckTop = f.cy - f.bodyR - f.neckH;
+    var neckBot = f.cy - f.bodyR;
+    var r = f.bodyR;
+    ctx.strokeStyle = 'rgba(90,130,170,0.8)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx - f.neckW / 2, neckTop);
+    ctx.lineTo(cx - f.neckW / 2, neckBot);
+    ctx.quadraticCurveTo(cx - f.neckW / 2 - 14, neckBot + 18, cx - r, f.cy);
+    ctx.arc(cx, f.cy, r, Math.PI, 0, false);
+    ctx.quadraticCurveTo(cx + f.neckW / 2 + 14, neckBot + 18, cx + f.neckW / 2, neckBot);
+    ctx.lineTo(cx + f.neckW / 2, neckTop);
+    ctx.closePath();
+    var gg = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
+    gg.addColorStop(0, 'rgba(160,200,230,0.3)');
+    gg.addColorStop(0.2, 'rgba(220,240,255,0.2)');
+    gg.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+    gg.addColorStop(0.8, 'rgba(220,240,255,0.2)');
+    gg.addColorStop(1, 'rgba(160,200,230,0.3)');
+    ctx.fillStyle = gg;
+    ctx.fill();
+    ctx.stroke();
+    var liqTop = f.cy + r * 0.15;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, f.cy, r - 3, 0, Math.PI * 2);
+    ctx.clip();
+    var lg = ctx.createLinearGradient(0, liqTop, 0, f.cy + r);
+    lg.addColorStop(0, 'rgba(255,255,255,0.15)');
+    lg.addColorStop(0.3, 'rgba(230,240,250,0.4)');
+    lg.addColorStop(1, 'rgba(200,220,240,0.5)');
+    ctx.fillStyle = lg;
+    ctx.fillRect(cx - r, liqTop, r * 2, f.cy + r - liqTop);
+    if (state.distHeating || (state.simulation && !state.simulation.done)) {
+      for (var i = 0; i < 6; i++) {
+        var bx = cx - 20 + Math.random() * 40;
+        var by = f.cy + 10 + Math.random() * (r - 20);
+        var br = 1 + Math.random() * 3;
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        ctx.arc(bx, by, br, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx - r + 14, f.cy - r * 0.5);
+    ctx.quadraticCurveTo(cx - r + 10, f.cy, cx - r + 16, f.cy + r * 0.4);
+    ctx.stroke();
+    ctx.restore();
+  },
+
+  drawColumn: function(ctx, col, flask) {
+    ctx.save();
+    var colBottom = flask.cy - flask.bodyR;
+    var colH = colBottom - col.y;
+    var gg = ctx.createLinearGradient(col.x, 0, col.x + col.width, 0);
+    gg.addColorStop(0, 'rgba(180,210,240,0.3)');
+    gg.addColorStop(0.25, 'rgba(240,248,255,0.15)');
+    gg.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+    gg.addColorStop(0.75, 'rgba(240,248,255,0.15)');
+    gg.addColorStop(1, 'rgba(180,210,240,0.3)');
+    ctx.fillStyle = gg;
+    ctx.strokeStyle = 'rgba(100,140,175,0.7)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(col.x, col.y, col.width, colH);
+    ctx.fill();
+    ctx.stroke();
+    var beadCount = Math.floor(colH / 16);
+    for (var i = 0; i < beadCount; i++) {
+      var bx = col.x + col.width / 2;
+      var by = col.y + 10 + i * 16;
+      var bg = ctx.createRadialGradient(bx - 1, by - 1, 0, bx, by, 5);
+      bg.addColorStop(0, 'rgba(255,255,255,0.7)');
+      bg.addColorStop(0.4, 'rgba(220,235,248,0.5)');
+      bg.addColorStop(0.8, 'rgba(180,200,220,0.3)');
+      bg.addColorStop(1, 'rgba(160,180,200,0.15)');
+      ctx.fillStyle = bg;
+      ctx.strokeStyle = 'rgba(140,160,180,0.35)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.arc(bx, by, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.restore();
+  },
+
+  drawThermometer: function(ctx, col, state) {
+    ctx.save();
+    var tx = col.x + col.width / 2;
+    var ty = col.y - 55;
+    var th = 75;
+    var bw = 8;
+    var bulbR = 5;
+    ctx.fillStyle = 'rgba(240,240,245,0.85)';
+    ctx.strokeStyle = 'rgba(160,160,170,0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(tx - bw / 2, ty + 4);
+    ctx.arcTo(tx - bw / 2, ty, tx, ty, 3);
+    ctx.arcTo(tx + bw / 2, ty, tx + bw / 2, ty + 4, 3);
+    ctx.lineTo(tx + bw / 2, ty + th - bulbR);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    var temp = state.distTemperature || 25;
+    var fillH = Math.min(th - bulbR - 8, (temp / 110) * (th - bulbR - 8));
+    ctx.fillStyle = '#d32f2f';
+    ctx.fillRect(tx - 1.5, ty + th - bulbR - fillH, 3, fillH);
+    ctx.beginPath();
+    ctx.arc(tx, ty + th, bulbR, 0, Math.PI * 2);
+    ctx.fillStyle = '#d32f2f';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(160,160,170,0.6)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    for (var i = 0; i <= 10; i++) {
+      var markY = ty + th - bulbR - (i / 10) * (th - bulbR - 8);
+      var markW = i % 5 === 0 ? 5 : 2.5;
+      ctx.strokeStyle = 'rgba(100,100,100,0.5)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(tx + bw / 2, markY);
+      ctx.lineTo(tx + bw / 2 + markW, markY);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(temp.toFixed(1) + ' \u00B0C', tx + 10, ty + th / 2);
+    ctx.font = '9px sans-serif';
+    ctx.fillStyle = '#999';
+    ctx.fillText('(simulated)', tx + 10, ty + th / 2 + 13);
+    if (state.distThermometerOk) {
+      ctx.fillStyle = 'rgba(40,167,69,0.85)';
+      ctx.beginPath();
+      ctx.arc(tx - 12, ty + th / 2, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('\u2713', tx - 12, ty + th / 2 + 3);
+    }
+    ctx.restore();
+  },
+
+  drawCondenser: function(ctx, cd, state) {
+    ctx.save();
+    var dx = cd.x2 - cd.x1;
+    var dy = cd.y2 - cd.y1;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    var angle = Math.atan2(dy, dx);
+    ctx.translate(cd.x1, cd.y1);
+    ctx.rotate(angle);
+    var ow = cd.width;
+    var iw = cd.innerW;
+    ctx.fillStyle = 'rgba(210,235,255,0.25)';
+    ctx.strokeStyle = 'rgba(100,160,210,0.65)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.rect(0, -ow / 2, len, ow);
+    ctx.fill();
+    ctx.stroke();
+    if (state.distCondenserOk) {
+      ctx.fillStyle = 'rgba(120,190,255,0.18)';
+      ctx.beginPath();
+      ctx.rect(2, -ow / 2 + 2, len - 4, ow - 4);
+      ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(230,240,250,0.3)';
+    ctx.strokeStyle = 'rgba(170,190,210,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.rect(8, -iw / 2, len - 16, iw);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(12, -iw / 2 + 1);
+    ctx.lineTo(len - 18, -iw / 2 + 1);
+    ctx.stroke();
+    ctx.restore();
+    if (state.distCondenserOk) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(30,120,220,0.7)';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      var hoseInX = cd.x2 - 25;
+      var hoseInY = cd.y2 + 15;
+      ctx.beginPath();
+      ctx.moveTo(hoseInX, hoseInY + 30);
+      ctx.quadraticCurveTo(hoseInX - 10, hoseInY + 15, hoseInX, hoseInY);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(30,120,220,0.6)';
+      ctx.font = '9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Cold water in', hoseInX, hoseInY + 44);
+      var hoseOutX = cd.x1 + 30;
+      var hoseOutY = cd.y1 - 15;
+      ctx.strokeStyle = 'rgba(30,120,220,0.7)';
+      ctx.beginPath();
+      ctx.moveTo(hoseOutX, hoseOutY);
+      ctx.quadraticCurveTo(hoseOutX - 15, hoseOutY - 20, hoseOutX - 10, hoseOutY - 40);
+      ctx.stroke();
+      ctx.fillText('Warm water out', hoseOutX, hoseOutY - 48);
+      ctx.restore();
+    }
+  },
+
+  drawReceiver: function(ctx, rc, state) {
+    ctx.save();
+    var cx = rc.cx;
+    var neckTop = rc.cy - rc.bodyR - rc.neckH;
+    var neckBot = rc.cy - rc.bodyR;
+    var r = rc.bodyR;
+    if (rc.type === 'erlenmeyer') {
+      ctx.strokeStyle = 'rgba(100,140,175,0.75)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - rc.neckW / 2, neckTop);
+      ctx.lineTo(cx - rc.neckW / 2, neckBot);
+      ctx.lineTo(cx - r, rc.cy + r * 0.6);
+      ctx.lineTo(cx - r + 5, rc.cy + r);
+      ctx.quadraticCurveTo(cx, rc.cy + r + 4, cx + r - 5, rc.cy + r);
+      ctx.lineTo(cx + r, rc.cy + r * 0.6);
+      ctx.lineTo(cx + rc.neckW / 2, neckBot);
+      ctx.lineTo(cx + rc.neckW / 2, neckTop);
+      ctx.closePath();
+      var gg = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
+      gg.addColorStop(0, 'rgba(180,210,240,0.25)');
+      gg.addColorStop(0.3, 'rgba(240,248,255,0.12)');
+      gg.addColorStop(0.7, 'rgba(240,248,255,0.08)');
+      gg.addColorStop(1, 'rgba(180,210,240,0.2)');
+      ctx.fillStyle = gg;
+      ctx.fill();
+      ctx.stroke();
+      if (state.distCollected) {
+        var collectH = r * 1.2;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx - r + 5, rc.cy + r);
+        ctx.quadraticCurveTo(cx, rc.cy + r + 3, cx + r - 5, rc.cy + r);
+        ctx.lineTo(cx + r, rc.cy + r * 0.6);
+        ctx.lineTo(cx - r, rc.cy + r * 0.6);
+        ctx.closePath();
+        ctx.clip();
+        var lg = ctx.createLinearGradient(0, rc.cy + r - collectH, 0, rc.cy + r + 4);
+        lg.addColorStop(0, 'rgba(180,215,250,0.35)');
+        lg.addColorStop(1, 'rgba(160,200,240,0.55)');
+        ctx.fillStyle = lg;
+        ctx.fillRect(cx - r, rc.cy + r - collectH, r * 2, collectH);
+        ctx.restore();
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - r + 12, rc.cy - r * 0.2);
+      ctx.lineTo(cx - r + 8, rc.cy + r * 0.5);
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = 'rgba(100,140,175,0.75)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - rc.neckW / 2, neckTop);
+      ctx.lineTo(cx - rc.neckW / 2, neckBot);
+      ctx.quadraticCurveTo(cx - rc.neckW / 2 - 10, neckBot + 12, cx - r, rc.cy);
+      ctx.arc(cx, rc.cy, r, Math.PI, 0, false);
+      ctx.quadraticCurveTo(cx + rc.neckW / 2 + 10, neckBot + 12, cx + rc.neckW / 2, neckBot);
+      ctx.lineTo(cx + rc.neckW / 2, neckTop);
+      ctx.closePath();
+      var gg2 = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
+      gg2.addColorStop(0, 'rgba(180,210,240,0.25)');
+      gg2.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+      gg2.addColorStop(1, 'rgba(180,210,240,0.2)');
+      ctx.fillStyle = gg2;
+      ctx.fill();
+      ctx.stroke();
+      if (state.distCollected) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, rc.cy, r - 3, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.fillStyle = 'rgba(180,215,250,0.5)';
+        ctx.fillRect(cx - r, rc.cy, r * 2, r);
+        ctx.restore();
+      }
+    }
     ctx.restore();
   },
 
@@ -238,345 +613,32 @@ var DistillationRenderer = {
     ctx.strokeRect(rodX - 3, cf.y, cf.x - rodX + 3, cf.h);
     ctx.fillRect(cf.x, cf.y, cf.w, cf.h);
     ctx.strokeRect(cf.x, cf.y, cf.w, cf.h);
+    ctx.fillRect(cf.x - 3, cf.y - 3, 6, cf.h + 6);
     ctx.fillRect(rodX - 3, cc.y, cc.x - rodX + 3, cc.h);
     ctx.strokeRect(rodX - 3, cc.y, cc.x - rodX + 3, cc.h);
     ctx.fillRect(cc.x, cc.y, cc.w, cc.h);
     ctx.strokeRect(cc.x, cc.y, cc.w, cc.h);
-    ctx.restore();
-  },
-
-  drawBurner: function(ctx, b, state) {
-    var cx = b.cx;
-    var topY = b.baseY - b.stemH;
-    ctx.save();
-    var baseG = ctx.createLinearGradient(cx - b.baseW / 2, 0, cx + b.baseW / 2, 0);
-    baseG.addColorStop(0, '#3a3a3a');
-    baseG.addColorStop(0.3, '#666');
-    baseG.addColorStop(0.5, '#777');
-    baseG.addColorStop(0.7, '#666');
-    baseG.addColorStop(1, '#3a3a3a');
-    ctx.fillStyle = baseG;
-    ctx.beginPath();
-    ctx.moveTo(cx - b.baseW / 2 + 4, b.baseY);
-    ctx.lineTo(cx + b.baseW / 2 - 4, b.baseY);
-    ctx.lineTo(cx + b.baseW / 2, b.baseY - 5);
-    ctx.lineTo(cx - b.baseW / 2, b.baseY - 5);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = '#2a2a2a';
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-    var stemG = ctx.createLinearGradient(cx - 5, 0, cx + 5, 0);
-    stemG.addColorStop(0, '#777');
-    stemG.addColorStop(0.3, '#bbb');
-    stemG.addColorStop(0.5, '#ddd');
-    stemG.addColorStop(0.7, '#bbb');
-    stemG.addColorStop(1, '#777');
-    ctx.fillStyle = stemG;
-    ctx.fillRect(cx - 5, topY + 8, 10, b.stemH - 8);
-    ctx.strokeStyle = '#666';
-    ctx.lineWidth = 0.5;
-    ctx.strokeRect(cx - 5, topY + 8, 10, b.stemH - 8);
-    ctx.fillStyle = '#999';
-    ctx.fillRect(cx - 7, topY, 14, 10);
-    ctx.strokeStyle = '#777';
-    ctx.strokeRect(cx - 7, topY, 14, 10);
-    ctx.fillStyle = 'rgba(60,60,60,0.5)';
-    ctx.fillRect(cx - 2, topY + 10, 4, b.stemH - 18);
-    if (state.distHeating || (state.simulation && !state.simulation.done)) {
-      var t = Date.now() / 80;
-      for (var i = 0; i < 8; i++) {
-        var spread = (i / 8) * 12 - 6;
-        var fx = cx + spread;
-        var fh = b.flameH * (0.3 + Math.random() * 0.7);
-        var fl = Math.sin(t + i * 1.7) * 1.5;
-        var al = 0.4 + (1 - Math.abs(spread) / 12) * 0.5;
-        if (i < 3) ctx.fillStyle = 'rgba(50,80,200,' + (al * 0.6) + ')';
-        else if (i < 5) ctx.fillStyle = 'rgba(255,180,30,' + (al * 0.8) + ')';
-        else ctx.fillStyle = 'rgba(255,255,200,' + (al * 0.5) + ')';
-        ctx.beginPath();
-        ctx.moveTo(fx, topY);
-        ctx.quadraticCurveTo(fx + fl, topY - fh * 0.5, fx + fl * 0.5, topY - fh);
-        ctx.quadraticCurveTo(fx - fl * 0.5, topY - fh * 0.5, fx, topY);
-        ctx.fill();
-      }
-    }
-    ctx.restore();
-  },
-
-  drawFlask: function(ctx, f, state) {
-    ctx.save();
-    var cx = f.cx;
-    var neckTop = f.cy - f.bodyR - f.neckH;
-    var neckBot = f.cy - f.bodyR;
-    var r = f.bodyR;
-    ctx.strokeStyle = 'rgba(90,120,150,0.85)';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(cx - f.neckW / 2, neckTop);
-    ctx.lineTo(cx - f.neckW / 2, neckBot);
-    ctx.quadraticCurveTo(cx - f.neckW / 2 - 12, neckBot + 15, cx - r, f.cy);
-    ctx.arc(cx, f.cy, r, Math.PI, 0, false);
-    ctx.quadraticCurveTo(cx + f.neckW / 2 + 12, neckBot + 15, cx + f.neckW / 2, neckBot);
-    ctx.lineTo(cx + f.neckW / 2, neckTop);
-    ctx.closePath();
-    var gg = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
-    gg.addColorStop(0, 'rgba(180,210,235,0.3)');
-    gg.addColorStop(0.25, 'rgba(230,240,250,0.2)');
-    gg.addColorStop(0.5, 'rgba(255,255,255,0.12)');
-    gg.addColorStop(0.75, 'rgba(230,240,250,0.2)');
-    gg.addColorStop(1, 'rgba(180,210,235,0.3)');
-    ctx.fillStyle = gg;
-    ctx.fill();
-    ctx.stroke();
-    var liqTop = f.cy + r * 0.1;
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(cx - f.neckW / 2 - 10, neckBot);
-    ctx.quadraticCurveTo(cx - f.neckW / 2 - 12, neckBot + 15, cx - r, f.cy);
-    ctx.arc(cx, f.cy, r, Math.PI, 0, false);
-    ctx.quadraticCurveTo(cx + f.neckW / 2 + 12, neckBot + 15, cx + f.neckW / 2 + 10, neckBot);
-    ctx.lineTo(cx + f.neckW / 2 + 10, f.cy + r);
-    ctx.lineTo(cx - f.neckW / 2 - 10, f.cy + r);
-    ctx.closePath();
-    ctx.clip();
-    var lg = ctx.createLinearGradient(0, liqTop, 0, f.cy + r);
-    lg.addColorStop(0, 'rgba(210,170,100,0.55)');
-    lg.addColorStop(0.5, 'rgba(190,140,70,0.6)');
-    lg.addColorStop(1, 'rgba(170,120,50,0.65)');
-    ctx.fillStyle = lg;
-    ctx.fillRect(cx - r, liqTop, r * 2, f.cy + r - liqTop);
-    ctx.restore();
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(cx - r + 12, f.cy - r * 0.5);
-    ctx.quadraticCurveTo(cx - r + 8, f.cy, cx - r + 14, f.cy + r * 0.4);
-    ctx.stroke();
-    ctx.restore();
-  },
-
-  drawColumn: function(ctx, col, flask) {
-    ctx.save();
-    var colBottom = flask.cy - flask.bodyR;
-    var colH = colBottom - col.y;
-    var gg = ctx.createLinearGradient(col.x, 0, col.x + col.width, 0);
-    gg.addColorStop(0, 'rgba(200,220,240,0.25)');
-    gg.addColorStop(0.3, 'rgba(255,255,255,0.12)');
-    gg.addColorStop(0.7, 'rgba(255,255,255,0.08)');
-    gg.addColorStop(1, 'rgba(200,220,240,0.2)');
-    ctx.fillStyle = gg;
-    ctx.strokeStyle = 'rgba(100,130,160,0.7)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.rect(col.x, col.y, col.width, colH);
-    ctx.fill();
-    ctx.stroke();
-    var beadCount = Math.floor(colH / 18);
-    for (var i = 0; i < beadCount; i++) {
-      var bx = col.x + 4 + (i % 3) * ((col.width - 8) / 3) + ((col.width - 8) / 6);
-      var by = col.y + 12 + i * 18;
-      var bg = ctx.createRadialGradient(bx, by, 0, bx, by, 5);
-      bg.addColorStop(0, 'rgba(255,255,255,0.6)');
-      bg.addColorStop(0.5, 'rgba(200,210,220,0.4)');
-      bg.addColorStop(1, 'rgba(180,190,200,0.2)');
-      ctx.fillStyle = bg;
-      ctx.strokeStyle = 'rgba(150,160,170,0.4)';
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.arc(bx, by, 4.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-    }
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(col.x + 5, col.y + 5);
-    ctx.lineTo(col.x + 5, colBottom - 5);
-    ctx.stroke();
-    ctx.restore();
-  },
-
-  drawThermometer: function(ctx, col, state) {
-    ctx.save();
-    var tx = col.x + col.width + 12;
-    var ty = col.y - 5;
-    var th = 70;
-    var bw = 10;
-    var bulbR = 6;
-    ctx.fillStyle = 'rgba(230,230,235,0.8)';
-    ctx.strokeStyle = 'rgba(150,150,160,0.6)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(tx - bw / 2, ty + 3);
-    ctx.arcTo(tx - bw / 2, ty, tx - bw / 2 + 3, ty, 3);
-    ctx.arcTo(tx + bw / 2, ty, tx + bw / 2, ty + 3, 3);
-    ctx.lineTo(tx + bw / 2, ty + th - bulbR);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    var temp = state.distTemperature || 25;
-    var fillH = Math.min(th - bulbR - 6, (temp / 110) * (th - bulbR - 6));
-    ctx.fillStyle = '#e63946';
-    ctx.fillRect(tx - 1.5, ty + th - bulbR - fillH, 3, fillH);
-    ctx.beginPath();
-    ctx.arc(tx, ty + th, bulbR, 0, Math.PI * 2);
-    ctx.fillStyle = '#e63946';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(150,150,160,0.6)';
-    ctx.stroke();
-    for (var i = 0; i <= 10; i++) {
-      var markY = ty + th - bulbR - (i / 10) * (th - bulbR - 6);
-      var markW = i % 5 === 0 ? 6 : 3;
-      ctx.strokeStyle = 'rgba(100,100,100,0.5)';
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.moveTo(tx + bw / 2, markY);
-      ctx.lineTo(tx + bw / 2 + markW, markY);
-      ctx.stroke();
-    }
-    ctx.fillStyle = '#333';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.fillText(temp.toFixed(1) + ' \u00B0C', tx + 14, ty + th / 2);
-    ctx.font = '9px sans-serif';
-    ctx.fillStyle = '#999';
-    ctx.fillText('(simulated)', tx + 14, ty + th / 2 + 14);
-    if (state.distThermometerOk) {
-      ctx.fillStyle = 'rgba(40,167,69,0.8)';
-      ctx.beginPath();
-      ctx.arc(tx - 14, ty + th / 2, 7, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 10px sans-serif';
-      ctx.fillText('\u2713', tx - 17.5, ty + th / 2 + 3.5);
-    }
-    ctx.restore();
-  },
-
-  drawCondenser: function(ctx, cd, state) {
-    ctx.save();
-    var dx = cd.x2 - cd.x1;
-    var dy = cd.y2 - cd.y1;
-    var len = Math.sqrt(dx * dx + dy * dy);
-    var angle = Math.atan2(dy, dx);
-    ctx.translate(cd.x1, cd.y1);
-    ctx.rotate(angle);
-    var ow = cd.width;
-    var iw = cd.innerW;
-    var wg = ctx.createLinearGradient(0, -ow / 2, 0, ow / 2);
-    wg.addColorStop(0, 'rgba(180,210,240,0.15)');
-    wg.addColorStop(0.5, 'rgba(200,225,250,0.1)');
-    wg.addColorStop(1, 'rgba(180,210,240,0.15)');
-    ctx.fillStyle = wg;
-    ctx.strokeStyle = 'rgba(100,150,200,0.6)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.rect(0, -ow / 2, len, ow);
-    ctx.fill();
-    ctx.stroke();
-    if (state.distCondenserOk) {
-      ctx.fillStyle = 'rgba(100,180,240,0.2)';
-      ctx.beginPath();
-      ctx.rect(2, -ow / 2 + 2, len - 4, ow - 4);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(70,130,200,0.5)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(0, -ow / 2);
-      ctx.lineTo(0, ow / 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo(len, -ow / 2);
-      ctx.lineTo(len, ow / 2);
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(50,120,200,0.6)';
-      ctx.font = '9px sans-serif';
-      ctx.fillText('water in', -5, -ow / 2 - 6);
-      ctx.fillText('water out', len - 25, -ow / 2 - 6);
-    }
-    ctx.fillStyle = 'rgba(220,235,245,0.3)';
-    ctx.strokeStyle = 'rgba(160,180,200,0.5)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.rect(5, -iw / 2, len - 10, iw);
-    ctx.fill();
-    ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(10, -iw / 2 + 1);
-    ctx.lineTo(len - 15, -iw / 2 + 1);
-    ctx.stroke();
-    ctx.restore();
-  },
-
-  drawReceiver: function(ctx, rc, state) {
-    ctx.save();
-    var cx = rc.cx;
-    var neckTop = rc.cy - rc.bodyR - rc.neckH;
-    var neckBot = rc.cy - rc.bodyR;
-    var r = rc.bodyR;
-    ctx.strokeStyle = 'rgba(100,130,160,0.7)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx - rc.neckW / 2, neckTop);
-    ctx.lineTo(cx - rc.neckW / 2, neckBot);
-    ctx.quadraticCurveTo(cx - rc.neckW / 2 - 8, neckBot + 12, cx - r, rc.cy);
-    ctx.arc(cx, rc.cy, r, Math.PI, 0, false);
-    ctx.quadraticCurveTo(cx + rc.neckW / 2 + 8, neckBot + 12, cx + rc.neckW / 2, neckBot);
-    ctx.lineTo(cx + rc.neckW / 2, neckTop);
-    ctx.closePath();
-    var gg = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
-    gg.addColorStop(0, 'rgba(200,220,240,0.25)');
-    gg.addColorStop(0.3, 'rgba(255,255,255,0.12)');
-    gg.addColorStop(0.7, 'rgba(255,255,255,0.08)');
-    gg.addColorStop(1, 'rgba(200,220,240,0.2)');
-    ctx.fillStyle = gg;
-    ctx.fill();
-    ctx.stroke();
-    if (state.distCollected) {
-      var collectH = r * 0.8;
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, rc.cy, r - 3, 0, Math.PI * 2);
-      ctx.clip();
-      var lg = ctx.createLinearGradient(0, rc.cy + r - collectH, 0, rc.cy + r);
-      lg.addColorStop(0, 'rgba(180,210,245,0.4)');
-      lg.addColorStop(1, 'rgba(160,195,235,0.55)');
-      ctx.fillStyle = lg;
-      ctx.fillRect(cx - r, rc.cy + r - collectH, r * 2, collectH);
-      ctx.restore();
-    }
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(cx - r + 8, rc.cy - r * 0.4);
-    ctx.lineTo(cx - r + 6, rc.cy + r * 0.4);
-    ctx.stroke();
+    ctx.fillRect(cc.x - 3, cc.y - 3, 6, cc.h + 6);
     ctx.restore();
   },
 
   drawLabels: function(ctx, sim) {
     ctx.save();
-    ctx.font = 'bold 11px sans-serif';
-    ctx.textAlign = 'center';
+    ctx.font = '11px sans-serif';
     ctx.fillStyle = 'rgba(0,0,0,0.75)';
-    ctx.fillText('Round-bottom flask', sim.flask.cx, sim.flask.cy + sim.flask.bodyR + 18);
-    ctx.fillText('Bunsen burner', sim.burner.cx, sim.burner.baseY + 22);
-    ctx.fillText('Fractionating column', sim.column.x + sim.column.width / 2, sim.column.y - 12);
-    ctx.fillText('Thermometer', sim.column.x + sim.column.width + 12, sim.column.y - 18);
+    ctx.textAlign = 'left';
+    var lx = 15;
+    ctx.fillText('Mixture of water', lx, sim.flask.cy + 10);
+    ctx.fillText('and alcohols', lx, sim.flask.cy + 24);
+    ctx.fillText('Heating mantle', lx, sim.mantle.cy + 30);
+    ctx.fillText('Fractionating', lx, sim.column.y + 80);
+    ctx.fillText('column', lx, sim.column.y + 94);
+    ctx.fillText('Thermometer', lx + 30, sim.column.y - 65);
     var cdMX = (sim.condenser.x1 + sim.condenser.x2) / 2;
     var cdMY = (sim.condenser.y1 + sim.condenser.y2) / 2;
-    var cdA = Math.atan2(sim.condenser.y2 - sim.condenser.y1, sim.condenser.x2 - sim.condenser.x1);
-    ctx.save();
-    ctx.translate(cdMX, cdMY - 16);
-    ctx.rotate(cdA);
-    ctx.fillText('Condenser', 0, 0);
-    ctx.restore();
-    ctx.fillText('Receiving flask', sim.receiver.cx, sim.receiver.cy + sim.receiver.bodyR + 18);
-    ctx.fillText('Retort stand', sim.stand.rodX, sim.stand.rodTop - 5);
+    ctx.fillText('Condenser', cdMX + 15, cdMY - 25);
+    ctx.fillText('Distillate', sim.receiver.cx + 20, sim.receiver.cy - 10);
+    ctx.fillText('(water-rich)', sim.receiver.cx + 20, sim.receiver.cy + 5);
     ctx.textAlign = 'left';
     ctx.restore();
   },
@@ -595,7 +657,7 @@ var DistillationRenderer = {
     var colBottom = sim.flask.cy - sim.flask.bodyR;
     var colH = colBottom - sim.column.y;
     var vapourY = sim.column.y + colH * (1 - progress);
-    ctx.fillStyle = 'rgba(200,220,255,0.3)';
+    ctx.fillStyle = 'rgba(200,225,255,0.3)';
     ctx.fillRect(sim.column.x + 3, vapourY, sim.column.width - 6, colBottom - vapourY);
     if (progress > 0.3) {
       var dropP = (progress - 0.3) / 0.7;
@@ -603,7 +665,7 @@ var DistillationRenderer = {
       var dy = sim.condenser.y2 - sim.condenser.y1;
       var dropX = sim.condenser.x1 + dropP * dx;
       var dropY = sim.condenser.y1 + dropP * dy;
-      ctx.fillStyle = 'rgba(180,210,240,0.6)';
+      ctx.fillStyle = 'rgba(180,215,250,0.6)';
       ctx.beginPath();
       ctx.arc(dropX, dropY, 3, 0, Math.PI * 2);
       ctx.fill();
