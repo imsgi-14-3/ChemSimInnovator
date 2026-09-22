@@ -49,18 +49,14 @@ var SIMULATION_CONFIG = {
       color: "rgba(180, 210, 240, 0.4)"
     },
     initialTemp: 25,
-    flask: {
-      x: 200, y: 350, width: 100, height: 80
-    },
-    column: {
-      x: 230, y: 180, width: 40, height: 170
-    },
-    condenser: {
-      x: 310, y: 180, width: 120, height: 25
-    },
-    receiver: {
-      x: 420, y: 260, width: 60, height: 80
-    }
+    stand: { baseX: 95, baseY: 530, baseW: 70, rodX: 130, rodTop: 50, rodBot: 530 },
+    flask: { x: 155, y: 400, width: 140, height: 110, neckW: 30, neckH: 40 },
+    burner: { x: 175, y: 520, baseW: 50, stemH: 30, flameH: 25 },
+    column: { x: 175, y: 110, width: 30, height: 290 },
+    condenser: { x1: 205, y1: 130, x2: 400, y2: 340, width: 18, innerW: 8 },
+    receiver: { x: 380, y: 400, width: 80, height: 100, neckW: 20, neckH: 30 },
+    clampFlask: { x: 125, y: 420, w: 55, h: 10 },
+    clampColumn: { x: 168, y: 250, w: 44, h: 10 }
   },
   "A4": {
     label: "SIMULATED EDUCATIONAL VALUES — not real laboratory measurements",
