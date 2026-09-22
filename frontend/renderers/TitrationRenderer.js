@@ -224,122 +224,497 @@ var TitrationRenderer = {
     if (!sim) return;
     var cw = canvas.width, ch = canvas.height;
     ctx.clearRect(0, 0, cw, ch);
-
-    var b = sim.burette;
-    var f = sim.flask;
-    var st = sim.stand;
-    var cl = sim.clamp;
-
-    this.drawStand(ctx, st);
-    this.drawClamp(ctx, cl, b);
-    this.drawBurette(ctx, b, sim, state);
-    this.drawFlask(ctx, f, sim, state);
-    this.drawLabel(ctx, b, f, state);
+    this.drawStand(ctx, sim);
+    this.drawNaOHBottle(ctx, sim);
+    this.drawHClBottle(ctx, sim);
+    this.drawIndicatorBottle(ctx, sim);
+    this.drawPipette(ctx, sim);
+    this.drawWhiteTile(ctx, sim);
+    this.drawFlask(ctx, sim, state);
+    this.drawBurette(ctx, sim, state);
+    this.drawClamp(ctx, sim);
+    this.drawStopcock(ctx, sim, state);
+    this.drawLabels(ctx, sim, state);
   },
 
-  drawStand: function(ctx, st) {
-    ctx.fillStyle = '#666';
-    ctx.fillRect(st.x, st.y, st.width, st.height);
-    ctx.fillStyle = '#888';
-    ctx.fillRect(st.x - 15, st.y + st.height - 5, st.width + 30, 8);
-  },
-
-  drawClamp: function(ctx, cl, b) {
-    ctx.fillStyle = '#555';
-    ctx.fillRect(cl.x, cl.y, cl.width, cl.height);
-    ctx.fillRect(b.x - 3, cl.y + 2, 6, cl.height - 4);
-  },
-
-  drawBurette: function(ctx, b, sim, state) {
-    ctx.fillStyle = '#e8e8e8';
-    ctx.strokeStyle = '#888';
-    ctx.lineWidth = 1.5;
-    ctx.fillRect(b.x, b.y, b.width, b.height);
-    ctx.strokeRect(b.x, b.y, b.width, b.height);
-
-    var mlToPixel = b.height / b.maxML;
-    var liquidTop = b.y + state.titrationVolume * mlToPixel;
-    ctx.fillStyle = 'rgba(180, 210, 240, 0.5)';
-    ctx.fillRect(b.x + 2, liquidTop, b.width - 4, b.y + b.height - liquidTop - 2);
-
-    ctx.strokeStyle = '#4a90d9';
-    ctx.lineWidth = 1;
+  drawStand: function(ctx, sim) {
+    var s = sim.stand;
+    ctx.save();
+    var baseGrad = ctx.createLinearGradient(s.baseX, s.baseY, s.baseX, s.baseY + s.baseH);
+    baseGrad.addColorStop(0, '#555');
+    baseGrad.addColorStop(0.5, '#444');
+    baseGrad.addColorStop(1, '#333');
+    ctx.fillStyle = baseGrad;
     ctx.beginPath();
-    ctx.moveTo(b.x + 2, liquidTop);
-    ctx.lineTo(b.x + b.width - 2, liquidTop);
-    ctx.stroke();
+    ctx.moveTo(s.baseX + 4, s.baseY);
+    ctx.lineTo(s.baseX + s.baseW - 4, s.baseY);
+    ctx.quadraticCurveTo(s.baseX + s.baseW, s.baseY, s.baseX + s.baseW, s.baseY + 4);
+    ctx.lineTo(s.baseX + s.baseW, s.baseY + s.baseH - 4);
+    ctx.quadraticCurveTo(s.baseX + s.baseW, s.baseY + s.baseH, s.baseX + s.baseW - 4, s.baseY + s.baseH);
+    ctx.lineTo(s.baseX + 4, s.baseY + s.baseH);
+    ctx.quadraticCurveTo(s.baseX, s.baseY + s.baseH, s.baseX, s.baseY + s.baseH - 4);
+    ctx.lineTo(s.baseX, s.baseY + 4);
+    ctx.quadraticCurveTo(s.baseX, s.baseY, s.baseX + 4, s.baseY);
+    ctx.closePath();
+    ctx.fill();
+    var rodGrad = ctx.createLinearGradient(s.rodX - s.rodW / 2, 0, s.rodX + s.rodW / 2, 0);
+    rodGrad.addColorStop(0, '#999');
+    rodGrad.addColorStop(0.3, '#ddd');
+    rodGrad.addColorStop(0.5, '#eee');
+    rodGrad.addColorStop(0.7, '#ccc');
+    rodGrad.addColorStop(1, '#888');
+    ctx.fillStyle = rodGrad;
+    ctx.fillRect(s.rodX - s.rodW / 2, s.rodTopY, s.rodW, s.rodBotY - s.rodTopY);
+    ctx.restore();
+  },
 
+  drawClamp: function(ctx, sim) {
+    var cl = sim.clamp;
+    var s = sim.stand;
+    ctx.save();
+    var clampGrad = ctx.createLinearGradient(cl.cx - cl.w / 2, cl.cy, cl.cx + cl.w / 2, cl.cy);
+    clampGrad.addColorStop(0, '#4477bb');
+    clampGrad.addColorStop(0.3, '#6699dd');
+    clampGrad.addColorStop(0.5, '#77aaee');
+    clampGrad.addColorStop(0.7, '#5588cc');
+    clampGrad.addColorStop(1, '#3366aa');
+    ctx.fillStyle = clampGrad;
+    ctx.beginPath();
+    ctx.moveTo(cl.cx - cl.w / 2 + 4, cl.cy - cl.h / 2);
+    ctx.lineTo(cl.cx + cl.w / 2 - 4, cl.cy - cl.h / 2);
+    ctx.quadraticCurveTo(cl.cx + cl.w / 2, cl.cy - cl.h / 2, cl.cx + cl.w / 2, cl.cy - cl.h / 2 + 4);
+    ctx.lineTo(cl.cx + cl.w / 2, cl.cy + cl.h / 2 - 4);
+    ctx.quadraticCurveTo(cl.cx + cl.w / 2, cl.cy + cl.h / 2, cl.cx + cl.w / 2 - 4, cl.cy + cl.h / 2);
+    ctx.lineTo(cl.cx - cl.w / 2 + 4, cl.cy + cl.h / 2);
+    ctx.quadraticCurveTo(cl.cx - cl.w / 2, cl.cy + cl.h / 2, cl.cx - cl.w / 2, cl.cy + cl.h / 2 - 4);
+    ctx.lineTo(cl.cx - cl.w / 2, cl.cy - cl.h / 2 + 4);
+    ctx.quadraticCurveTo(cl.cx - cl.w / 2, cl.cy - cl.h / 2, cl.cx - cl.w / 2 + 4, cl.cy - cl.h / 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#2255aa';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    var bx = sim.burette.cx;
+    ctx.fillStyle = '#555';
+    ctx.fillRect(bx - 3, cl.cy - cl.h / 2 + 2, 6, cl.h - 4);
+    ctx.restore();
+  },
+
+  drawBurette: function(ctx, sim, state) {
+    var b = sim.burette;
+    var bx = b.cx - b.w / 2;
+    var by = b.topY;
+    ctx.save();
+    var glassGrad = ctx.createLinearGradient(bx, by, bx + b.w, by);
+    glassGrad.addColorStop(0, 'rgba(180,210,240,0.25)');
+    glassGrad.addColorStop(0.15, 'rgba(220,235,250,0.12)');
+    glassGrad.addColorStop(0.5, 'rgba(255,255,255,0.06)');
+    glassGrad.addColorStop(0.85, 'rgba(220,235,250,0.12)');
+    glassGrad.addColorStop(1, 'rgba(180,210,240,0.25)');
+    ctx.fillStyle = glassGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(bx, by, b.w, b.h);
+    ctx.strokeRect(bx, by, b.w, b.h);
+    ctx.strokeStyle = 'rgba(100,140,180,0.25)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(bx + 2, by);
+    ctx.lineTo(bx + 2, by + b.h);
+    ctx.stroke();
+    var mlToPixel = b.h / b.maxML;
+    var vol = state.titrationVolume || 0;
+    var liquidTop = by + vol * mlToPixel;
+    var liquidGrad = ctx.createLinearGradient(bx, liquidTop, bx, by + b.h);
+    liquidGrad.addColorStop(0, 'rgba(100,170,230,0.4)');
+    liquidGrad.addColorStop(1, 'rgba(80,150,220,0.55)');
+    ctx.fillStyle = liquidGrad;
+    ctx.fillRect(bx + 2, liquidTop, b.w - 4, by + b.h - liquidTop - 2);
+    ctx.fillStyle = 'rgba(60,130,200,0.6)';
+    ctx.beginPath();
+    ctx.ellipse(bx + b.w / 2, liquidTop, b.w / 2 - 2, 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(60,100,140,0.6)';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'right';
     for (var ml = 0; ml <= b.maxML; ml += 5) {
-      var y = b.y + ml * mlToPixel;
-      ctx.strokeStyle = '#999';
-      ctx.lineWidth = 1;
+      var y = by + ml * mlToPixel;
+      var lw = (ml % 10 === 0) ? 10 : 5;
+      ctx.strokeStyle = 'rgba(80,110,140,0.5)';
+      ctx.lineWidth = (ml % 10 === 0) ? 1 : 0.5;
       ctx.beginPath();
-      ctx.moveTo(b.x, y);
-      ctx.lineTo(b.x + (ml % 10 === 0 ? 10 : 5), y);
+      ctx.moveTo(bx + b.w, y);
+      ctx.lineTo(bx + b.w - lw, y);
       ctx.stroke();
       if (ml % 10 === 0) {
-        ctx.fillStyle = '#666';
-        ctx.font = '9px sans-serif';
-        ctx.fillText(ml + '', b.x + 12, y + 3);
+        ctx.fillText(ml + '', bx + b.w - 13, y + 3);
       }
     }
-
-    ctx.fillStyle = '#555';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('burette (HCl)', b.x - 10, b.y - 8);
+    ctx.textAlign = 'left';
+    var tipW = 6;
+    var tipH = 18;
+    ctx.fillStyle = 'rgba(180,210,240,0.2)';
+    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(bx + b.w / 2 - tipW / 2, by + b.h, tipW, tipH);
+    ctx.strokeRect(bx + b.w / 2 - tipW / 2, by + b.h, tipW, tipH);
+    if (state.titrationVolume > 0 && vol < b.maxML) {
+      var dropY = by + b.h + tipH + 4;
+      ctx.fillStyle = 'rgba(80,160,230,0.6)';
+      ctx.beginPath();
+      ctx.ellipse(bx + b.w / 2, dropY, 2.5, 3.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
   },
 
-  drawFlask: function(ctx, f, sim, state) {
-    ctx.fillStyle = '#f0f0f0';
-    ctx.strokeStyle = '#888';
-    ctx.lineWidth = 2;
+  drawStopcock: function(ctx, sim, state) {
+    var sc = sim.stopcock;
+    var bx = sim.burette.cx;
+    var by = sim.burette.topY + sim.burette.h;
+    ctx.save();
+    ctx.fillStyle = '#eee';
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.fillRect(bx - sc.w / 2, by + 18, sc.w, sc.h);
+    ctx.strokeRect(bx - sc.w / 2, by + 18, sc.w, sc.h);
+    var knobX = bx + sc.w / 2 + 10;
+    var knobY = by + 18 + sc.h / 2;
+    ctx.fillStyle = '#4477bb';
     ctx.beginPath();
-    ctx.ellipse(f.x + f.width / 2, f.y + f.height * 0.7, f.width / 2, f.height * 0.4, 0, 0, Math.PI * 2);
+    ctx.arc(knobX, knobY, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#3366aa';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#5599dd';
+    ctx.beginPath();
+    ctx.arc(knobX - 1, knobY - 1, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  },
+
+  drawWhiteTile: function(ctx, sim) {
+    var t = sim.whiteTile;
+    ctx.save();
+    var tileGrad = ctx.createLinearGradient(t.cx - t.w / 2, t.cy, t.cx + t.w / 2, t.cy);
+    tileGrad.addColorStop(0, '#e8e8e8');
+    tileGrad.addColorStop(0.2, '#f5f5f5');
+    tileGrad.addColorStop(0.5, '#ffffff');
+    tileGrad.addColorStop(0.8, '#f0f0f0');
+    tileGrad.addColorStop(1, '#e0e0e0');
+    ctx.fillStyle = tileGrad;
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(t.cx - t.w / 2 + 3, t.cy - t.h / 2);
+    ctx.lineTo(t.cx + t.w / 2 - 3, t.cy - t.h / 2);
+    ctx.quadraticCurveTo(t.cx + t.w / 2, t.cy - t.h / 2, t.cx + t.w / 2, t.cy - t.h / 2 + 3);
+    ctx.lineTo(t.cx + t.w / 2, t.cy + t.h / 2 - 3);
+    ctx.quadraticCurveTo(t.cx + t.w / 2, t.cy + t.h / 2, t.cx + t.w / 2 - 3, t.cy + t.h / 2);
+    ctx.lineTo(t.cx - t.w / 2 + 3, t.cy + t.h / 2);
+    ctx.quadraticCurveTo(t.cx - t.w / 2, t.cy + t.h / 2, t.cx - t.w / 2, t.cy + t.h / 2 - 3);
+    ctx.lineTo(t.cx - t.w / 2, t.cy - t.h / 2 + 3);
+    ctx.quadraticCurveTo(t.cx - t.w / 2, t.cy - t.h / 2, t.cx - t.w / 2 + 3, t.cy - t.h / 2);
+    ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    ctx.fillRect(f.x + f.width * 0.3, f.y, f.width * 0.4, f.height * 0.4);
-    ctx.strokeRect(f.x + f.width * 0.3, f.y, f.width * 0.4, f.height * 0.4);
-
-    var frac = Math.min(state.titrationVolume / sim.endpointVolume, 1.2);
-    var r, g, b2;
-    if (frac < 0.85) {
-      r = 220; g = 100; b2 = 180;
-    } else if (frac < 1.0) {
-      var t = (frac - 0.85) / 0.15;
-      r = Math.round(220 - t * 200);
-      g = Math.round(100 - t * 80);
-      b2 = Math.round(180 - t * 160);
-    } else {
-      r = 255; g = 255; b2 = 255;
-    }
-    ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b2 + ', 0.6)';
-    ctx.beginPath();
-    ctx.ellipse(f.x + f.width / 2, f.y + f.height * 0.7, f.width / 2 - 3, f.height * 0.35, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#555';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('conical flask (NaOH + indicator)', f.x - 30, f.y + f.height + 15);
+    ctx.restore();
   },
 
-  drawLabel: function(ctx, b, f, state) {
-    var vol = state.titrationVolume.toFixed(2);
-    ctx.fillStyle = '#333';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('Delivered: ' + vol + ' mL', b.x + b.width + 8, b.y + b.height / 2);
+  drawFlask: function(ctx, sim, state) {
+    var f = sim.flask;
+    var fLeft = f.cx - f.bodyW / 2;
+    var fRight = f.cx + f.bodyW / 2;
+    var fBottom = f.cy + f.bodyH / 2;
+    var fShoulder = f.cy - f.bodyH / 2;
+    var neckTop = fShoulder - f.neckH;
+    ctx.save();
+    var flaskGrad = ctx.createLinearGradient(fLeft, f.cy, fRight, f.cy);
+    flaskGrad.addColorStop(0, 'rgba(180,210,240,0.22)');
+    flaskGrad.addColorStop(0.15, 'rgba(220,235,250,0.10)');
+    flaskGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+    flaskGrad.addColorStop(0.85, 'rgba(220,235,250,0.10)');
+    flaskGrad.addColorStop(1, 'rgba(180,210,240,0.22)');
+    ctx.fillStyle = flaskGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(f.cx - f.neckW / 2, neckTop);
+    ctx.lineTo(f.cx - f.neckW / 2, fShoulder);
+    ctx.lineTo(fLeft + 8, fShoulder);
+    ctx.quadraticCurveTo(fLeft, fShoulder, fLeft, fShoulder + 8);
+    ctx.lineTo(fLeft, fBottom - 8);
+    ctx.quadraticCurveTo(fLeft, fBottom, fLeft + 8, fBottom);
+    ctx.lineTo(fRight - 8, fBottom);
+    ctx.quadraticCurveTo(fRight, fBottom, fRight, fBottom - 8);
+    ctx.lineTo(fRight, fShoulder + 8);
+    ctx.quadraticCurveTo(fRight, fShoulder, fRight - 8, fShoulder);
+    ctx.lineTo(f.cx + f.neckW / 2, fShoulder);
+    ctx.lineTo(f.cx + f.neckW / 2, neckTop);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(fLeft + 6, fShoulder + 10);
+    ctx.lineTo(fLeft + 4, fBottom - 12);
+    ctx.stroke();
+    var vol = state.titrationVolume || 0;
+    var frac = Math.min(vol / sim.endpointVolume, 1.2);
+    var r, g, b2;
+    if (frac < 0.85) { r = 220; g = 80; b2 = 170; }
+    else if (frac < 1.0) { var t = (frac - 0.85) / 0.15; r = Math.round(220 - t * 200); g = Math.round(80 - t * 60); b2 = Math.round(170 - t * 150); }
+    else { r = 255; g = 255; b2 = 255; }
+    var liquidY = fBottom - 15;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(fLeft + 8, fShoulder);
+    ctx.quadraticCurveTo(fLeft, fShoulder, fLeft, fShoulder + 8);
+    ctx.lineTo(fLeft, fBottom - 8);
+    ctx.quadraticCurveTo(fLeft, fBottom, fLeft + 8, fBottom);
+    ctx.lineTo(fRight - 8, fBottom);
+    ctx.quadraticCurveTo(fRight, fBottom, fRight, fBottom - 8);
+    ctx.lineTo(fRight, fShoulder + 8);
+    ctx.quadraticCurveTo(fRight, fShoulder, fRight - 8, fShoulder);
+    ctx.closePath();
+    ctx.clip();
+    var liqGrad = ctx.createLinearGradient(fLeft, liquidY - 40, fLeft, fBottom);
+    liqGrad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b2 + ',0.35)');
+    liqGrad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b2 + ',0.55)');
+    ctx.fillStyle = liqGrad;
+    ctx.fillRect(fLeft, liquidY - 40, f.bodyW, fBottom - liquidY + 40);
+    ctx.restore();
+    ctx.fillStyle = 'rgba(80,110,140,0.4)';
     ctx.font = '9px sans-serif';
-    ctx.fillStyle = '#888';
-    ctx.fillText('(simulated)', b.x + b.width + 8, b.y + b.height / 2 + 12);
-
-    if (state.titrationEndpointReached && !state.titrationEndpointPassed) {
-      ctx.fillStyle = 'rgba(40, 167, 69, 0.7)';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText('\u2713 Endpoint reached', f.x - 20, f.y - 15);
-    } else if (state.titrationEndpointPassed) {
-      ctx.fillStyle = 'rgba(220, 53, 69, 0.7)';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText('\u2717 Endpoint passed!', f.x - 20, f.y - 15);
+    ctx.textAlign = 'right';
+    var marks = [50, 100, 150, 200, 250];
+    for (var i = 0; i < marks.length; i++) {
+      var my = fBottom - 15 - (marks[i] / 250) * (f.bodyH - 20);
+      ctx.fillRect(fRight - 15, my, 8, 0.8);
+      if (marks[i] % 100 === 0) {
+        ctx.fillRect(fRight - 22, my, 15, 0.8);
+      }
+      ctx.fillText(marks[i] + '', fRight - 25, my + 3);
     }
+    ctx.textAlign = 'left';
+    ctx.restore();
+  },
+
+  drawNaOHBottle: function(ctx, sim) {
+    var nb = sim.naohBottle;
+    this.drawReagentBottle(ctx, nb);
+  },
+
+  drawHClBottle: function(ctx, sim) {
+    var hb = sim.hclBottle;
+    this.drawReagentBottle(ctx, hb);
+  },
+
+  drawReagentBottle: function(ctx, b) {
+    var bx = b.cx - b.w / 2;
+    var by = b.cy - b.h / 2;
+    var neckW = b.w * 0.35;
+    var neckH = b.h * 0.22;
+    var bodyTop = by + neckH;
+    ctx.save();
+    var glassGrad = ctx.createLinearGradient(bx, by + 30, bx + b.w, by + 30);
+    glassGrad.addColorStop(0, 'rgba(200,215,230,0.35)');
+    glassGrad.addColorStop(0.2, 'rgba(230,242,255,0.15)');
+    glassGrad.addColorStop(0.5, 'rgba(255,255,255,0.06)');
+    glassGrad.addColorStop(0.8, 'rgba(230,242,255,0.15)');
+    glassGrad.addColorStop(1, 'rgba(200,215,230,0.35)');
+    ctx.fillStyle = glassGrad;
+    ctx.strokeStyle = 'rgba(100,130,160,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(bx + (b.w - neckW) / 2, by + 14);
+    ctx.lineTo(bx + (b.w - neckW) / 2, bodyTop);
+    ctx.lineTo(bx + 2, bodyTop + 4);
+    ctx.lineTo(bx + 2, by + b.h - 4);
+    ctx.quadraticCurveTo(bx + 2, by + b.h, bx + 8, by + b.h);
+    ctx.lineTo(bx + b.w - 8, by + b.h);
+    ctx.quadraticCurveTo(bx + b.w - 2, by + b.h, bx + b.w - 2, by + b.h - 4);
+    ctx.lineTo(bx + b.w - 2, bodyTop + 4);
+    ctx.lineTo(bx + b.w - (b.w - neckW) / 2, bodyTop);
+    ctx.lineTo(bx + b.w - (b.w - neckW) / 2, by + 14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(200,220,240,0.1)';
+    ctx.beginPath();
+    ctx.moveTo(bx + 4, bodyTop + 4);
+    ctx.lineTo(bx + 4, by + b.h - 8);
+    ctx.stroke();
+    ctx.fillStyle = b.capColor;
+    ctx.fillRect(bx + (b.w - neckW) / 2, by + 6, neckW, 10);
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(bx + (b.w - neckW) / 2, by + 6, neckW, 10);
+    ctx.fillStyle = b.capColor;
+    ctx.beginPath();
+    ctx.ellipse(bx + b.w / 2, by + 4, neckW / 2 + 2, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    var labelY = by + b.h - 28;
+    ctx.fillRect(bx + 5, labelY, b.w - 10, 24);
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(bx + 5, labelY, b.w - 10, 24);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 7px sans-serif';
+    ctx.textAlign = 'center';
+    var lines = b.label.split('\n');
+    for (var j = 0; j < lines.length; j++) {
+      ctx.fillText(lines[j], b.cx, labelY + 9 + j * 10);
+    }
+    ctx.textAlign = 'left';
+    ctx.restore();
+  },
+
+  drawIndicatorBottle: function(ctx, sim) {
+    var ib = sim.indicatorBottle;
+    var bx = ib.cx - ib.w / 2;
+    var by = ib.cy - ib.h / 2;
+    ctx.save();
+    var glassGrad = ctx.createLinearGradient(bx, by, bx + ib.w, by);
+    glassGrad.addColorStop(0, 'rgba(200,215,230,0.35)');
+    glassGrad.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+    glassGrad.addColorStop(1, 'rgba(200,215,230,0.35)');
+    ctx.fillStyle = glassGrad;
+    ctx.strokeStyle = 'rgba(100,130,160,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(bx + 6, by + 10);
+    ctx.quadraticCurveTo(bx + 2, by + 10, bx + 2, by + 16);
+    ctx.lineTo(bx + 2, by + ib.h - 4);
+    ctx.quadraticCurveTo(bx + 2, by + ib.h, bx + 8, by + ib.h);
+    ctx.lineTo(bx + ib.w - 8, by + ib.h);
+    ctx.quadraticCurveTo(bx + ib.w - 2, by + ib.h, bx + ib.w - 2, by + ib.h - 4);
+    ctx.lineTo(bx + ib.w - 2, by + 16);
+    ctx.quadraticCurveTo(bx + ib.w - 2, by + 10, bx + ib.w - 6, by + 10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(bx + 2, by + 16);
+    ctx.lineTo(bx + 2, by + ib.h - 4);
+    ctx.quadraticCurveTo(bx + 2, by + ib.h, bx + 8, by + ib.h);
+    ctx.lineTo(bx + ib.w - 8, by + ib.h);
+    ctx.quadraticCurveTo(bx + ib.w - 2, by + ib.h, bx + ib.w - 2, by + ib.h - 4);
+    ctx.lineTo(bx + ib.w - 2, by + 16);
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle = ib.liquidColor;
+    ctx.fillRect(bx, by + 22, ib.w, ib.h - 22);
+    ctx.restore();
+    ctx.fillStyle = ib.capColor;
+    ctx.beginPath();
+    ctx.moveTo(bx + 8, by + 10);
+    ctx.lineTo(bx + ib.w - 8, by + 10);
+    ctx.lineTo(bx + ib.w - 6, by + 2);
+    ctx.quadraticCurveTo(bx + ib.w / 2, by - 2, bx + 6, by + 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    var labelY = by + ib.h - 20;
+    ctx.fillRect(bx + 4, labelY, ib.w - 8, 16);
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(bx + 4, labelY, ib.w - 8, 16);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 6px sans-serif';
+    ctx.textAlign = 'center';
+    var lines = ib.label.split('\n');
+    for (var j = 0; j < lines.length; j++) {
+      ctx.fillText(lines[j], ib.cx, labelY + 7 + j * 8);
+    }
+    ctx.textAlign = 'left';
+    ctx.restore();
+  },
+
+  drawPipette: function(ctx, sim) {
+    var p = sim.pipette;
+    ctx.save();
+    var angle = Math.atan2(p.y2 - p.y1, p.x2 - p.x1);
+    var len = Math.sqrt(Math.pow(p.x2 - p.x1, 2) + Math.pow(p.y2 - p.y1, 2));
+    ctx.translate(p.x1, p.y1);
+    ctx.rotate(angle);
+    var tubeW = 4;
+    var tubeGrad = ctx.createLinearGradient(0, -tubeW, 0, tubeW);
+    tubeGrad.addColorStop(0, 'rgba(200,220,240,0.2)');
+    tubeGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+    tubeGrad.addColorStop(1, 'rgba(200,220,240,0.2)');
+    ctx.fillStyle = tubeGrad;
+    ctx.strokeStyle = 'rgba(120,160,190,0.5)';
+    ctx.lineWidth = 1;
+    ctx.fillRect(0, -tubeW / 2, len - 15, tubeW);
+    ctx.strokeRect(0, -tubeW / 2, len - 15, tubeW);
+    var tipLen = 15;
+    ctx.beginPath();
+    ctx.moveTo(len - 15, -tubeW / 2);
+    ctx.lineTo(len, -1);
+    ctx.lineTo(len, 1);
+    ctx.lineTo(len - 15, tubeW / 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    var bulbX = -18;
+    var bulbW = 14;
+    var bulbH = 10;
+    ctx.fillStyle = '#e0e0e0';
+    ctx.beginPath();
+    ctx.ellipse(bulbX + bulbW / 2, 0, bulbW / 2, bulbH / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#bbb';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    ctx.restore();
+  },
+
+  drawLabels: function(ctx, sim, state) {
+    ctx.save();
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.strokeStyle = 'rgba(26,58,106,0.85)';
+    ctx.lineWidth = 1;
+    function drawTag(text, tx, ty) {
+      var tw = ctx.measureText(text).width + 14;
+      var th = 20;
+      ctx.fillStyle = 'rgba(26,58,106,0.88)';
+      ctx.beginPath();
+      ctx.moveTo(tx + 4, ty - th / 2);
+      ctx.lineTo(tx + tw - 4, ty - th / 2);
+      ctx.quadraticCurveTo(tx + tw, ty - th / 2, tx + tw, ty - th / 2 + 4);
+      ctx.lineTo(tx + tw, ty + th / 2 - 4);
+      ctx.quadraticCurveTo(tx + tw, ty + th / 2, tx + tw - 4, ty + th / 2);
+      ctx.lineTo(tx + 4, ty + th / 2);
+      ctx.quadraticCurveTo(tx, ty + th / 2, tx, ty + th / 2 - 4);
+      ctx.lineTo(tx, ty - th / 2 + 4);
+      ctx.quadraticCurveTo(tx, ty - th / 2, tx + 4, ty - th / 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, tx + tw / 2, ty + 4);
+      ctx.textAlign = 'left';
+    }
+    drawTag('Burette (with HCl)', 365, 55);
+    drawTag('NaOH solution', 20, 355);
+    drawTag('(unknown molarity)', 20, 370);
+    drawTag('HCl solution', 110, 355);
+    drawTag('(0.100 M)', 110, 370);
+    drawTag('Conical flask', 385, 445);
+    drawTag('(with NaOH + indicator)', 385, 460);
+    drawTag('Phenolphthalein', 430, 405);
+    drawTag('indicator', 430, 420);
+    drawTag('White tile', 400, 555);
+    drawTag('Pipette', 430, 575);
+    drawTag('(for initial sample)', 430, 590);
+    ctx.restore();
   },
 
   /* Canvas Click Handling */
@@ -350,15 +725,16 @@ var TitrationRenderer = {
     if (!sim) return;
 
     if (stage === 'fillBurette' && !state.titrationBuretteFilled) {
-      var nearBurette = mx >= sim.burette.x - 20 && mx <= sim.burette.x + sim.burette.width + 20 &&
-        my >= sim.burette.y - 10 && my <= sim.burette.y + sim.burette.height + 10;
+      var nearBurette = mx >= sim.burette.cx - 30 && mx <= sim.burette.cx + 30 &&
+        my >= sim.burette.topY - 10 && my <= sim.burette.topY + sim.burette.h + 30;
       if (nearBurette) {
         state.titrationBuretteFilled = true;
       }
     }
     if (stage === 'measureSample' && !state.titrationSampleMeasured) {
-      var nearFlask = mx >= sim.flask.x - 20 && mx <= sim.flask.x + sim.flask.width + 20 &&
-        my >= sim.flask.y - 20 && my <= sim.flask.y + sim.flask.height + 20;
+      var f = sim.flask;
+      var nearFlask = mx >= f.cx - f.bodyW / 2 - 20 && mx <= f.cx + f.bodyW / 2 + 20 &&
+        my >= f.cy - f.bodyH / 2 - 20 && my <= f.cy + f.bodyH / 2 + 20;
       if (nearFlask) {
         state.titrationSampleMeasured = true;
       }

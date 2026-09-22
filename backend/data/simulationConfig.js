@@ -97,10 +97,16 @@ var SIMULATION_CONFIG = {
     ],
     meanTitre: 23.45,
     expectedMolarity: 0.0938,
-    burette: { x: 180, y: 60, width: 22, height: 340, maxML: 50 },
-    flask: { x: 160, y: 420, width: 80, height: 90 },
-    stand: { x: 170, y: 40, width: 8, height: 480 },
-    clamp: { x: 168, y: 180, width: 50, height: 10 }
+    stand: { baseX: 305, baseY: 570, baseW: 90, baseH: 18, rodX: 350, rodTopY: 30, rodBotY: 570, rodW: 8 },
+    burette: { cx: 350, topY: 30, w: 22, h: 380, maxML: 50 },
+    clamp: { cx: 350, cy: 160, w: 70, h: 14 },
+    stopcock: { cx: 350, cy: 410, w: 30, h: 10 },
+    flask: { cx: 345, cy: 510, bodyW: 100, bodyH: 80, neckW: 30, neckH: 50 },
+    whiteTile: { cx: 345, cy: 545, w: 130, h: 16 },
+    naohBottle: { cx: 80, cy: 430, w: 50, h: 95, capColor: '#2255cc', label: 'NaOH\n(unknown molarity)' },
+    hclBottle: { cx: 165, cy: 430, w: 50, h: 95, capColor: '#cc2222', label: 'HCl\n(0.100 M)' },
+    indicatorBottle: { cx: 470, cy: 470, w: 40, h: 70, capColor: '#eee', liquidColor: 'rgba(220,80,160,0.5)', label: 'Phenolphthalein\nindicator' },
+    pipette: { x1: 410, y1: 575, x2: 510, y2: 590 }
   },
   "A5": {
     label: "SIMULATED EDUCATIONAL VALUES — not real laboratory measurements",
