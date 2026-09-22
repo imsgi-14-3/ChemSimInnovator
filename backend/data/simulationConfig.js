@@ -7,16 +7,30 @@ var SIMULATION_CONFIG = {
   "A2": {
     label: "SIMULATED EDUCATIONAL VALUES — not real laboratory measurements",
     paper: {
-      width: 160,
-      height: 420,
-      baselineY: 350,
-      topY: 20
+      width: 80,
+      height: 300,
+      baselineY: 380,
+      topY: 80
     },
-    solventFrontMaxDist: 330,
+    beaker: { cx: 290, cy: 340, w: 190, h: 280, solventLevel: 0.22, rimY: 80 },
+    stick: { x: 175, y: 72, w: 230, h: 8 },
+    clip: { cx: 290, cy: 72, w: 24, h: 30 },
+    solventBeaker: { cx: 455, cy: 400, w: 80, h: 110, solventLevel: 0.5 },
+    inkBottles: [
+      { cx: 75, cy: 420, w: 40, h: 80, label: 'Black Ink', liquidColor: '#1a1a1a', capColor: '#222' },
+      { cx: 135, cy: 420, w: 40, h: 80, label: 'Blue Ink', liquidColor: '#0044cc', capColor: '#222' },
+      { cx: 195, cy: 420, w: 40, h: 80, label: 'Red Ink', liquidColor: '#cc0033', capColor: '#222' }
+    ],
+    capillary: { x1: 130, y1: 540, x2: 230, y2: 555 },
+    pencil: { x: 290, y: 548, w: 130, h: 8 },
+    ruler: { x: 380, y: 535, w: 140, h: 18 },
+    dropper: { cx: 468, cy: 340, w: 6, h: 120 },
+    solventFrontMaxDist: 250,
     animationDurationMs: 4500,
     components: [
-      { name: "Component A", color: "#cc0000", relativeRate: 0.78 },
-      { name: "Component B", color: "#0044cc", relativeRate: 0.45 }
+      { name: "Yellow dye", color: "#e6c619", relativeRate: 0.85 },
+      { name: "Blue dye", color: "#0066dd", relativeRate: 0.55 },
+      { name: "Purple dye", color: "#9933cc", relativeRate: 0.35 }
     ]
   },
   "A3": {

@@ -209,11 +209,13 @@ var ChromatographyRenderer = {
   /* Canvas Drawing */
   getGeometry: function(canvas, sim) {
     var cw = canvas.width, ch = canvas.height;
-    var paperW = sim.paper.width, paperH = sim.paper.height;
-    var paperX = (cw - paperW) / 2;
-    var paperTop = (ch - paperH) / 2;
-    var baseAbsY = paperTop + sim.paper.baselineY;
-    var topAbsY = paperTop + sim.paper.topY;
+    var bk = sim.beaker;
+    var paperW = sim.paper.width;
+    var paperH = sim.paper.height;
+    var paperX = bk.cx - paperW / 2;
+    var paperTop = bk.rimY + 20;
+    var baseAbsY = paperTop + (sim.paper.baselineY - sim.paper.topY);
+    var topAbsY = paperTop;
     return { cw: cw, ch: ch, paperW: paperW, paperH: paperH, paperX: paperX, paperTop: paperTop, baseAbsY: baseAbsY, topAbsY: topAbsY, sim: sim };
   },
 
@@ -222,9 +224,16 @@ var ChromatographyRenderer = {
     if (!sim) return;
     var g = this.getGeometry(canvas, sim);
     ctx.clearRect(0, 0, g.cw, g.ch);
-
+    this.drawBench(ctx, g);
+    this.drawInkBottles(ctx, g);
+    this.drawCapillary(ctx, g);
+    this.drawPencil(ctx, g);
+    this.drawRuler(ctx, g);
+    this.drawSmallBeaker(ctx, g);
+    this.drawLargeBeaker(ctx, g);
     this.drawPaperStrip(ctx, g);
-    this.drawBeakerBg(ctx, g);
+    this.drawStick(ctx, g);
+    this.drawClip(ctx, g);
     if (state.currentStage === 'prepare') this.drawPrepareTool(ctx, g, state);
     if (state.baselineDrawn || state.currentStage === 'baseline') this.drawBaseline(ctx, g);
     if (state.sampleApplied || state.currentStage === 'sample') this.drawSampleSpot(ctx, g);
@@ -232,40 +241,297 @@ var ChromatographyRenderer = {
     if (state.currentStage === 'run' && state.simulation) this.drawRunningSim(ctx, g, state);
     if (['observe','markFront','measure','calculate','interpret','conclude','complete'].indexOf(state.currentStage) !== -1 && state.simulation) this.drawCompletedChrom(ctx, g, state);
     if (state.currentStage === 'measure') this.drawMeasureOverlay(ctx, g, state);
+    this.drawLabels(ctx, g);
+  },
+
+  drawBench: function(ctx, g) {
+    var benchY = 500;
+    var bg = ctx.createLinearGradient(0, benchY, 0, g.ch);
+    bg.addColorStop(0, '#5a5a5a');
+    bg.addColorStop(0.02, '#4a4a4a');
+    bg.addColorStop(1, '#333');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, benchY, g.cw, g.ch - benchY);
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, benchY);
+    ctx.lineTo(g.cw, benchY);
+    ctx.stroke();
+  },
+
+  drawLargeBeaker: function(ctx, g) {
+    var bk = g.sim.beaker;
+    var bx = bk.cx - bk.w / 2;
+    var by = bk.rimY;
+    var bw = bk.w;
+    var bh = bk.h;
+    ctx.save();
+    ctx.fillStyle = 'rgba(220,235,248,0.18)';
+    ctx.strokeStyle = 'rgba(140,170,200,0.7)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(bx + 8, by);
+    ctx.lineTo(bx + bw - 8, by);
+    ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + 8);
+    ctx.lineTo(bx + bw, by + bh - 8);
+    ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - 8, by + bh);
+    ctx.lineTo(bx + 8, by + bh);
+    ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - 8);
+    ctx.lineTo(bx, by + 8);
+    ctx.quadraticCurveTo(bx, by, bx + 8, by);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    var spoutW = 20;
+    ctx.beginPath();
+    ctx.moveTo(bx + bw - 8, by);
+    ctx.lineTo(bx + bw + spoutW, by - 6);
+    ctx.lineTo(bx + bw + spoutW - 4, by + 2);
+    ctx.lineTo(bx + bw - 8, by + 4);
+    ctx.strokeStyle = 'rgba(140,170,200,0.7)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    var solY = by + bh - bk.solventLevel * bh;
+    ctx.fillStyle = 'rgba(170,210,245,0.35)';
+    ctx.beginPath();
+    ctx.moveTo(bx + 3, solY);
+    ctx.lineTo(bx + bw - 3, solY);
+    ctx.lineTo(bx + bw - 3, by + bh - 3);
+    ctx.quadraticCurveTo(bx + bw - 3, by + bh, bx + bw - 8, by + bh);
+    ctx.lineTo(bx + 8, by + bh);
+    ctx.quadraticCurveTo(bx + 3, by + bh, bx + 3, by + bh - 3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(100,160,220,0.3)';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(bx + 3, solY);
+    ctx.lineTo(bx + bw - 3, solY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(100,100,100,0.5)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    var marks = [50, 100, 150, 200, 250];
+    for (var i = 0; i < marks.length; i++) {
+      var my = by + bh - (marks[i] / 250) * bh * 0.85;
+      ctx.fillRect(bx + bw - 18, my, 12, 1);
+      if (marks[i] % 100 === 0) {
+        ctx.fillRect(bx + bw - 25, my, 18, 1);
+      }
+      ctx.fillText(marks[i] + '', bx + bw - 28, my + 3);
+    }
+    ctx.textAlign = 'left';
+    ctx.restore();
   },
 
   drawPaperStrip: function(ctx, g) {
-    ctx.fillStyle = '#ffffff';
-    ctx.strokeStyle = '#b0b0b0';
+    ctx.save();
+    ctx.fillStyle = '#f8f8f8';
+    ctx.strokeStyle = '#c0c0c0';
     ctx.lineWidth = 1;
     ctx.fillRect(g.paperX, g.paperTop, g.paperW, g.paperH);
     ctx.strokeRect(g.paperX, g.paperTop, g.paperW, g.paperH);
+    ctx.restore();
   },
 
-  drawBeakerBg: function(ctx, g) {
-    var bx = g.paperX - 35;
-    var bw = g.paperW + 70;
-    var bh = g.paperH + 50;
-    var by = g.paperTop + g.paperH - bh + 65;
-    ctx.fillStyle = '#e8edf2';
-    ctx.strokeStyle = '#9aa8b5';
-    ctx.lineWidth = 2;
-    ctx.fillRect(bx, by, bw, bh);
-    ctx.strokeRect(bx, by, bw, bh);
+  drawStick: function(ctx, g) {
+    var st = g.sim.stick;
+    ctx.save();
+    var sg = ctx.createLinearGradient(st.x, st.y, st.x, st.y + st.h);
+    sg.addColorStop(0, '#d4a853');
+    sg.addColorStop(0.3, '#e8c478');
+    sg.addColorStop(0.5, '#f0d48a');
+    sg.addColorStop(0.7, '#e8c478');
+    sg.addColorStop(1, '#c49a45');
+    ctx.fillStyle = sg;
+    ctx.fillRect(st.x, st.y, st.w, st.h);
+    ctx.strokeStyle = '#a08030';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(st.x, st.y, st.w, st.h);
+    ctx.fillStyle = '#c49a45';
+    ctx.beginPath();
+    ctx.moveTo(st.x, st.y);
+    ctx.lineTo(st.x - 10, st.y + st.h / 2);
+    ctx.lineTo(st.x, st.y + st.h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
   },
 
-  drawPrepareTool: function(ctx, g, state) {
-    if (state.prepareTool === 'pencil') {
-      ctx.fillStyle = '#555';
-      ctx.fillRect(g.paperX - 50, g.paperTop + g.paperH / 2 - 5, 40, 10);
-      ctx.fillStyle = '#333';
-      ctx.fillRect(g.paperX - 50, g.paperTop + g.paperH / 2 - 5, 8, 10);
-    } else if (state.prepareTool === 'pen') {
-      ctx.fillStyle = '#222';
-      ctx.fillRect(g.paperX - 50, g.paperTop + g.paperH / 2 - 4, 36, 8);
-      ctx.fillStyle = '#0044cc';
-      ctx.fillRect(g.paperX - 50, g.paperTop + g.paperH / 2 - 4, 6, 8);
+  drawClip: function(ctx, g) {
+    var cl = g.sim.clip;
+    var cx = cl.cx;
+    var top = cl.cy - cl.h / 2;
+    ctx.save();
+    ctx.fillStyle = '#222';
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx - cl.w / 2, top);
+    ctx.lineTo(cx + cl.w / 2, top);
+    ctx.lineTo(cx + cl.w / 2 + 4, top + cl.h * 0.4);
+    ctx.lineTo(cx + cl.w / 2, top + cl.h);
+    ctx.lineTo(cx - cl.w / 2, top + cl.h);
+    ctx.lineTo(cx - cl.w / 2 - 4, top + cl.h * 0.4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#555';
+    ctx.fillRect(cx - cl.w / 2 + 2, top + 2, cl.w - 4, 4);
+    ctx.restore();
+  },
+
+  drawInkBottles: function(ctx, g) {
+    var bottles = g.sim.inkBottles;
+    for (var i = 0; i < bottles.length; i++) {
+      var b = bottles[i];
+      var bx = b.cx - b.w / 2;
+      var by = b.cy - b.h / 2;
+      ctx.save();
+      ctx.fillStyle = 'rgba(200,220,240,0.3)';
+      ctx.strokeStyle = 'rgba(120,150,180,0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(bx + 4, by + 18);
+      ctx.lineTo(bx, by + b.h - 4);
+      ctx.quadraticCurveTo(bx, by + b.h, bx + 4, by + b.h);
+      ctx.lineTo(bx + b.w - 4, by + b.h);
+      ctx.quadraticCurveTo(bx + b.w, by + b.h, bx + b.w, by + b.h - 4);
+      ctx.lineTo(bx + b.w - 4, by + 18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      var liqTop = by + 25;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(bx + 4, by + 18);
+      ctx.lineTo(bx, by + b.h - 4);
+      ctx.quadraticCurveTo(bx, by + b.h, bx + 4, by + b.h);
+      ctx.lineTo(bx + b.w - 4, by + b.h);
+      ctx.quadraticCurveTo(bx + b.w, by + b.h, bx + b.w, by + b.h - 4);
+      ctx.lineTo(bx + b.w - 4, by + 18);
+      ctx.closePath();
+      ctx.clip();
+      ctx.fillStyle = b.liquidColor;
+      ctx.globalAlpha = 0.85;
+      ctx.fillRect(bx, liqTop, b.w, by + b.h - liqTop);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      ctx.fillStyle = b.capColor;
+      ctx.fillRect(bx + 6, by, b.w - 12, 20);
+      ctx.strokeStyle = '#111';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(bx + 6, by, b.w - 12, 20);
+      ctx.fillStyle = '#888';
+      ctx.fillRect(bx + b.w / 2 - 2, by - 8, 4, 10);
+      ctx.beginPath();
+      ctx.ellipse(bx + b.w / 2, by - 8, 5, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 7px sans-serif';
+      ctx.textAlign = 'center';
+      var lines = b.label.split(' ');
+      for (var j = 0; j < lines.length; j++) {
+        ctx.fillText(lines[j], b.cx, by + b.h - 14 + j * 10);
+      }
+      ctx.textAlign = 'left';
+      ctx.restore();
     }
+  },
+
+  drawSmallBeaker: function(ctx, g) {
+    var sb = g.sim.solventBeaker;
+    var bx = sb.cx - sb.w / 2;
+    var by = sb.cy - sb.h / 2;
+    ctx.save();
+    ctx.fillStyle = 'rgba(220,235,248,0.2)';
+    ctx.strokeStyle = 'rgba(140,170,200,0.65)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bx + 5, by);
+    ctx.lineTo(bx + sb.w - 5, by);
+    ctx.quadraticCurveTo(bx + sb.w, by, bx + sb.w, by + 5);
+    ctx.lineTo(bx + sb.w, by + sb.h - 5);
+    ctx.quadraticCurveTo(bx + sb.w, by + sb.h, bx + sb.w - 5, by + sb.h);
+    ctx.lineTo(bx + 5, by + sb.h);
+    ctx.quadraticCurveTo(bx, by + sb.h, bx, by + sb.h - 5);
+    ctx.lineTo(bx, by + 5);
+    ctx.quadraticCurveTo(bx, by, bx + 5, by);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    var solY = by + sb.h - sb.solventLevel * sb.h;
+    ctx.fillStyle = 'rgba(170,210,245,0.4)';
+    ctx.fillRect(bx + 2, solY, sb.w - 4, by + sb.h - solY - 2);
+    ctx.restore();
+  },
+
+  drawCapillary: function(ctx, g) {
+    var cp = g.sim.capillary;
+    ctx.save();
+    var angle = Math.atan2(cp.y2 - cp.y1, cp.x2 - cp.x1);
+    var len = Math.sqrt(Math.pow(cp.x2 - cp.x1, 2) + Math.pow(cp.y2 - cp.y1, 2));
+    ctx.translate(cp.x1, cp.y1);
+    ctx.rotate(angle);
+    ctx.fillStyle = 'rgba(200,225,250,0.4)';
+    ctx.strokeStyle = 'rgba(140,170,200,0.6)';
+    ctx.lineWidth = 1;
+    ctx.fillRect(0, -2, len, 4);
+    ctx.strokeRect(0, -2, len, 4);
+    ctx.restore();
+  },
+
+  drawPencil: function(ctx, g) {
+    var p = g.sim.pencil;
+    ctx.save();
+    var pg = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.h);
+    pg.addColorStop(0, '#f0c040');
+    pg.addColorStop(0.5, '#e8b830');
+    pg.addColorStop(1, '#d0a020');
+    ctx.fillStyle = pg;
+    ctx.fillRect(p.x, p.y, p.w, p.h);
+    ctx.strokeStyle = '#b08818';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(p.x, p.y, p.w, p.h);
+    ctx.fillStyle = '#f5e0a0';
+    ctx.fillRect(p.x + p.w - 22, p.y + 1, 20, p.h - 2);
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x - 10, p.y + p.h / 2);
+    ctx.lineTo(p.x, p.y + p.h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  },
+
+  drawRuler: function(ctx, g) {
+    var r = g.sim.ruler;
+    ctx.save();
+    var rg = ctx.createLinearGradient(r.x, r.y, r.x, r.y + r.h);
+    rg.addColorStop(0, '#c8c8c8');
+    rg.addColorStop(0.5, '#e0e0e0');
+    rg.addColorStop(1, '#b0b0b0');
+    ctx.fillStyle = rg;
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(r.x, r.y, r.w, r.h);
+    ctx.fillStyle = '#666';
+    ctx.font = '7px sans-serif';
+    ctx.textAlign = 'center';
+    for (var i = 0; i <= 10; i++) {
+      var mx = r.x + 8 + i * (r.w - 16) / 10;
+      var mh = i % 5 === 0 ? 6 : 3;
+      ctx.fillRect(mx, r.y, 0.5, mh);
+      if (i % 2 === 0) ctx.fillText(i + '', mx, r.y + r.h - 3);
+    }
+    ctx.textAlign = 'left';
+    ctx.restore();
   },
 
   drawBaseline: function(ctx, g) {
@@ -273,8 +539,8 @@ var ChromatographyRenderer = {
     ctx.lineWidth = 1.5;
     ctx.setLineDash([]);
     ctx.beginPath();
-    ctx.moveTo(g.paperX + 10, g.baseAbsY);
-    ctx.lineTo(g.paperX + g.paperW - 10, g.baseAbsY);
+    ctx.moveTo(g.paperX + 8, g.baseAbsY);
+    ctx.lineTo(g.paperX + g.paperW - 8, g.baseAbsY);
     ctx.stroke();
   },
 
@@ -286,22 +552,41 @@ var ChromatographyRenderer = {
     ctx.fill();
   },
 
+  drawPrepareTool: function(ctx, g, state) {
+    if (state.prepareTool === 'pencil') {
+      ctx.fillStyle = '#e8b830';
+      ctx.fillRect(g.paperX - 50, g.paperTop + g.paperH / 2 - 5, 40, 10);
+      ctx.fillStyle = '#333';
+      ctx.beginPath();
+      ctx.moveTo(g.paperX - 50, g.paperTop + g.paperH / 2 - 5);
+      ctx.lineTo(g.paperX - 60, g.paperTop + g.paperH / 2);
+      ctx.lineTo(g.paperX - 50, g.paperTop + g.paperH / 2 + 5);
+      ctx.closePath();
+      ctx.fill();
+    } else if (state.prepareTool === 'pen') {
+      ctx.fillStyle = '#222';
+      ctx.fillRect(g.paperX - 50, g.paperTop + g.paperH / 2 - 4, 36, 8);
+      ctx.fillStyle = '#0044cc';
+      ctx.fillRect(g.paperX - 50, g.paperTop + g.paperH / 2 - 4, 6, 8);
+    }
+  },
+
   drawSetupSolvent: function(ctx, g, state) {
     var slider = document.getElementById('solvent-slider');
     var val = slider ? parseInt(slider.value, 10) : 50;
-    var bx = g.paperX - 35;
-    var bw = g.paperW + 70;
-    var bh = g.paperH + 50;
-    var by = g.paperTop + g.paperH - bh + 65;
-    var solventLevel = by + bh - (val / 100) * bh * 0.4;
-    ctx.fillStyle = 'rgba(180, 210, 240, 0.5)';
-    ctx.fillRect(bx + 2, solventLevel, bw - 4, by + bh - solventLevel - 2);
-    ctx.strokeStyle = '#4a90d9';
+    var bk = g.sim.beaker;
+    var bx = bk.cx - bk.w / 2;
+    var by = bk.rimY;
+    var bh = bk.h;
+    var solY = by + bh - (val / 100) * bh * 0.4;
+    ctx.fillStyle = 'rgba(170,210,245,0.35)';
+    ctx.fillRect(bx + 3, solY, bk.w - 6, by + bh - solY - 3);
+    ctx.strokeStyle = 'rgba(100,160,220,0.6)';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([4, 3]);
     ctx.beginPath();
-    ctx.moveTo(bx + 2, solventLevel);
-    ctx.lineTo(bx + bw - 2, solventLevel);
+    ctx.moveTo(bx + 3, solY);
+    ctx.lineTo(bx + bk.w - 3, solY);
     ctx.stroke();
     ctx.setLineDash([]);
     this.drawBaseline(ctx, g);
@@ -311,8 +596,8 @@ var ChromatographyRenderer = {
     var elapsed = Date.now() - state.simulation.startTime;
     var progress = Math.min(elapsed / g.sim.animationDurationMs, 1);
     var solventFrontY = g.sim.paper.baselineY - progress * (g.sim.paper.baselineY - g.sim.paper.topY);
-    var solventAbsY = g.paperTop + solventFrontY;
-    ctx.fillStyle = 'rgba(180, 210, 240, 0.2)';
+    var solventAbsY = g.paperTop + (solventFrontY - g.sim.paper.topY);
+    ctx.fillStyle = 'rgba(170,210,245,0.2)';
     ctx.fillRect(g.paperX + 2, solventAbsY, g.paperW - 4, g.baseAbsY - solventAbsY);
     ctx.strokeStyle = 'rgba(100, 160, 220, 0.7)';
     ctx.lineWidth = 2;
@@ -339,7 +624,7 @@ var ChromatographyRenderer = {
   },
 
   drawCompletedChrom: function(ctx, g, state) {
-    ctx.fillStyle = 'rgba(180, 210, 240, 0.15)';
+    ctx.fillStyle = 'rgba(170,210,245,0.15)';
     ctx.fillRect(g.paperX + 2, g.topAbsY, g.paperW - 4, g.baseAbsY - g.topAbsY);
     if (state.solventFrontMarked || state.currentStage === 'markFront') {
       ctx.strokeStyle = 'rgba(100, 160, 220, 0.6)';
@@ -387,6 +672,26 @@ var ChromatographyRenderer = {
       ctx.stroke();
       ctx.setLineDash([]);
     }
+  },
+
+  drawLabels: function(ctx, g) {
+    ctx.save();
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.textAlign = 'left';
+    ctx.fillText('Ink samples', 55, 510);
+    ctx.fillText('Chromatography paper', g.paperX + g.paperW + 10, g.paperTop + 60);
+    ctx.fillText('Baseline', g.paperX + g.paperW + 10, g.baseAbsY + 4);
+    ctx.fillText('Separated ink', g.paperX + g.paperW + 10, g.baseAbsY - 60);
+    ctx.fillText('components', g.paperX + g.paperW + 10, g.baseAbsY - 48);
+    ctx.fillText('Wooden stick and clip', g.sim.stick.x + g.sim.stick.w / 2 - 30, g.sim.stick.y - 10);
+    ctx.fillText('Solvent', g.sim.beaker.cx + 20, g.sim.beaker.rimY + g.sim.beaker.h - 15);
+    ctx.fillText('Solvent (with dropper)', g.sim.solventBeaker.cx + 50, g.sim.solventBeaker.cy - 30);
+    ctx.fillText('Capillary tube', g.sim.capillary.x1 - 10, g.sim.capillary.y1 + 18);
+    ctx.fillText('Pencil (for baseline)', g.sim.pencil.x + 20, g.sim.pencil.y + g.sim.pencil.h + 15);
+    ctx.fillText('Ruler', g.sim.ruler.x + g.sim.ruler.w / 2 - 10, g.sim.ruler.y - 8);
+    ctx.textAlign = 'left';
+    ctx.restore();
   },
 
   /* Canvas Click Handling */
