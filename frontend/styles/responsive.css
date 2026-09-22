@@ -1,0 +1,258 @@
+/* Responsive Breakpoints */
+
+/* Desktop - Full 3-column layout (default) */
+
+/* Tablet - 1024px and below */
+@media (max-width: 1024px) {
+  .app-instruction-panel {
+    position: fixed;
+    top: 56px;
+    right: -320px;
+    bottom: 0;
+    width: 300px;
+    z-index: var(--z-dropdown);
+    box-shadow: var(--shadow-xl);
+    transition: right var(--transition-slow);
+  }
+
+  .app-instruction-panel--open {
+    right: 0;
+  }
+
+  .app-instruction-panel__overlay {
+    position: fixed;
+    inset: 0;
+    top: 56px;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: calc(var(--z-dropdown) - 1);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-base);
+  }
+
+  .app-instruction-panel__overlay--visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .app-body {
+    margin-right: 0;
+  }
+}
+
+/* Mobile - 768px and below */
+@media (max-width: 768px) {
+  .app-header {
+    height: 48px;
+    padding: 0 var(--space-3);
+  }
+
+  .app-header__experiment-info {
+    display: none;
+  }
+
+  .app-header__progress-bar {
+    width: 80px;
+  }
+
+  .app-body {
+    margin-top: 48px;
+    flex-direction: column;
+    min-height: calc(100vh - 48px);
+  }
+
+  .app-sidebar {
+    position: fixed;
+    top: 48px;
+    left: -280px;
+    bottom: 0;
+    width: 280px;
+    min-width: 280px;
+    z-index: var(--z-dropdown);
+    box-shadow: var(--shadow-xl);
+    transition: left var(--transition-slow);
+  }
+
+  .app-sidebar--open {
+    left: 0;
+  }
+
+  .app-sidebar__overlay {
+    position: fixed;
+    inset: 0;
+    top: 48px;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: calc(var(--z-dropdown) - 1);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-base);
+  }
+
+  .app-sidebar__overlay--visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .app-workspace {
+    flex: 1;
+    min-height: calc(100vh - 48px - 60px);
+  }
+
+  .app-instruction-panel {
+    position: fixed;
+    top: 48px;
+    right: -320px;
+    bottom: 60px;
+    width: 280px;
+    min-width: 280px;
+    z-index: var(--z-dropdown);
+    box-shadow: var(--shadow-xl);
+    transition: right var(--transition-slow);
+  }
+
+  .app-instruction-panel--open {
+    right: 0;
+  }
+
+  .app-action-bar {
+    height: 52px;
+    min-height: 52px;
+    padding: 0 var(--space-3);
+  }
+}
+
+/* Small - 480px and below */
+@media (max-width: 480px) {
+  :root {
+    --text-xs: 0.6875rem;
+    --text-sm: 0.75rem;
+    --text-base: 0.875rem;
+    --text-lg: 1rem;
+    --text-xl: 1.125rem;
+    --text-2xl: 1.375rem;
+    --text-3xl: 1.625rem;
+
+    --space-3: 0.625rem;
+    --space-4: 0.875rem;
+    --space-5: 1.125rem;
+    --space-6: 1.375rem;
+  }
+
+  .app-header {
+    height: 44px;
+    padding: 0 var(--space-2);
+  }
+
+  .app-header__branding {
+    font-size: var(--text-base);
+  }
+
+  .app-header__branding-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .app-body {
+    margin-top: 44px;
+    min-height: calc(100vh - 44px);
+  }
+
+  .app-sidebar {
+    top: 44px;
+    width: 260px;
+    min-width: 260px;
+  }
+
+  .app-workspace {
+    min-height: calc(100vh - 44px - 48px);
+  }
+
+  .app-instruction-panel {
+    top: 44px;
+    bottom: 48px;
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .app-action-bar {
+    height: 48px;
+    min-height: 48px;
+    padding: 0 var(--space-2);
+  }
+
+  .btn-sm {
+    height: 28px;
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-xs);
+  }
+
+  .btn-md {
+    height: 32px;
+    padding: var(--space-1) var(--space-3);
+  }
+
+  .btn-lg {
+    height: 36px;
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .card-body {
+    padding: var(--space-4);
+  }
+
+  .modal {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .modal__header {
+    padding: var(--space-4);
+  }
+
+  .modal__body {
+    padding: var(--space-4);
+  }
+
+  .modal__footer {
+    padding: var(--space-3) var(--space-4);
+    flex-direction: column;
+  }
+
+  .modal__footer .btn {
+    width: 100%;
+  }
+
+  .tool-item {
+    padding: var(--space-2);
+  }
+
+  .tool-item__icon {
+    width: 32px;
+    height: 32px;
+    font-size: var(--text-base);
+  }
+
+  .table th,
+  .table td {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-xs);
+  }
+}
+
+/* Print */
+@media print {
+  .app-header,
+  .app-sidebar,
+  .app-instruction-panel,
+  .app-action-bar {
+    display: none;
+  }
+
+  .app-body {
+    margin-top: 0;
+  }
+
+  .app-workspace {
+    width: 100%;
+  }
+}

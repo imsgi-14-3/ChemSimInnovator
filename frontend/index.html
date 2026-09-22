@@ -6,11 +6,11 @@
   <title>ChemSim — Interactive Virtual Chemistry Laboratory</title>
   
   <!-- Design System & Styles -->
-  <link rel="stylesheet" href="frontend/styles/design-system.css">
-  <link rel="stylesheet" href="frontend/styles/layout.css">
-  <link rel="stylesheet" href="frontend/styles/components.css">
-  <link rel="stylesheet" href="frontend/styles/laboratory.css">
-  <link rel="stylesheet" href="frontend/styles/responsive.css">
+  <link rel="stylesheet" href="styles/design-system.css">
+  <link rel="stylesheet" href="styles/layout.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/laboratory.css">
+  <link rel="stylesheet" href="styles/responsive.css">
 </head>
 <body>
   <div id="app">
@@ -27,9 +27,12 @@
           <span class="brand-name">ChemSim</span>
         </div>
       </div>
-      <div class="header-center" id="header-center"></div>
+      <div class="header-center" id="header-center">
+        <span class="header-experiment-title" id="header-title"></span>
+        <span class="header-experiment-id" id="header-id"></span>
+      </div>
       <div class="header-right">
-        <div class="header-progress" id="header-progress" style="display:none;">
+        <div class="header-progress" id="header-progress">
           <span class="progress-label" id="progress-label"></span>
           <div class="progress-bar-container">
             <div class="progress-bar-fill" id="progress-fill"></div>
@@ -114,50 +117,50 @@
   </div>
 
   <!-- Backend / Domain Layer -->
-  <script src="backend/data/experiments.js"></script>
-  <script src="backend/data/simulationConfig.js"></script>
-  <script src="backend/data/pbaQuestions.js"></script>
-  <script src="backend/domain/experimentEngine.js"></script>
-  <script src="backend/domain/validationEngine.js"></script>
-  <script src="backend/domain/calculationEngine.js"></script>
-  <script src="backend/domain/scoringEngine.js"></script>
-  <script src="backend/services/experimentService.js"></script>
-  <script src="backend/services/pbaService.js"></script>
-  <script src="backend/services/mysteryService.js"></script>
-  <script src="backend/services/logService.js"></script>
+  <script src="../backend/data/experiments.js"></script>
+  <script src="../backend/data/simulationConfig.js"></script>
+  <script src="../backend/data/pbaQuestions.js"></script>
+  <script src="../backend/domain/experimentEngine.js"></script>
+  <script src="../backend/domain/validationEngine.js"></script>
+  <script src="../backend/domain/calculationEngine.js"></script>
+  <script src="../backend/domain/scoringEngine.js"></script>
+  <script src="../backend/services/experimentService.js"></script>
+  <script src="../backend/services/pbaService.js"></script>
+  <script src="../backend/services/mysteryService.js"></script>
+  <script src="../backend/services/logService.js"></script>
 
   <!-- Frontend Services -->
-  <script src="frontend/services/apiClient.js"></script>
-
-  <!-- Main Application (defines ChemSim global, must load before screens) -->
-  <script src="frontend/app.js"></script>
+  <script src="services/apiClient.js"></script>
 
   <!-- Frontend Components -->
-  <script src="frontend/components/AppShell.js"></script>
-  <script src="frontend/components/Header.js"></script>
-  <script src="frontend/components/ExperimentSidebar.js"></script>
-  <script src="frontend/components/ProgressTracker.js"></script>
-  <script src="frontend/components/ToolsPanel.js"></script>
-  <script src="frontend/components/LaboratoryWorkspace.js"></script>
-  <script src="frontend/components/InstructionPanel.js"></script>
-  <script src="frontend/components/FeedbackPanel.js"></script>
-  <script src="frontend/components/ActionBar.js"></script>
+  <script src="components/AppShell.js"></script>
+  <script src="components/Header.js"></script>
+  <script src="components/ExperimentSidebar.js"></script>
+  <script src="components/ProgressTracker.js"></script>
+  <script src="components/ToolsPanel.js"></script>
+  <script src="components/LaboratoryWorkspace.js"></script>
+  <script src="components/InstructionPanel.js"></script>
+  <script src="components/FeedbackPanel.js"></script>
+  <script src="components/ActionBar.js"></script>
 
-  <!-- Frontend Screens (call ChemSim.registerScreen) -->
-  <script src="frontend/screens/HomeScreen.js"></script>
-  <script src="frontend/screens/ExperimentScreen.js"></script>
-  <script src="frontend/screens/ResultsScreen.js"></script>
-  <script src="frontend/screens/PBAScreen.js"></script>
-  <script src="frontend/screens/MysteryLabScreen.js"></script>
-  <script src="frontend/screens/LogScreen.js"></script>
-  <script src="frontend/screens/RevisionScreen.js"></script>
-  <script src="frontend/screens/DemoScreen.js"></script>
+  <!-- Frontend Screens -->
+  <script src="screens/HomeScreen.js"></script>
+  <script src="screens/ExperimentScreen.js"></script>
+  <script src="screens/ResultsScreen.js"></script>
+  <script src="screens/PBAScreen.js"></script>
+  <script src="screens/MysteryLabScreen.js"></script>
+  <script src="screens/LogScreen.js"></script>
+  <script src="screens/RevisionScreen.js"></script>
+  <script src="screens/DemoScreen.js"></script>
 
   <!-- Frontend Renderers -->
-  <script src="frontend/renderers/ChromatographyRenderer.js"></script>
-  <script src="frontend/renderers/DistillationRenderer.js"></script>
-  <script src="frontend/renderers/TitrationRenderer.js"></script>
-  <script src="frontend/renderers/GasRenderer.js"></script>
-  <script src="frontend/renderers/MinorExperimentRenderer.js"></script>
+  <script src="renderers/ChromatographyRenderer.js"></script>
+  <script src="renderers/DistillationRenderer.js"></script>
+  <script src="renderers/TitrationRenderer.js"></script>
+  <script src="renderers/GasRenderer.js"></script>
+  <script src="renderers/MinorExperimentRenderer.js"></script>
+
+  <!-- Main Application -->
+  <script src="app.js"></script>
 </body>
 </html>

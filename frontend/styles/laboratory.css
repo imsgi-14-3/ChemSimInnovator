@@ -1,0 +1,498 @@
+/* Laboratory-Specific Styles */
+
+/* Canvas Container */
+.canvas-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-4);
+}
+
+.canvas-container canvas {
+  max-width: 100%;
+  cursor: crosshair;
+  border-radius: var(--radius-sm);
+}
+
+/* Lab Workspace */
+.lab-workspace {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #e8edf2 0%, #d5dce4 100%);
+  overflow: hidden;
+}
+
+/* Lab Bench */
+.lab-bench {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(180deg, #8b7355 0%, #6d5a42 100%);
+  border-top: 3px solid #5a4a35;
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,0.15),
+    0 -2px 8px rgba(0,0,0,0.2);
+}
+
+.lab-bench::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
+}
+
+.lab-bench::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 80px,
+      rgba(0,0,0,0.03) 80px,
+      rgba(0,0,0,0.03) 82px
+    );
+}
+
+/* Lab Equipment Base */
+.lab-equipment {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform var(--transition-fast);
+}
+
+.lab-equipment--interactive {
+  cursor: pointer;
+}
+
+.lab-equipment--interactive:hover {
+  transform: translateY(-2px);
+}
+
+/* Lab Glassware */
+.lab-glassware {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.4) 0%,
+    rgba(255,255,255,0.15) 50%,
+    rgba(255,255,255,0.25) 100%
+  );
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 20px rgba(255,255,255,0.1),
+    0 2px 8px rgba(0,0,0,0.1);
+}
+
+.lab-glassware::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 30%;
+  height: 60%;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.6) 0%,
+    transparent 100%
+  );
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Lab Liquid */
+.lab-liquid {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  right: 2px;
+  border-radius: 0 0 2px 2px;
+  overflow: hidden;
+}
+
+.lab-liquid::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.3) 0%,
+    transparent 100%
+  );
+}
+
+.lab-liquid--water {
+  background: linear-gradient(180deg, rgba(66,133,244,0.5) 0%, rgba(66,133,244,0.7) 100%);
+}
+
+.lab-liquid--acid {
+  background: linear-gradient(180deg, rgba(234,67,53,0.5) 0%, rgba(234,67,53,0.7) 100%);
+}
+
+.lab-liquid--base {
+  background: linear-gradient(180deg, rgba(52,168,83,0.5) 0%, rgba(52,168,83,0.7) 100%);
+}
+
+.lab-liquid--indicator {
+  background: linear-gradient(180deg, rgba(162,93,220,0.5) 0%, rgba(162,93,220,0.7) 100%);
+}
+
+.lab-liquid--neutral {
+  background: linear-gradient(180deg, rgba(251,188,4,0.5) 0%, rgba(251,188,4,0.7) 100%);
+}
+
+/* Lab Shadow */
+.lab-shadow {
+  position: absolute;
+  bottom: -6px;
+  left: 10%;
+  right: 10%;
+  height: 6px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Lab Burner */
+.lab-burner {
+  position: relative;
+  width: 40px;
+  height: 60px;
+}
+
+.lab-burner__base {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 12px;
+  background: linear-gradient(180deg, #666 0%, #444 100%);
+  border-radius: 2px;
+}
+
+.lab-burner__stem {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 30px;
+  background: linear-gradient(90deg, #888 0%, #aaa 50%, #888 100%);
+  border-radius: 2px;
+}
+
+.lab-burner__flame {
+  position: absolute;
+  bottom: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 24px;
+  background: linear-gradient(
+    180deg,
+    #ff6b35 0%,
+    #f7c948 40%,
+    #fff7a8 80%,
+    transparent 100%
+  );
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: flame-flicker 0.15s infinite alternate;
+}
+
+.lab-burner__flame::before {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 12px;
+  background: linear-gradient(
+    180deg,
+    #4a90d9 0%,
+    #67b8f7 60%,
+    transparent 100%
+  );
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+}
+
+@keyframes flame-flicker {
+  0% {
+    transform: translateX(-50%) scaleX(1) scaleY(1);
+  }
+  50% {
+    transform: translateX(-50%) scaleX(0.95) scaleY(1.02);
+  }
+  100% {
+    transform: translateX(-50%) scaleX(1.02) scaleY(0.98);
+  }
+}
+
+/* Lab Label */
+.lab-label {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 8px;
+  background-color: rgba(255,255,255,0.9);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  box-shadow: var(--shadow-xs);
+}
+
+/* Lab Interaction */
+.lab-interaction {
+  position: relative;
+}
+
+.lab-interaction::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  transition: all var(--transition-fast);
+  pointer-events: none;
+}
+
+.lab-interaction--hoverable:hover::after {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--color-primary-50);
+}
+
+.lab-interaction--active::after {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--color-primary-100);
+  animation: interaction-pulse 1.5s infinite;
+}
+
+@keyframes interaction-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px var(--color-primary-100);
+  }
+  50% {
+    box-shadow: 0 0 0 8px var(--color-primary-50);
+  }
+}
+
+/* Lab Instruction */
+.lab-instruction {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-3);
+}
+
+.lab-instruction__step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.lab-instruction__step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lab-instruction__step-title {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.lab-instruction__text {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* Lab Feedback */
+.lab-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  animation: feedback-slide-in 0.3s ease;
+}
+
+@keyframes feedback-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lab-feedback--success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid rgba(13, 158, 95, 0.2);
+}
+
+.lab-feedback--error {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.lab-feedback--warning {
+  background-color: var(--color-warning-bg);
+  color: #b8860b;
+  border: 1px solid rgba(240, 173, 78, 0.3);
+}
+
+.lab-feedback--info {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+  border: 1px solid rgba(74, 144, 217, 0.2);
+}
+
+/* Tools Panel */
+.tools-panel {
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border-light);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tools-panel__header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border-light);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.tools-panel__section {
+  padding: var(--space-3) var(--space-4);
+}
+
+.tools-panel__section-title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
+}
+
+.tools-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Instruction Card */
+.instruction-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.instruction-card--active {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-50), var(--shadow-sm);
+}
+
+.instruction-card--completed {
+  opacity: 0.75;
+}
+
+.instruction-card__header {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg);
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.instruction-card__number {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-border);
+  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.instruction-card--active .instruction-card__number {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.instruction-card--completed .instruction-card__number {
+  background-color: var(--color-success);
+  color: #ffffff;
+}
+
+.instruction-card__title {
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.instruction-card__body {
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.instruction-card__hint {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-info-bg);
+  border-top: 1px solid var(--color-border-light);
+  font-size: var(--text-xs);
+  color: var(--color-info);
+}

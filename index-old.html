@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChemSim — Interactive Virtual Chemistry Laboratory</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header id="app-header">
+    <h1>ChemSim</h1>
+    <p class="subtitle">Interactive Virtual Chemistry Laboratory</p>
+  </header>
+
+  <main id="app-main">
+    <div id="sidebar">
+      <h2>Experiments</h2>
+      <ul id="practical-list"></ul>
+    </div>
+
+    <div id="workspace">
+      <div id="stage-header">
+        <h2 id="stage-title"></h2>
+        <div id="stage-progress"></div>
+      </div>
+
+      <div id="stage-content"></div>
+
+      <div id="simulation-area">
+        <canvas id="sim-canvas" width="500" height="600"></canvas>
+      </div>
+
+      <div id="feedback-area"></div>
+      <div id="user-input-area"></div>
+
+      <div id="action-bar">
+        <button id="btn-back" class="btn btn-secondary" style="display:none;">Back</button>
+        <button id="btn-next" class="btn btn-primary" style="display:none;">Next</button>
+      </div>
+    </div>
+  </main>
+
+  <footer id="app-footer">
+    <p>ChemSim — Educational Simulation</p>
+    <p class="disclaimer">Simulated values are for educational purposes only and are not real laboratory measurements.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
