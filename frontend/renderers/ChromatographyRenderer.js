@@ -69,9 +69,9 @@ var ChromatographyRenderer = {
     html += '<p>Key conditions:</p>';
     html += '<ul><li>The solvent level must be <strong>below</strong> the baseline.</li>';
     html += '<li>The paper must not touch the walls of the beaker.</li></ul>';
-    html += '<div class="form-group"><label class="form-label">Solvent Level</label>';
-    html += '<input type="range" id="solvent-slider" min="0" max="100" value="' + (state.solventPositioned ? '20' : '80') + '" class="form-range">';
-    html += '<p class="text-sm text-secondary">Adjust so solvent level is below the baseline (dashed line).</p></div>';
+    html += '<div class="form-group"><label class="form-label">Solvent Level: <strong id="solvent-level-val">' + (state.solventPositioned ? '20' : '80') + '%</strong></label>';
+    html += '<input type="range" id="solvent-slider" min="5" max="95" value="' + (state.solventPositioned ? '20' : '80') + '" class="form-range">';
+    html += '<p class="text-sm text-secondary">Slide to adjust solvent level below the baseline.</p></div>';
     if (state.feedback === 'solvent_above_baseline') {
       html += '<div class="feedback feedback-incorrect">The solvent level is above the baseline. Lower the solvent level.</div>';
     }
@@ -225,7 +225,11 @@ var ChromatographyRenderer = {
     var g = this.getGeometry(canvas, sim);
     if (state.currentStage === 'setup') {
       var slider = document.getElementById('solvent-slider');
-      if (slider) sim.beaker.solventLevel = parseInt(slider.value, 10) / 100;
+      if (slider) {
+        sim.beaker.solventLevel = parseInt(slider.value, 10) / 100;
+        var lbl = document.getElementById('solvent-level-val');
+        if (lbl) lbl.textContent = slider.value + '%';
+      }
     }
     ctx.clearRect(0, 0, g.cw, g.ch);
     this.drawInkBottles(ctx, g);
@@ -245,7 +249,7 @@ var ChromatographyRenderer = {
     if (['observe','markFront','measure','calculate','interpret','conclude','complete'].indexOf(state.currentStage) !== -1 && state.simulation) this.drawCompletedChrom(ctx, g, state);
     if (state.currentStage === 'measure') this.drawMeasureOverlay(ctx, g, state);
     this.drawLabels(ctx, g);
-    if (state.currentStage === 'setup') {
+    if (state.currentStage === 'setup' || state.currentStage === 'run') {
       var self = this;
       requestAnimationFrame(function() { self.draw(canvas, ctx, state, exp); });
     }
@@ -463,8 +467,14 @@ var ChromatographyRenderer = {
     var bx = sb.cx - sb.w / 2;
     var by = sb.cy - sb.h / 2;
     ctx.save();
-    ctx.fillStyle = 'rgba(215,230,245,0.2)';
-    ctx.strokeStyle = 'rgba(130,160,195,0.65)';
+    var gg = ctx.createLinearGradient(bx, 0, bx + sb.w, 0);
+    gg.addColorStop(0, 'rgba(200,220,240,0.25)');
+    gg.addColorStop(0.15, 'rgba(230,242,255,0.12)');
+    gg.addColorStop(0.5, 'rgba(255,255,255,0.06)');
+    gg.addColorStop(0.85, 'rgba(230,242,255,0.12)');
+    gg.addColorStop(1, 'rgba(200,220,240,0.25)');
+    ctx.fillStyle = gg;
+    ctx.strokeStyle = 'rgba(120,155,190,0.7)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(bx + 5, by);
@@ -480,56 +490,85 @@ var ChromatographyRenderer = {
     ctx.fill();
     ctx.stroke();
     var solY = by + sb.h - sb.solventLevel * sb.h;
-    ctx.fillStyle = 'rgba(165,205,240,0.4)';
-    ctx.fillRect(bx + 2, solY, sb.w - 4, by + sb.h - solY - 2);
-    ctx.strokeStyle = 'rgba(200,200,200,0.3)';
-    ctx.lineWidth = 0.8;
+    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(bx + 5, by + 4);
-    ctx.lineTo(bx + 3, by + sb.h - 8);
+    ctx.moveTo(bx + 5, by);
+    ctx.lineTo(bx + sb.w - 5, by);
+    ctx.quadraticCurveTo(bx + sb.w, by, bx + sb.w, by + 5);
+    ctx.lineTo(bx + sb.w, by + sb.h - 5);
+    ctx.quadraticCurveTo(bx + sb.w, by + sb.h, bx + sb.w - 5, by + sb.h);
+    ctx.lineTo(bx + 5, by + sb.h);
+    ctx.quadraticCurveTo(bx, by + sb.h, bx, by + sb.h - 5);
+    ctx.lineTo(bx, by + 5);
+    ctx.quadraticCurveTo(bx, by, bx + 5, by);
+    ctx.closePath();
+    ctx.clip();
+    var sg = ctx.createLinearGradient(0, solY, 0, by + sb.h);
+    sg.addColorStop(0, 'rgba(160,200,240,0.35)');
+    sg.addColorStop(1, 'rgba(140,185,230,0.5)');
+    ctx.fillStyle = sg;
+    ctx.fillRect(bx, solY, sb.w, by + sb.h - solY);
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(bx + 6, by + 5);
+    ctx.lineTo(bx + 4, by + sb.h - 10);
     ctx.stroke();
+    for (var i = 1; i <= 3; i++) {
+      var my = by + sb.h - (i / 4) * sb.h * 0.8;
+      ctx.strokeStyle = 'rgba(100,130,160,0.3)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(bx + sb.w - 10, my);
+      ctx.lineTo(bx + sb.w - 4, my);
+      ctx.stroke();
+    }
     var spoutW = 12;
     ctx.beginPath();
     ctx.moveTo(bx + sb.w - 5, by);
     ctx.lineTo(bx + sb.w + spoutW, by - 5);
     ctx.lineTo(bx + sb.w + spoutW - 3, by + 2);
     ctx.lineTo(bx + sb.w - 5, by + 3);
-    ctx.strokeStyle = 'rgba(130,160,195,0.65)';
+    ctx.strokeStyle = 'rgba(120,155,190,0.7)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
     var dp = g.sim.dropper;
     if (dp) {
       var dx = dp.cx;
-      var dpTop = by - 25;
-      var dpGlassTop = by - 5;
-      var dpGlassBot = by + sb.h * 0.55;
-      ctx.fillStyle = '#e8e8e8';
+      var bulbTop = by - 28;
+      var bulbBot = by - 8;
+      var glassTop = by - 5;
+      var glassBot = by + sb.h * 0.5;
+      ctx.fillStyle = '#e0e0e0';
       ctx.beginPath();
-      ctx.ellipse(dx, dpTop + 8, 8, 10, 0, 0, Math.PI * 2);
+      ctx.ellipse(dx, bulbBot - 6, 9, 12, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#ccc';
+      ctx.strokeStyle = '#bbb';
       ctx.lineWidth = 0.8;
       ctx.stroke();
-      ctx.fillStyle = '#d0d0d0';
+      ctx.fillStyle = '#d5d5d5';
       ctx.beginPath();
-      ctx.ellipse(dx, dpTop + 5, 6, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(dx, bulbBot - 10, 7, 7, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = 'rgba(200,220,240,0.35)';
-      ctx.strokeStyle = 'rgba(130,160,195,0.5)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#c0c0c0';
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(195,215,238,0.4)';
+      ctx.strokeStyle = 'rgba(120,155,190,0.55)';
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.moveTo(dx - 2.5, dpGlassTop);
-      ctx.lineTo(dx - 2.5, dpGlassBot);
-      ctx.quadraticCurveTo(dx, dpGlassBot + 4, dx + 2.5, dpGlassBot);
-      ctx.lineTo(dx + 2.5, dpGlassTop);
+      ctx.moveTo(dx - 2.5, glassTop);
+      ctx.lineTo(dx - 2.5, glassBot - 3);
+      ctx.quadraticCurveTo(dx, glassBot + 3, dx + 2.5, glassBot - 3);
+      ctx.lineTo(dx + 2.5, glassTop);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
       ctx.strokeStyle = 'rgba(255,255,255,0.4)';
       ctx.lineWidth = 0.8;
       ctx.beginPath();
-      ctx.moveTo(dx - 1, dpGlassTop + 2);
-      ctx.lineTo(dx - 1, dpGlassBot - 5);
+      ctx.moveTo(dx - 1, glassTop + 3);
+      ctx.lineTo(dx - 1, glassBot - 8);
       ctx.stroke();
     }
     ctx.restore();
