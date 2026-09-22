@@ -223,8 +223,11 @@ var ChromatographyRenderer = {
     var sim = SIMULATION_CONFIG[exp.id];
     if (!sim) return;
     var g = this.getGeometry(canvas, sim);
+    if (state.currentStage === 'setup') {
+      var slider = document.getElementById('solvent-slider');
+      if (slider) sim.beaker.solventLevel = parseInt(slider.value, 10) / 100;
+    }
     ctx.clearRect(0, 0, g.cw, g.ch);
-    this.drawBench(ctx, g);
     this.drawInkBottles(ctx, g);
     this.drawCapillary(ctx, g);
     this.drawPencil(ctx, g);
@@ -242,22 +245,10 @@ var ChromatographyRenderer = {
     if (['observe','markFront','measure','calculate','interpret','conclude','complete'].indexOf(state.currentStage) !== -1 && state.simulation) this.drawCompletedChrom(ctx, g, state);
     if (state.currentStage === 'measure') this.drawMeasureOverlay(ctx, g, state);
     this.drawLabels(ctx, g);
-  },
-
-  drawBench: function(ctx, g) {
-    var benchY = 500;
-    var bg = ctx.createLinearGradient(0, benchY, 0, g.ch);
-    bg.addColorStop(0, '#5a5a5a');
-    bg.addColorStop(0.02, '#4a4a4a');
-    bg.addColorStop(1, '#333');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, benchY, g.cw, g.ch - benchY);
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, benchY);
-    ctx.lineTo(g.cw, benchY);
-    ctx.stroke();
+    if (state.currentStage === 'setup') {
+      var self = this;
+      requestAnimationFrame(function() { self.draw(canvas, ctx, state, exp); });
+    }
   },
 
   drawLargeBeaker: function(ctx, g) {
@@ -296,21 +287,17 @@ var ChromatographyRenderer = {
     ctx.fillStyle = 'rgba(170,210,245,0.35)';
     ctx.beginPath();
     ctx.moveTo(bx + 3, solY);
-    ctx.lineTo(bx + bw - 3, solY);
+    var waveT = Date.now() / 500;
+    for (var wx = bx + 3; wx <= bx + bw - 3; wx += 2) {
+      var wave = Math.sin(waveT + wx * 0.03) * 1.5;
+      ctx.lineTo(wx, solY + wave);
+    }
     ctx.lineTo(bx + bw - 3, by + bh - 3);
     ctx.quadraticCurveTo(bx + bw - 3, by + bh, bx + bw - 8, by + bh);
     ctx.lineTo(bx + 8, by + bh);
     ctx.quadraticCurveTo(bx + 3, by + bh, bx + 3, by + bh - 3);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = 'rgba(100,160,220,0.3)';
-    ctx.lineWidth = 0.5;
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath();
-    ctx.moveTo(bx + 3, solY);
-    ctx.lineTo(bx + bw - 3, solY);
-    ctx.stroke();
-    ctx.setLineDash([]);
     ctx.fillStyle = 'rgba(100,100,100,0.5)';
     ctx.font = '10px sans-serif';
     ctx.textAlign = 'right';
