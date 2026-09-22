@@ -70,7 +70,7 @@ var ChromatographyRenderer = {
     html += '<ul><li>The solvent level must be <strong>below</strong> the baseline.</li>';
     html += '<li>The paper must not touch the walls of the beaker.</li></ul>';
     html += '<div class="form-group"><label class="form-label">Solvent Level: <strong id="solvent-level-val">' + (state.solventPositioned ? '20' : '80') + '%</strong></label>';
-    html += '<input type="range" id="solvent-slider" min="5" max="95" value="' + (state.solventPositioned ? '20' : '80') + '" class="form-range">';
+    html += '<div class="form-range"><input type="range" id="solvent-slider" min="5" max="95" value="' + (state.solventPositioned ? '20' : '80') + '"></div>';
     html += '<p class="text-sm text-secondary">Slide to adjust solvent level below the baseline.</p></div>';
     if (state.feedback === 'solvent_above_baseline') {
       html += '<div class="feedback feedback-incorrect">The solvent level is above the baseline. Lower the solvent level.</div>';
