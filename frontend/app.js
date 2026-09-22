@@ -293,6 +293,16 @@ var ChemSim = (function() {
       });
     });
 
+    var actionCenter = document.getElementById('action-center');
+    if (actionCenter) {
+      actionCenter.querySelectorAll('[data-action]').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          handleAction(el.getAttribute('data-action'), el, exp, stage);
+        });
+      });
+    }
+
     workspace.querySelectorAll('[data-tool]').forEach(function(el) {
       el.addEventListener('click', function(e) {
         e.preventDefault();
