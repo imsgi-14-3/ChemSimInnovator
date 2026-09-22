@@ -185,23 +185,20 @@ var DistillationRenderer = {
     return html;
   },
 
-  /* Canvas Drawing */
+  /* ========== Canvas Drawing ========== */
   draw: function(canvas, ctx, state, exp) {
     var sim = SIMULATION_CONFIG['A1'];
     if (!sim) return;
-    var cw = canvas.width, ch = canvas.height;
-    ctx.clearRect(0, 0, cw, ch);
-
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     this.drawStand(ctx, sim.stand);
+    this.drawClamps(ctx, sim);
     this.drawBurner(ctx, sim.burner, state);
     this.drawFlask(ctx, sim.flask, state);
-    this.drawColumn(ctx, sim.column);
+    this.drawColumn(ctx, sim.column, sim.flask);
     this.drawThermometer(ctx, sim.column, state);
     this.drawCondenser(ctx, sim.condenser, state);
     this.drawReceiver(ctx, sim.receiver, state);
-    this.drawClamps(ctx, sim);
-    this.drawLabels(ctx, sim, state);
-
+    this.drawLabels(ctx, sim);
     if (state.simulation && (state.currentStage === 'monitor' || state.currentStage === 'observe' || state.currentStage === 'collect')) {
       this.drawAnimation(ctx, sim, state, canvas);
     }
@@ -209,102 +206,98 @@ var DistillationRenderer = {
 
   drawStand: function(ctx, s) {
     ctx.save();
-    ctx.fillStyle = '#555';
-    ctx.strokeStyle = '#444';
+    ctx.fillStyle = '#3a3a3a';
+    ctx.fillRect(s.baseX, s.baseY, s.baseW, 10);
+    ctx.strokeStyle = '#2a2a2a';
     ctx.lineWidth = 1;
-    ctx.fillRect(s.baseX, s.baseY, s.baseW, 12);
-    ctx.strokeRect(s.baseX, s.baseY, s.baseW, 12);
-    ctx.fillRect(s.baseX + s.baseW / 2 - 5, s.baseY - 5, 10, 8);
-    ctx.fillStyle = '#666';
+    ctx.strokeRect(s.baseX, s.baseY, s.baseW, 10);
+    var g = ctx.createLinearGradient(s.rodX - 3, 0, s.rodX + 3, 0);
+    g.addColorStop(0, '#555');
+    g.addColorStop(0.4, '#aaa');
+    g.addColorStop(0.6, '#aaa');
+    g.addColorStop(1, '#555');
+    ctx.fillStyle = g;
     ctx.fillRect(s.rodX - 3, s.rodTop, 6, s.rodBot - s.rodTop);
-    ctx.strokeStyle = '#555';
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 0.5;
     ctx.strokeRect(s.rodX - 3, s.rodTop, 6, s.rodBot - s.rodTop);
-    ctx.fillStyle = '#777';
-    ctx.fillRect(s.rodX - 5, s.rodTop, 10, 6);
+    ctx.fillStyle = '#666';
+    ctx.fillRect(s.rodX - 6, s.rodTop, 12, 5);
     ctx.restore();
   },
 
   drawClamps: function(ctx, sim) {
+    var rodX = sim.stand.rodX;
     var cf = sim.clampFlask;
     var cc = sim.clampColumn;
     ctx.save();
-    ctx.fillStyle = '#777';
-    ctx.strokeStyle = '#555';
+    ctx.fillStyle = '#888';
+    ctx.strokeStyle = '#666';
     ctx.lineWidth = 1;
+    ctx.fillRect(rodX - 3, cf.y, cf.x - rodX + 3, cf.h);
+    ctx.strokeRect(rodX - 3, cf.y, cf.x - rodX + 3, cf.h);
     ctx.fillRect(cf.x, cf.y, cf.w, cf.h);
     ctx.strokeRect(cf.x, cf.y, cf.w, cf.h);
-    ctx.fillRect(cf.x - 4, cf.y + 1, 8, cf.h - 2);
-    ctx.fillRect(cf.x + cf.w - 4, cf.y + 1, 8, cf.h - 2);
+    ctx.fillRect(rodX - 3, cc.y, cc.x - rodX + 3, cc.h);
+    ctx.strokeRect(rodX - 3, cc.y, cc.x - rodX + 3, cc.h);
     ctx.fillRect(cc.x, cc.y, cc.w, cc.h);
     ctx.strokeRect(cc.x, cc.y, cc.w, cc.h);
-    ctx.fillRect(cc.x - 4, cc.y + 1, 8, cc.h - 2);
-    ctx.fillRect(cc.x + cc.w - 4, cc.y + 1, 8, cc.h - 2);
     ctx.restore();
   },
 
   drawBurner: function(ctx, b, state) {
-    var cx = b.x + b.baseW / 2;
+    var cx = b.cx;
+    var topY = b.baseY - b.stemH;
     ctx.save();
-
-    ctx.fillStyle = '#444';
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
+    var baseG = ctx.createLinearGradient(cx - b.baseW / 2, 0, cx + b.baseW / 2, 0);
+    baseG.addColorStop(0, '#3a3a3a');
+    baseG.addColorStop(0.3, '#666');
+    baseG.addColorStop(0.5, '#777');
+    baseG.addColorStop(0.7, '#666');
+    baseG.addColorStop(1, '#3a3a3a');
+    ctx.fillStyle = baseG;
     ctx.beginPath();
-    ctx.moveTo(b.x + 3, b.y);
-    ctx.lineTo(b.x + b.baseW - 3, b.y);
-    ctx.lineTo(b.x + b.baseW - 6, b.y + 8);
-    ctx.lineTo(b.x + 6, b.y + 8);
+    ctx.moveTo(cx - b.baseW / 2 + 4, b.baseY);
+    ctx.lineTo(cx + b.baseW / 2 - 4, b.baseY);
+    ctx.lineTo(cx + b.baseW / 2, b.baseY - 5);
+    ctx.lineTo(cx - b.baseW / 2, b.baseY - 5);
     ctx.closePath();
     ctx.fill();
+    ctx.strokeStyle = '#2a2a2a';
+    ctx.lineWidth = 0.5;
     ctx.stroke();
-
-    var stemTop = b.y - b.stemH;
-    var stemGrad = ctx.createLinearGradient(cx - 6, 0, cx + 6, 0);
-    stemGrad.addColorStop(0, '#777');
-    stemGrad.addColorStop(0.3, '#aaa');
-    stemGrad.addColorStop(0.5, '#ccc');
-    stemGrad.addColorStop(0.7, '#aaa');
-    stemGrad.addColorStop(1, '#777');
-    ctx.fillStyle = stemGrad;
-    ctx.fillRect(cx - 6, stemTop + 8, 12, b.stemH - 8);
+    var stemG = ctx.createLinearGradient(cx - 5, 0, cx + 5, 0);
+    stemG.addColorStop(0, '#777');
+    stemG.addColorStop(0.3, '#bbb');
+    stemG.addColorStop(0.5, '#ddd');
+    stemG.addColorStop(0.7, '#bbb');
+    stemG.addColorStop(1, '#777');
+    ctx.fillStyle = stemG;
+    ctx.fillRect(cx - 5, topY + 8, 10, b.stemH - 8);
     ctx.strokeStyle = '#666';
     ctx.lineWidth = 0.5;
-    ctx.strokeRect(cx - 6, stemTop + 8, 12, b.stemH - 8);
-
-    ctx.fillStyle = '#888';
-    ctx.beginPath();
-    ctx.ellipse(cx, stemTop + 8, 10, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#666';
-    ctx.stroke();
-
+    ctx.strokeRect(cx - 5, topY + 8, 10, b.stemH - 8);
     ctx.fillStyle = '#999';
-    ctx.fillRect(cx - 8, stemTop, 16, 10);
+    ctx.fillRect(cx - 7, topY, 14, 10);
     ctx.strokeStyle = '#777';
-    ctx.strokeRect(cx - 8, stemTop, 16, 10);
-
-    var airHole = ctx.createLinearGradient(cx - 3, stemTop + 10, cx + 3, stemTop + 10);
-    airHole.addColorStop(0, 'rgba(80, 80, 80, 0.6)');
-    airHole.addColorStop(0.5, 'rgba(120, 120, 120, 0.3)');
-    airHole.addColorStop(1, 'rgba(80, 80, 80, 0.6)');
-    ctx.fillStyle = airHole;
-    ctx.fillRect(cx - 3, stemTop + 12, 6, b.stemH - 20);
-
+    ctx.strokeRect(cx - 7, topY, 14, 10);
+    ctx.fillStyle = 'rgba(60,60,60,0.5)';
+    ctx.fillRect(cx - 2, topY + 10, 4, b.stemH - 18);
     if (state.distHeating || (state.simulation && !state.simulation.done)) {
       var t = Date.now() / 80;
       for (var i = 0; i < 8; i++) {
-        var spread = (i / 8) * 14 - 7;
+        var spread = (i / 8) * 12 - 6;
         var fx = cx + spread;
         var fh = b.flameH * (0.3 + Math.random() * 0.7);
-        var flicker = Math.sin(t + i * 1.7) * 1.5;
-        var alpha = 0.4 + (1 - Math.abs(spread) / 14) * 0.5;
-        if (i < 3) ctx.fillStyle = 'rgba(50, 80, 200, ' + (alpha * 0.6) + ')';
-        else if (i < 5) ctx.fillStyle = 'rgba(255, 180, 30, ' + (alpha * 0.8) + ')';
-        else ctx.fillStyle = 'rgba(255, 255, 200, ' + (alpha * 0.5) + ')';
+        var fl = Math.sin(t + i * 1.7) * 1.5;
+        var al = 0.4 + (1 - Math.abs(spread) / 12) * 0.5;
+        if (i < 3) ctx.fillStyle = 'rgba(50,80,200,' + (al * 0.6) + ')';
+        else if (i < 5) ctx.fillStyle = 'rgba(255,180,30,' + (al * 0.8) + ')';
+        else ctx.fillStyle = 'rgba(255,255,200,' + (al * 0.5) + ')';
         ctx.beginPath();
-        ctx.moveTo(fx, stemTop);
-        ctx.quadraticCurveTo(fx + flicker, stemTop - fh * 0.5, fx + flicker * 0.5, stemTop - fh);
-        ctx.quadraticCurveTo(fx - flicker * 0.5, stemTop - fh * 0.5, fx, stemTop);
+        ctx.moveTo(fx, topY);
+        ctx.quadraticCurveTo(fx + fl, topY - fh * 0.5, fx + fl * 0.5, topY - fh);
+        ctx.quadraticCurveTo(fx - fl * 0.5, topY - fh * 0.5, fx, topY);
         ctx.fill();
       }
     }
@@ -313,98 +306,106 @@ var DistillationRenderer = {
 
   drawFlask: function(ctx, f, state) {
     ctx.save();
-    var cx = f.x + f.width / 2;
-    var neckTop = f.y;
-    var neckBot = f.y + f.neckH;
-    var bodyR = f.width / 2;
-    var bodyCY = neckBot + bodyR * 0.6;
-
-    ctx.strokeStyle = 'rgba(90, 120, 150, 0.8)';
+    var cx = f.cx;
+    var neckTop = f.cy - f.bodyR - f.neckH;
+    var neckBot = f.cy - f.bodyR;
+    var r = f.bodyR;
+    ctx.strokeStyle = 'rgba(90,120,150,0.85)';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(cx - f.neckW / 2, neckTop);
     ctx.lineTo(cx - f.neckW / 2, neckBot);
-    ctx.quadraticCurveTo(cx - f.neckW / 2 - bodyR * 0.3, neckBot + bodyR * 0.15, cx - bodyR + 5, bodyCY - bodyR * 0.2);
-    ctx.arc(cx, bodyCY, bodyR - 3, Math.PI, 0, false);
-    ctx.quadraticCurveTo(cx + f.neckW / 2 + bodyR * 0.3, neckBot + bodyR * 0.15, cx + f.neckW / 2, neckBot);
+    ctx.quadraticCurveTo(cx - f.neckW / 2 - 12, neckBot + 15, cx - r, f.cy);
+    ctx.arc(cx, f.cy, r, Math.PI, 0, false);
+    ctx.quadraticCurveTo(cx + f.neckW / 2 + 12, neckBot + 15, cx + f.neckW / 2, neckBot);
     ctx.lineTo(cx + f.neckW / 2, neckTop);
     ctx.closePath();
-
-    var glassGrad = ctx.createLinearGradient(cx - bodyR, 0, cx + bodyR, 0);
-    glassGrad.addColorStop(0, 'rgba(180, 210, 235, 0.3)');
-    glassGrad.addColorStop(0.25, 'rgba(230, 240, 250, 0.2)');
-    glassGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.12)');
-    glassGrad.addColorStop(0.75, 'rgba(230, 240, 250, 0.2)');
-    glassGrad.addColorStop(1, 'rgba(180, 210, 235, 0.3)');
-    ctx.fillStyle = glassGrad;
+    var gg = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
+    gg.addColorStop(0, 'rgba(180,210,235,0.3)');
+    gg.addColorStop(0.25, 'rgba(230,240,250,0.2)');
+    gg.addColorStop(0.5, 'rgba(255,255,255,0.12)');
+    gg.addColorStop(0.75, 'rgba(230,240,250,0.2)');
+    gg.addColorStop(1, 'rgba(180,210,235,0.3)');
+    ctx.fillStyle = gg;
     ctx.fill();
     ctx.stroke();
-
-    var liquidLevel = 0.5;
-    var liquidY = bodyCY + bodyR * (1 - liquidLevel * 2) * 0.4;
-    ctx.fillStyle = 'rgba(160, 200, 240, 0.5)';
+    var liqTop = f.cy + r * 0.1;
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, bodyCY, bodyR - 6, 0, Math.PI, false);
+    ctx.moveTo(cx - f.neckW / 2 - 10, neckBot);
+    ctx.quadraticCurveTo(cx - f.neckW / 2 - 12, neckBot + 15, cx - r, f.cy);
+    ctx.arc(cx, f.cy, r, Math.PI, 0, false);
+    ctx.quadraticCurveTo(cx + f.neckW / 2 + 12, neckBot + 15, cx + f.neckW / 2 + 10, neckBot);
+    ctx.lineTo(cx + f.neckW / 2 + 10, f.cy + r);
+    ctx.lineTo(cx - f.neckW / 2 - 10, f.cy + r);
     ctx.closePath();
-    ctx.fill();
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.lineWidth = 2;
+    ctx.clip();
+    var lg = ctx.createLinearGradient(0, liqTop, 0, f.cy + r);
+    lg.addColorStop(0, 'rgba(210,170,100,0.55)');
+    lg.addColorStop(0.5, 'rgba(190,140,70,0.6)');
+    lg.addColorStop(1, 'rgba(170,120,50,0.65)');
+    ctx.fillStyle = lg;
+    ctx.fillRect(cx - r, liqTop, r * 2, f.cy + r - liqTop);
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(cx - bodyR + 15, bodyCY - bodyR * 0.6);
-    ctx.quadraticCurveTo(cx - bodyR + 10, bodyCY, cx - bodyR + 18, bodyCY + bodyR * 0.5);
+    ctx.moveTo(cx - r + 12, f.cy - r * 0.5);
+    ctx.quadraticCurveTo(cx - r + 8, f.cy, cx - r + 14, f.cy + r * 0.4);
     ctx.stroke();
     ctx.restore();
   },
 
-  drawColumn: function(ctx, col) {
+  drawColumn: function(ctx, col, flask) {
     ctx.save();
-    var glassGrad = ctx.createLinearGradient(col.x, 0, col.x + col.width, 0);
-    glassGrad.addColorStop(0, 'rgba(200, 220, 240, 0.25)');
-    glassGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.12)');
-    glassGrad.addColorStop(0.7, 'rgba(255, 255, 255, 0.08)');
-    glassGrad.addColorStop(1, 'rgba(200, 220, 240, 0.2)');
-    ctx.fillStyle = glassGrad;
-    ctx.strokeStyle = 'rgba(100, 130, 160, 0.7)';
+    var colBottom = flask.cy - flask.bodyR;
+    var colH = colBottom - col.y;
+    var gg = ctx.createLinearGradient(col.x, 0, col.x + col.width, 0);
+    gg.addColorStop(0, 'rgba(200,220,240,0.25)');
+    gg.addColorStop(0.3, 'rgba(255,255,255,0.12)');
+    gg.addColorStop(0.7, 'rgba(255,255,255,0.08)');
+    gg.addColorStop(1, 'rgba(200,220,240,0.2)');
+    ctx.fillStyle = gg;
+    ctx.strokeStyle = 'rgba(100,130,160,0.7)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.rect(col.x, col.y, col.width, col.height);
+    ctx.rect(col.x, col.y, col.width, colH);
     ctx.fill();
     ctx.stroke();
-    var beadCount = Math.floor(col.height / 18);
+    var beadCount = Math.floor(colH / 18);
     for (var i = 0; i < beadCount; i++) {
       var bx = col.x + 4 + (i % 3) * ((col.width - 8) / 3) + ((col.width - 8) / 6);
       var by = col.y + 12 + i * 18;
-      var grad = ctx.createRadialGradient(bx, by, 0, bx, by, 5);
-      grad.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
-      grad.addColorStop(0.5, 'rgba(200, 210, 220, 0.4)');
-      grad.addColorStop(1, 'rgba(180, 190, 200, 0.2)');
-      ctx.fillStyle = grad;
-      ctx.strokeStyle = 'rgba(150, 160, 170, 0.4)';
+      var bg = ctx.createRadialGradient(bx, by, 0, bx, by, 5);
+      bg.addColorStop(0, 'rgba(255,255,255,0.6)');
+      bg.addColorStop(0.5, 'rgba(200,210,220,0.4)');
+      bg.addColorStop(1, 'rgba(180,190,200,0.2)');
+      ctx.fillStyle = bg;
+      ctx.strokeStyle = 'rgba(150,160,170,0.4)';
       ctx.lineWidth = 0.5;
       ctx.beginPath();
       ctx.arc(bx, by, 4.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
     }
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(col.x + 5, col.y + 5);
-    ctx.lineTo(col.x + 5, col.y + col.height - 5);
+    ctx.lineTo(col.x + 5, colBottom - 5);
     ctx.stroke();
     ctx.restore();
   },
 
   drawThermometer: function(ctx, col, state) {
     ctx.save();
-    var tx = col.x + col.width + 10;
+    var tx = col.x + col.width + 12;
     var ty = col.y - 5;
     var th = 70;
     var bw = 10;
     var bulbR = 6;
-    ctx.fillStyle = 'rgba(230, 230, 235, 0.8)';
-    ctx.strokeStyle = 'rgba(150, 150, 160, 0.6)';
+    ctx.fillStyle = 'rgba(230,230,235,0.8)';
+    ctx.strokeStyle = 'rgba(150,150,160,0.6)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(tx - bw / 2, ty + 3);
@@ -422,12 +423,12 @@ var DistillationRenderer = {
     ctx.arc(tx, ty + th, bulbR, 0, Math.PI * 2);
     ctx.fillStyle = '#e63946';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(150, 150, 160, 0.6)';
+    ctx.strokeStyle = 'rgba(150,150,160,0.6)';
     ctx.stroke();
     for (var i = 0; i <= 10; i++) {
       var markY = ty + th - bulbR - (i / 10) * (th - bulbR - 6);
       var markW = i % 5 === 0 ? 6 : 3;
-      ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
+      ctx.strokeStyle = 'rgba(100,100,100,0.5)';
       ctx.lineWidth = 0.5;
       ctx.beginPath();
       ctx.moveTo(tx + bw / 2, markY);
@@ -441,7 +442,7 @@ var DistillationRenderer = {
     ctx.fillStyle = '#999';
     ctx.fillText('(simulated)', tx + 14, ty + th / 2 + 14);
     if (state.distThermometerOk) {
-      ctx.fillStyle = 'rgba(40, 167, 69, 0.8)';
+      ctx.fillStyle = 'rgba(40,167,69,0.8)';
       ctx.beginPath();
       ctx.arc(tx - 14, ty + th / 2, 7, 0, Math.PI * 2);
       ctx.fill();
@@ -462,23 +463,23 @@ var DistillationRenderer = {
     ctx.rotate(angle);
     var ow = cd.width;
     var iw = cd.innerW;
-    var waterGrad = ctx.createLinearGradient(0, -ow / 2, 0, ow / 2);
-    waterGrad.addColorStop(0, 'rgba(180, 210, 240, 0.15)');
-    waterGrad.addColorStop(0.5, 'rgba(200, 225, 250, 0.1)');
-    waterGrad.addColorStop(1, 'rgba(180, 210, 240, 0.15)');
-    ctx.fillStyle = waterGrad;
-    ctx.strokeStyle = 'rgba(100, 150, 200, 0.6)';
+    var wg = ctx.createLinearGradient(0, -ow / 2, 0, ow / 2);
+    wg.addColorStop(0, 'rgba(180,210,240,0.15)');
+    wg.addColorStop(0.5, 'rgba(200,225,250,0.1)');
+    wg.addColorStop(1, 'rgba(180,210,240,0.15)');
+    ctx.fillStyle = wg;
+    ctx.strokeStyle = 'rgba(100,150,200,0.6)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.rect(0, -ow / 2, len, ow);
     ctx.fill();
     ctx.stroke();
     if (state.distCondenserOk) {
-      ctx.fillStyle = 'rgba(100, 180, 240, 0.2)';
+      ctx.fillStyle = 'rgba(100,180,240,0.2)';
       ctx.beginPath();
       ctx.rect(2, -ow / 2 + 2, len - 4, ow - 4);
       ctx.fill();
-      ctx.strokeStyle = 'rgba(70, 130, 200, 0.5)';
+      ctx.strokeStyle = 'rgba(70,130,200,0.5)';
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -490,19 +491,19 @@ var DistillationRenderer = {
       ctx.moveTo(len, -ow / 2);
       ctx.lineTo(len, ow / 2);
       ctx.stroke();
-      ctx.fillStyle = 'rgba(50, 120, 200, 0.6)';
+      ctx.fillStyle = 'rgba(50,120,200,0.6)';
       ctx.font = '9px sans-serif';
       ctx.fillText('water in', -5, -ow / 2 - 6);
       ctx.fillText('water out', len - 25, -ow / 2 - 6);
     }
-    ctx.fillStyle = 'rgba(220, 235, 245, 0.3)';
-    ctx.strokeStyle = 'rgba(160, 180, 200, 0.5)';
+    ctx.fillStyle = 'rgba(220,235,245,0.3)';
+    ctx.strokeStyle = 'rgba(160,180,200,0.5)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.rect(5, -iw / 2, len - 10, iw);
     ctx.fill();
     ctx.stroke();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(10, -iw / 2 + 1);
@@ -513,78 +514,69 @@ var DistillationRenderer = {
 
   drawReceiver: function(ctx, rc, state) {
     ctx.save();
-    var cx = rc.x + rc.width / 2;
-    var bodyTop = rc.y + rc.neckH;
-    var bodyH = rc.height - rc.neckH;
-    var glassGrad = ctx.createLinearGradient(rc.x, rc.y, rc.x + rc.width, rc.y);
-    glassGrad.addColorStop(0, 'rgba(200, 220, 240, 0.25)');
-    glassGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.12)');
-    glassGrad.addColorStop(0.7, 'rgba(255, 255, 255, 0.08)');
-    glassGrad.addColorStop(1, 'rgba(200, 220, 240, 0.2)');
-    ctx.fillStyle = glassGrad;
-    ctx.strokeStyle = 'rgba(100, 130, 160, 0.7)';
+    var cx = rc.cx;
+    var neckTop = rc.cy - rc.bodyR - rc.neckH;
+    var neckBot = rc.cy - rc.bodyR;
+    var r = rc.bodyR;
+    ctx.strokeStyle = 'rgba(100,130,160,0.7)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(cx - rc.neckW / 2, rc.y);
-    ctx.lineTo(cx - rc.neckW / 2, bodyTop);
-    ctx.lineTo(rc.x + 5, rc.y + rc.height - 5);
-    ctx.quadraticCurveTo(cx, rc.y + rc.height + 3, rc.x + rc.width - 5, rc.y + rc.height - 5);
-    ctx.lineTo(cx + rc.neckW / 2, bodyTop);
-    ctx.lineTo(cx + rc.neckW / 2, rc.y);
+    ctx.moveTo(cx - rc.neckW / 2, neckTop);
+    ctx.lineTo(cx - rc.neckW / 2, neckBot);
+    ctx.quadraticCurveTo(cx - rc.neckW / 2 - 8, neckBot + 12, cx - r, rc.cy);
+    ctx.arc(cx, rc.cy, r, Math.PI, 0, false);
+    ctx.quadraticCurveTo(cx + rc.neckW / 2 + 8, neckBot + 12, cx + rc.neckW / 2, neckBot);
+    ctx.lineTo(cx + rc.neckW / 2, neckTop);
     ctx.closePath();
+    var gg = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
+    gg.addColorStop(0, 'rgba(200,220,240,0.25)');
+    gg.addColorStop(0.3, 'rgba(255,255,255,0.12)');
+    gg.addColorStop(0.7, 'rgba(255,255,255,0.08)');
+    gg.addColorStop(1, 'rgba(200,220,240,0.2)');
+    ctx.fillStyle = gg;
     ctx.fill();
     ctx.stroke();
     if (state.distCollected) {
-      var collectH = bodyH * 0.4;
-      ctx.fillStyle = 'rgba(180, 210, 245, 0.45)';
+      var collectH = r * 0.8;
+      ctx.save();
       ctx.beginPath();
-      ctx.moveTo(rc.x + 10, rc.y + rc.height - collectH);
-      ctx.lineTo(rc.x + 5, rc.y + rc.height - 5);
-      ctx.quadraticCurveTo(cx, rc.y + rc.height + 2, rc.x + rc.width - 5, rc.y + rc.height - 5);
-      ctx.lineTo(rc.x + rc.width - 10, rc.y + rc.height - collectH);
-      ctx.closePath();
-      ctx.fill();
+      ctx.arc(cx, rc.cy, r - 3, 0, Math.PI * 2);
+      ctx.clip();
+      var lg = ctx.createLinearGradient(0, rc.cy + r - collectH, 0, rc.cy + r);
+      lg.addColorStop(0, 'rgba(180,210,245,0.4)');
+      lg.addColorStop(1, 'rgba(160,195,235,0.55)');
+      ctx.fillStyle = lg;
+      ctx.fillRect(cx - r, rc.cy + r - collectH, r * 2, collectH);
+      ctx.restore();
     }
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(rc.x + 12, bodyTop + 5);
-    ctx.lineTo(rc.x + 10, rc.y + rc.height - 15);
+    ctx.moveTo(cx - r + 8, rc.cy - r * 0.4);
+    ctx.lineTo(cx - r + 6, rc.cy + r * 0.4);
     ctx.stroke();
     ctx.restore();
   },
 
-  drawLabels: function(ctx, sim, state) {
+  drawLabels: function(ctx, sim) {
     ctx.save();
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
-
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    var fCx = sim.flask.x + sim.flask.width / 2;
-    ctx.fillText('Round-bottom flask', fCx, sim.flask.y + sim.flask.height + 20);
-
-    var bCx = sim.burner.x + sim.burner.baseW / 2;
-    ctx.fillText('Bunsen burner', bCx, sim.burner.y + 25);
-
-    var colCx = sim.column.x + sim.column.width / 2;
-    ctx.fillText('Fractionating column', colCx, sim.column.y - 12);
-
-    ctx.fillText('Thermometer', sim.column.x + sim.column.width + 15, sim.column.y - 20);
-
-    var cdMidX = (sim.condenser.x1 + sim.condenser.x2) / 2;
-    var cdMidY = (sim.condenser.y1 + sim.condenser.y2) / 2;
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fillText('Round-bottom flask', sim.flask.cx, sim.flask.cy + sim.flask.bodyR + 18);
+    ctx.fillText('Bunsen burner', sim.burner.cx, sim.burner.baseY + 22);
+    ctx.fillText('Fractionating column', sim.column.x + sim.column.width / 2, sim.column.y - 12);
+    ctx.fillText('Thermometer', sim.column.x + sim.column.width + 12, sim.column.y - 18);
+    var cdMX = (sim.condenser.x1 + sim.condenser.x2) / 2;
+    var cdMY = (sim.condenser.y1 + sim.condenser.y2) / 2;
+    var cdA = Math.atan2(sim.condenser.y2 - sim.condenser.y1, sim.condenser.x2 - sim.condenser.x1);
     ctx.save();
-    var cdAngle = Math.atan2(sim.condenser.y2 - sim.condenser.y1, sim.condenser.x2 - sim.condenser.x1);
-    ctx.translate(cdMidX, cdMidY - 16);
-    ctx.rotate(cdAngle);
+    ctx.translate(cdMX, cdMY - 16);
+    ctx.rotate(cdA);
     ctx.fillText('Condenser', 0, 0);
     ctx.restore();
-
-    var rcCx = sim.receiver.x + sim.receiver.width / 2;
-    ctx.fillText('Receiving flask', rcCx, sim.receiver.y + sim.receiver.height + 20);
-
+    ctx.fillText('Receiving flask', sim.receiver.cx, sim.receiver.cy + sim.receiver.bodyR + 18);
     ctx.fillText('Retort stand', sim.stand.rodX, sim.stand.rodTop - 5);
-
     ctx.textAlign = 'left';
     ctx.restore();
   },
@@ -593,7 +585,6 @@ var DistillationRenderer = {
     if (!state.simulation) return;
     var elapsed = Date.now() - state.simulation.startTime;
     var progress = Math.min(elapsed / sim.animationDurationMs, 1);
-
     var temp = sim.initialTemp + progress * (sim.secondFraction.boilingPoint - sim.initialTemp);
     if (progress < 0.5) {
       temp = sim.initialTemp + progress * 2 * (sim.firstFraction.boilingPoint - sim.initialTemp);
@@ -601,39 +592,32 @@ var DistillationRenderer = {
       temp = sim.firstFraction.boilingPoint + (progress - 0.5) * 2 * (sim.secondFraction.boilingPoint - sim.firstFraction.boilingPoint);
     }
     state.distTemperature = Math.min(temp, sim.secondFraction.boilingPoint);
-
-    var col = sim.column;
-    var vapourY = col.y + col.height - progress * col.height;
-    ctx.fillStyle = 'rgba(200, 220, 255, 0.3)';
-    ctx.fillRect(col.x + 3, vapourY, col.width - 6, col.y + col.height - vapourY);
-
-    var cd = sim.condenser;
+    var colBottom = sim.flask.cy - sim.flask.bodyR;
+    var colH = colBottom - sim.column.y;
+    var vapourY = sim.column.y + colH * (1 - progress);
+    ctx.fillStyle = 'rgba(200,220,255,0.3)';
+    ctx.fillRect(sim.column.x + 3, vapourY, sim.column.width - 6, colBottom - vapourY);
     if (progress > 0.3) {
-      var dropProgress = (progress - 0.3) / 0.7;
-      var dx = cd.x2 - cd.x1;
-      var dy = cd.y2 - cd.y1;
-      var dropX = cd.x1 + dropProgress * dx;
-      var dropY = cd.y1 + dropProgress * dy;
-      ctx.fillStyle = 'rgba(180, 210, 240, 0.6)';
+      var dropP = (progress - 0.3) / 0.7;
+      var dx = sim.condenser.x2 - sim.condenser.x1;
+      var dy = sim.condenser.y2 - sim.condenser.y1;
+      var dropX = sim.condenser.x1 + dropP * dx;
+      var dropY = sim.condenser.y1 + dropP * dy;
+      ctx.fillStyle = 'rgba(180,210,240,0.6)';
       ctx.beginPath();
       ctx.arc(dropX, dropY, 3, 0, Math.PI * 2);
       ctx.fill();
     }
-
-    var rc = sim.receiver;
     if (progress > 0.5) {
-      var collectH = (progress - 0.5) * 2 * (rc.height - rc.neckH) * 0.4;
-      ctx.fillStyle = sim.firstFraction.color;
+      var collectH = (progress - 0.5) * 2 * sim.receiver.bodyR * 0.8;
+      ctx.save();
       ctx.beginPath();
-      var rcx = rc.x + rc.width / 2;
-      ctx.moveTo(rcx - 20, rc.y + rc.height - collectH);
-      ctx.lineTo(rc.x + 5, rc.y + rc.height - 5);
-      ctx.quadraticCurveTo(rcx, rc.y + rc.height + 2, rc.x + rc.width - 5, rc.y + rc.height - 5);
-      ctx.lineTo(rcx + 20, rc.y + rc.height - collectH);
-      ctx.closePath();
-      ctx.fill();
+      ctx.arc(sim.receiver.cx, sim.receiver.cy, sim.receiver.bodyR - 3, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.fillStyle = sim.firstFraction.color;
+      ctx.fillRect(sim.receiver.cx - sim.receiver.bodyR, sim.receiver.cy + sim.receiver.bodyR - collectH, sim.receiver.bodyR * 2, collectH);
+      ctx.restore();
     }
-
     if (progress < 1) {
       var self = this;
       requestAnimationFrame(function() { self.draw(canvas, ctx, state, state.experiment); });
@@ -643,7 +627,6 @@ var DistillationRenderer = {
     }
   },
 
-  /* Canvas Click Handling */
   handleClick: function(mx, my, state, stage, appState) {
     var canvas = document.getElementById('lab-canvas');
     if (!canvas) return;
@@ -651,7 +634,6 @@ var DistillationRenderer = {
     if (!sim) return;
     var col = sim.column;
     var cd = sim.condenser;
-
     if (stage === 'setUp') {
       if (!state.distThermometerOk) {
         var nearColHead = mx >= col.x - 10 && mx <= col.x + col.width + 20 && my >= col.y - 10 && my <= col.y + 30;
