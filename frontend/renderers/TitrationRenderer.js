@@ -486,35 +486,39 @@ var TitrationRenderer = {
     ctx.ellipse(f.cx, neckTop + 8, f.neckW / 2 - 2, 3, 0, 0, Math.PI * 2);
     ctx.stroke();
     var vol = state.titrationVolume || 0;
-    var frac = Math.min(vol / sim.endpointVolume, 1.2);
+    var hasSample = state.titrationSampleMeasured;
+    var frac = hasSample ? Math.min(vol / sim.endpointVolume, 1.2) : 0;
     var r, g, b2;
-    if (frac < 0.85) { r = 210; g = 60; b2 = 155; }
+    if (!hasSample) { r = 255; g = 255; b2 = 255; }
+    else if (frac < 0.85) { r = 210; g = 60; b2 = 155; }
     else if (frac < 1.0) { var t = (frac - 0.85) / 0.15; r = Math.round(210 - t * 195); g = Math.round(60 - t * 45); b2 = Math.round(155 - t * 140); }
     else { r = 255; g = 255; b2 = 255; }
     var liquidY = fBottom - 18;
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(fLeft + 10, fShoulder);
-    ctx.quadraticCurveTo(fLeft, fShoulder, fLeft, fShoulder + 10);
-    ctx.lineTo(fLeft, fBottom - 10);
-    ctx.quadraticCurveTo(fLeft, fBottom, fLeft + 10, fBottom);
-    ctx.lineTo(fRight - 10, fBottom);
-    ctx.quadraticCurveTo(fRight, fBottom, fRight, fBottom - 10);
-    ctx.lineTo(fRight, fShoulder + 10);
-    ctx.quadraticCurveTo(fRight, fShoulder, fRight - 10, fShoulder);
-    ctx.closePath();
-    ctx.clip();
-    var liqGrad = ctx.createLinearGradient(fLeft, liquidY - 40, fLeft, fBottom);
-    liqGrad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b2 + ',0.3)');
-    liqGrad.addColorStop(0.6, 'rgba(' + r + ',' + g + ',' + b2 + ',0.45)');
-    liqGrad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b2 + ',0.55)');
-    ctx.fillStyle = liqGrad;
-    ctx.fillRect(fLeft, liquidY - 40, f.bodyW, fBottom - liquidY + 40);
-    ctx.fillStyle = 'rgba(' + Math.min(r + 30, 255) + ',' + Math.min(g + 30, 255) + ',' + Math.min(b2 + 30, 255) + ',0.25)';
-    ctx.beginPath();
-    ctx.ellipse(f.cx, liquidY - 40, f.bodyW / 2 - 6, 2.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+    if (hasSample) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(fLeft + 10, fShoulder);
+      ctx.quadraticCurveTo(fLeft, fShoulder, fLeft, fShoulder + 10);
+      ctx.lineTo(fLeft, fBottom - 10);
+      ctx.quadraticCurveTo(fLeft, fBottom, fLeft + 10, fBottom);
+      ctx.lineTo(fRight - 10, fBottom);
+      ctx.quadraticCurveTo(fRight, fBottom, fRight, fBottom - 10);
+      ctx.lineTo(fRight, fShoulder + 10);
+      ctx.quadraticCurveTo(fRight, fShoulder, fRight - 10, fShoulder);
+      ctx.closePath();
+      ctx.clip();
+      var liqGrad = ctx.createLinearGradient(fLeft, liquidY - 40, fLeft, fBottom);
+      liqGrad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b2 + ',0.3)');
+      liqGrad.addColorStop(0.6, 'rgba(' + r + ',' + g + ',' + b2 + ',0.45)');
+      liqGrad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b2 + ',0.55)');
+      ctx.fillStyle = liqGrad;
+      ctx.fillRect(fLeft, liquidY - 40, f.bodyW, fBottom - liquidY + 40);
+      ctx.fillStyle = 'rgba(' + Math.min(r + 30, 255) + ',' + Math.min(g + 30, 255) + ',' + Math.min(b2 + 30, 255) + ',0.25)';
+      ctx.beginPath();
+      ctx.ellipse(f.cx, liquidY - 40, f.bodyW / 2 - 6, 2.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
     ctx.fillStyle = 'rgba(60,90,120,0.4)';
     ctx.font = '9px sans-serif';
     ctx.textAlign = 'right';
@@ -725,25 +729,25 @@ var TitrationRenderer = {
       ctx.textAlign = align || 'left';
       ctx.fillText(text, tx, ty);
     }
-    drawLine(361, 50, 380, 50);
-    drawLabel('Burette (with HCl)', 383, 54, 'left');
-    drawLine(55, 365, 120, 365);
-    drawLabel('NaOH solution', 10, 380, 'left');
-    drawLabel('(unknown molarity)', 10, 393, 'left');
-    drawLine(140, 365, 175, 365);
-    drawLabel('HCl solution', 118, 380, 'left');
-    drawLabel('(0.100 M)', 118, 393, 'left');
-    drawLine(400, 465, 420, 465);
-    drawLabel('Conical flask', 423, 460, 'left');
-    drawLabel('(with NaOH + indicator)', 423, 473, 'left');
-    drawLine(490, 440, 505, 440);
-    drawLabel('Phenolphthalein', 440, 418, 'left');
-    drawLabel('indicator', 440, 431, 'left');
-    drawLine(400, 545, 420, 545);
-    drawLabel('White tile', 423, 549, 'left');
-    drawLine(500, 570, 510, 570);
-    drawLabel('Pipette', 440, 580, 'left');
-    drawLabel('(for initial sample)', 440, 593, 'left');
+    drawLine(361, 50, 378, 50);
+    drawLabel('Burette (with HCl)', 381, 54, 'left');
+    drawLine(55, 350, 125, 350);
+    drawLabel('NaOH solution', 10, 345, 'left');
+    drawLabel('(unknown molarity)', 10, 358, 'left');
+    drawLine(145, 350, 175, 350);
+    drawLabel('HCl solution', 118, 345, 'left');
+    drawLabel('(0.100 M)', 118, 358, 'left');
+    drawLine(395, 445, 418, 445);
+    drawLabel('Conical flask', 421, 442, 'left');
+    drawLabel('(NaOH + indicator)', 421, 455, 'left');
+    drawLine(492, 460, 505, 460);
+    drawLabel('Phenolphthalein', 438, 475, 'left');
+    drawLabel('indicator', 438, 488, 'left');
+    drawLine(400, 548, 418, 548);
+    drawLabel('White tile', 421, 552, 'left');
+    drawLine(490, 585, 510, 585);
+    drawLabel('Pipette', 438, 598, 'left');
+    drawLabel('(for initial sample)', 438, 611, 'left');
     ctx.textAlign = 'left';
     ctx.restore();
   },

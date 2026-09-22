@@ -109,9 +109,36 @@ var ChemSim = (function() {
     }
   }
 
+  function isStageCompleted(expId, stage, state) {
+    if (!state) return false;
+    if (expId === 'A4') {
+      switch(stage) {
+        case 'select': return true;
+        case 'objective': return true;
+        case 'apparatus': return true;
+        case 'prepare': return state.titrationApparatusChoice1 === 'burette' && state.titrationApparatusChoice2 === 'volumetric-pipette';
+        case 'fillBurette': return state.titrationBuretteFilled === true;
+        case 'measureSample': return state.titrationSampleMeasured === true;
+        case 'titrate': return state.titrationEndpointReached === true || state.titrationEndpointPassed === true;
+        case 'endpoint': return true;
+        case 'record': return true;
+        case 'calculate': return state.titrationCalcChecked === true;
+        case 'interpret': return state.interpretation && state.interpretation.trim().length > 0;
+        case 'conclude': return state.conclusion && state.conclusion.trim().length > 0;
+        case 'complete': return true;
+        default: return true;
+      }
+    }
+    return true;
+  }
+
   function goNext() {
     if (appState.screen === 'experiment' && appState.experiment) {
       if (appState.stageIndex < appState.stages.length - 1) {
+        var currentStage = appState.stages[appState.stageIndex];
+        if (!isStageCompleted(appState.experimentId, currentStage, appState.state)) {
+          return;
+        }
         appState.stageIndex++;
         appState.currentStage = appState.stages[appState.stageIndex];
         renderExperimentStage();
@@ -229,7 +256,8 @@ var ChemSim = (function() {
     var isLastStage = stage === 'complete';
     var stageHtml = ExperimentScreen.renderStage(exp, stage, appState.state, appState);
     if (hasNext) {
-      stageHtml += '<div class="stage-next-btn-wrap"><button class="btn btn-primary stage-next-btn" id="stage-next-btn">Next Step →</button></div>';
+      var completed = isStageCompleted(exp.id, stage, appState.state);
+      stageHtml += '<div class="stage-next-btn-wrap"><button class="btn btn-primary stage-next-btn" id="stage-next-btn"' + (completed ? '' : ' disabled') + '>Next Step →</button></div>';
     }
     workspace.innerHTML = stageHtml;
 
