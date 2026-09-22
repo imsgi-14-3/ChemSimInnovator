@@ -233,7 +233,7 @@ var ChromatographyRenderer = {
     }
     ctx.clearRect(0, 0, g.cw, g.ch);
     this.drawInkBottles(ctx, g);
-    this.drawCapillary(ctx, g);
+    if (g.sim.capillary) this.drawCapillary(ctx, g);
     if (g.sim.pencil) this.drawPencil(ctx, g);
     if (g.sim.ruler) this.drawRuler(ctx, g);
     if (g.sim.solventBeaker) this.drawSmallBeaker(ctx, g);
@@ -896,9 +896,6 @@ var ChromatographyRenderer = {
       ctx.textAlign = 'center';
       ctx.fillText('Pb²⁺ Solution', 60, 500);
       ctx.fillText('Cd²⁺ Solution', 135, 500);
-      ctx.fillText('Capillary tube', 110, 590);
-      ctx.textAlign = 'left';
-      ctx.fillText('(for spotting)', 60, 602);
       ctx.textAlign = 'right';
       var bk = g.sim.beaker;
       ctx.fillText('Chromatography paper', bk.cx - bk.w / 2 - 20, g.paperTop + 40);

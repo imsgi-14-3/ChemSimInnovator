@@ -50,7 +50,7 @@ var SIMULATION_CONFIG = {
       { cx: 60, cy: 435, w: 45, h: 85, label: 'Pb²⁺\nSolution', liquidColor: 'rgba(190,195,200,0.5)', capColor: '#1a1a1a', glassColor: 'rgba(200,210,220,0.45)', bottleType: 'reagent' },
       { cx: 135, cy: 435, w: 45, h: 85, label: 'Cd²⁺\nSolution', liquidColor: 'rgba(150,190,225,0.45)', capColor: '#1a1a1a', glassColor: 'rgba(160,195,225,0.35)', bottleType: 'reagent' }
     ],
-    capillary: { x1: 55, y1: 558, x2: 155, y2: 568 },
+    capillary: null,
     pencil: null,
     ruler: null,
     solventFrontMaxDist: 250,
