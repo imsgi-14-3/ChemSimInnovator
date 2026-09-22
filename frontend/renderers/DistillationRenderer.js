@@ -195,8 +195,7 @@ var DistillationRenderer = {
     this.drawFlask(ctx, sim.flask, state);
     this.drawColumn(ctx, sim.column, sim.flask);
     this.drawThermometer(ctx, sim.column, state);
-    this.drawCondenser(ctx, sim.condenser, state);
-    this.drawReceiver(ctx, sim.receiver, state);
+    this.drawCondenserToReceiver(ctx, sim, state);
     this.drawClamps(ctx, sim);
     this.drawLabels(ctx, sim);
     if (state.simulation && (state.currentStage === 'monitor' || state.currentStage === 'observe' || state.currentStage === 'collect')) {
@@ -279,11 +278,11 @@ var DistillationRenderer = {
     ctx.beginPath();
     ctx.ellipse(cx, top + 10, m.w / 2 - 8, 4, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#ccc';
+    ctx.fillStyle = '#ddd';
     ctx.beginPath();
     ctx.ellipse(cx, top + 10, m.w / 2 - 14, 2, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#ddd';
+    ctx.fillStyle = '#ccc';
     ctx.beginPath();
     ctx.arc(m.dialX, m.dialY, 11, 0, Math.PI * 2);
     ctx.fill();
@@ -320,57 +319,70 @@ var DistillationRenderer = {
     var neckTop = f.cy - f.bodyR - f.neckH;
     var neckBot = f.cy - f.bodyR;
     var r = f.bodyR;
-    ctx.strokeStyle = 'rgba(80,120,160,0.8)';
-    ctx.lineWidth = 2.5;
+
+    ctx.strokeStyle = 'rgba(60,95,130,0.9)';
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(cx - f.neckW / 2, neckTop);
     ctx.lineTo(cx - f.neckW / 2, neckBot);
-    ctx.quadraticCurveTo(cx - f.neckW / 2 - 16, neckBot + 20, cx - r, f.cy + 5);
+    ctx.quadraticCurveTo(cx - f.neckW / 2 - 14, neckBot + 18, cx - r, f.cy + 5);
     ctx.arc(cx, f.cy, r, Math.PI, 0, false);
-    ctx.quadraticCurveTo(cx + f.neckW / 2 + 16, neckBot + 20, cx + f.neckW / 2, neckBot);
+    ctx.quadraticCurveTo(cx + f.neckW / 2 + 14, neckBot + 18, cx + f.neckW / 2, neckBot);
     ctx.lineTo(cx + f.neckW / 2, neckTop);
     ctx.closePath();
+
     var gg = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
-    gg.addColorStop(0, 'rgba(150,195,230,0.35)');
-    gg.addColorStop(0.15, 'rgba(200,230,250,0.2)');
-    gg.addColorStop(0.4, 'rgba(240,250,255,0.1)');
-    gg.addColorStop(0.6, 'rgba(240,250,255,0.1)');
-    gg.addColorStop(0.85, 'rgba(200,230,250,0.2)');
-    gg.addColorStop(1, 'rgba(150,195,230,0.35)');
+    gg.addColorStop(0, 'rgba(140,185,225,0.4)');
+    gg.addColorStop(0.12, 'rgba(190,220,245,0.25)');
+    gg.addColorStop(0.35, 'rgba(235,248,255,0.12)');
+    gg.addColorStop(0.5, 'rgba(255,255,255,0.06)');
+    gg.addColorStop(0.65, 'rgba(235,248,255,0.12)');
+    gg.addColorStop(0.88, 'rgba(190,220,245,0.25)');
+    gg.addColorStop(1, 'rgba(140,185,225,0.4)');
     ctx.fillStyle = gg;
     ctx.fill();
     ctx.stroke();
+
     var liqTop = f.cy + r * 0.15;
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, f.cy, r - 3, 0, Math.PI * 2);
+    ctx.arc(cx, f.cy, r - 4, 0, Math.PI * 2);
     ctx.clip();
     var lg = ctx.createLinearGradient(0, liqTop, 0, f.cy + r);
-    lg.addColorStop(0, 'rgba(255,255,255,0.1)');
-    lg.addColorStop(0.2, 'rgba(235,245,255,0.35)');
-    lg.addColorStop(0.6, 'rgba(210,230,250,0.5)');
-    lg.addColorStop(1, 'rgba(190,215,240,0.55)');
+    lg.addColorStop(0, 'rgba(255,255,255,0.08)');
+    lg.addColorStop(0.15, 'rgba(235,245,255,0.3)');
+    lg.addColorStop(0.5, 'rgba(210,230,250,0.45)');
+    lg.addColorStop(1, 'rgba(185,210,240,0.55)');
     ctx.fillStyle = lg;
     ctx.fillRect(cx - r, liqTop, r * 2, f.cy + r - liqTop);
+
     if (state.distHeating || (state.simulation && !state.simulation.done)) {
       var t = Date.now() / 150;
-      for (var i = 0; i < 8; i++) {
-        var bx = cx - 25 + Math.random() * 50;
-        var by = f.cy + 5 + Math.random() * (r - 15);
-        var br = 1 + Math.random() * 3.5;
-        var alpha = 0.2 + Math.random() * 0.3;
+      for (var i = 0; i < 10; i++) {
+        var bx = cx - 20 + Math.random() * 40;
+        var by = f.cy + Math.random() * (r * 0.8);
+        var br = 1 + Math.random() * 3;
+        var alpha = 0.15 + Math.random() * 0.25;
         ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
         ctx.beginPath();
-        ctx.arc(bx, by - Math.sin(t + i) * 2, br, 0, Math.PI * 2);
+        ctx.arc(bx, by - Math.sin(t + i) * 3, br, 0, Math.PI * 2);
         ctx.fill();
       }
     }
     ctx.restore();
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(cx - r + 16, f.cy - r * 0.5);
-    ctx.quadraticCurveTo(cx - r + 12, f.cy, cx - r + 18, f.cy + r * 0.35);
+    ctx.moveTo(cx - r + 14, f.cy - r * 0.55);
+    ctx.quadraticCurveTo(cx - r + 10, f.cy, cx - r + 16, f.cy + r * 0.4);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx - r + 20, f.cy - r * 0.7);
+    ctx.lineTo(cx - r + 18, f.cy - r * 0.3);
     ctx.stroke();
     ctx.restore();
   },
@@ -380,29 +392,29 @@ var DistillationRenderer = {
     var colBottom = flask.cy - flask.bodyR;
     var colH = colBottom - col.y;
     var gg = ctx.createLinearGradient(col.x, 0, col.x + col.width, 0);
-    gg.addColorStop(0, 'rgba(170,205,235,0.3)');
-    gg.addColorStop(0.2, 'rgba(230,245,255,0.15)');
+    gg.addColorStop(0, 'rgba(160,200,235,0.35)');
+    gg.addColorStop(0.15, 'rgba(220,240,255,0.18)');
     gg.addColorStop(0.5, 'rgba(255,255,255,0.08)');
-    gg.addColorStop(0.8, 'rgba(230,245,255,0.15)');
-    gg.addColorStop(1, 'rgba(170,205,235,0.3)');
+    gg.addColorStop(0.85, 'rgba(220,240,255,0.18)');
+    gg.addColorStop(1, 'rgba(160,200,235,0.35)');
     ctx.fillStyle = gg;
-    ctx.strokeStyle = 'rgba(90,130,170,0.7)';
+    ctx.strokeStyle = 'rgba(80,120,160,0.75)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.rect(col.x, col.y, col.width, colH);
     ctx.fill();
     ctx.stroke();
-    var beadCount = Math.floor(colH / 14);
+    var beadCount = Math.floor(colH / 13);
     for (var i = 0; i < beadCount; i++) {
       var bx = col.x + col.width / 2;
-      var by = col.y + 8 + i * 14;
-      var bg = ctx.createRadialGradient(bx - 1, by - 1, 0, bx, by, 5);
-      bg.addColorStop(0, 'rgba(255,255,255,0.75)');
+      var by = col.y + 8 + i * 13;
+      var bg = ctx.createRadialGradient(bx - 1, by - 1, 0, bx, by, 4.5);
+      bg.addColorStop(0, 'rgba(255,255,255,0.8)');
       bg.addColorStop(0.3, 'rgba(230,242,255,0.5)');
-      bg.addColorStop(0.7, 'rgba(190,210,230,0.3)');
-      bg.addColorStop(1, 'rgba(160,185,210,0.15)');
+      bg.addColorStop(0.7, 'rgba(185,208,228,0.3)');
+      bg.addColorStop(1, 'rgba(155,180,205,0.12)');
       ctx.fillStyle = bg;
-      ctx.strokeStyle = 'rgba(130,155,180,0.3)';
+      ctx.strokeStyle = 'rgba(125,150,175,0.3)';
       ctx.lineWidth = 0.5;
       ctx.beginPath();
       ctx.arc(bx, by, 4, 0, Math.PI * 2);
@@ -415,12 +427,12 @@ var DistillationRenderer = {
   drawThermometer: function(ctx, col, state) {
     ctx.save();
     var tx = col.x + col.width / 2;
-    var ty = col.y - 58;
-    var th = 80;
+    var ty = col.y - 55;
+    var th = 78;
     var bw = 7;
     var bulbR = 5;
-    ctx.fillStyle = 'rgba(245,245,250,0.9)';
-    ctx.strokeStyle = 'rgba(170,170,180,0.6)';
+    ctx.fillStyle = 'rgba(245,245,250,0.92)';
+    ctx.strokeStyle = 'rgba(165,165,175,0.6)';
     ctx.lineWidth = 0.8;
     ctx.beginPath();
     ctx.moveTo(tx - bw / 2, ty + 4);
@@ -438,13 +450,13 @@ var DistillationRenderer = {
     ctx.arc(tx, ty + th, bulbR, 0, Math.PI * 2);
     ctx.fillStyle = '#c62828';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(170,170,180,0.6)';
+    ctx.strokeStyle = 'rgba(165,165,175,0.6)';
     ctx.lineWidth = 0.6;
     ctx.stroke();
     for (var i = 0; i <= 10; i++) {
       var markY = ty + th - bulbR - (i / 10) * (th - bulbR - 8);
       var markW = i % 5 === 0 ? 5 : 2;
-      ctx.strokeStyle = 'rgba(100,100,100,0.45)';
+      ctx.strokeStyle = 'rgba(100,100,100,0.4)';
       ctx.lineWidth = 0.4;
       ctx.beginPath();
       ctx.moveTo(tx + bw / 2, markY);
@@ -471,10 +483,18 @@ var DistillationRenderer = {
     ctx.restore();
   },
 
-  drawCondenser: function(ctx, cd, state) {
+  drawCondenserToReceiver: function(ctx, sim, state) {
+    var rc = sim.receiver;
+    var rcNeckTop = rc.cy - rc.bodyR - rc.neckH;
+    var connX = rc.cx;
+    var connY = rcNeckTop;
+    var cd = sim.condenser;
+    var endX = connX - 5;
+    var endY = connY + 5;
+
     ctx.save();
-    var dx = cd.x2 - cd.x1;
-    var dy = cd.y2 - cd.y1;
+    var dx = endX - cd.x1;
+    var dy = endY - cd.y1;
     var len = Math.sqrt(dx * dx + dy * dy);
     var angle = Math.atan2(dy, dx);
     ctx.translate(cd.x1, cd.y1);
@@ -482,7 +502,7 @@ var DistillationRenderer = {
     var ow = cd.width;
     var iw = cd.innerW;
     ctx.fillStyle = 'rgba(200,230,255,0.2)';
-    ctx.strokeStyle = 'rgba(90,150,210,0.6)';
+    ctx.strokeStyle = 'rgba(85,145,205,0.65)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.rect(0, -ow / 2, len, ow);
@@ -495,7 +515,7 @@ var DistillationRenderer = {
       ctx.fill();
     }
     ctx.fillStyle = 'rgba(225,240,255,0.3)';
-    ctx.strokeStyle = 'rgba(160,185,210,0.45)';
+    ctx.strokeStyle = 'rgba(155,180,208,0.45)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.rect(10, -iw / 2, len - 20, iw);
@@ -508,97 +528,101 @@ var DistillationRenderer = {
     ctx.lineTo(len - 22, -iw / 2 + 1);
     ctx.stroke();
     ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(85,145,205,0.65)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(endX, endY);
+    ctx.lineTo(endX, connY - 2);
+    ctx.stroke();
+    ctx.restore();
+
     if (state.distCondenserOk) {
       ctx.save();
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      var hoseInX = cd.x2 - 20;
-      var hoseInY = cd.y2 + 12;
-      ctx.strokeStyle = 'rgba(30,110,210,0.75)';
+      var hoseInX = endX - 18;
+      var hoseInY = endY + 15;
+      ctx.strokeStyle = 'rgba(25,105,205,0.8)';
       ctx.lineWidth = 5;
       ctx.beginPath();
-      ctx.moveTo(hoseInX, hoseInY + 35);
-      ctx.quadraticCurveTo(hoseInX - 8, hoseInY + 20, hoseInX + 2, hoseInY + 5);
-      ctx.quadraticCurveTo(hoseInX + 5, hoseInY, hoseInX + 2, hoseInY - 3);
+      ctx.moveTo(hoseInX, hoseInY + 32);
+      ctx.quadraticCurveTo(hoseInX - 6, hoseInY + 18, hoseInX + 3, hoseInY + 3);
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(50,140,230,0.5)';
+      ctx.strokeStyle = 'rgba(55,145,235,0.45)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(hoseInX, hoseInY + 35);
-      ctx.quadraticCurveTo(hoseInX - 8, hoseInY + 20, hoseInX + 2, hoseInY + 5);
+      ctx.moveTo(hoseInX, hoseInY + 32);
+      ctx.quadraticCurveTo(hoseInX - 6, hoseInY + 18, hoseInX + 3, hoseInY + 3);
       ctx.stroke();
-      var hoseOutX = cd.x1 + 25;
-      var hoseOutY = cd.y1 - 12;
-      ctx.strokeStyle = 'rgba(30,110,210,0.75)';
+      var hoseOutX = cd.x1 + 22;
+      var hoseOutY = cd.y1 - 10;
+      ctx.strokeStyle = 'rgba(25,105,205,0.8)';
       ctx.lineWidth = 5;
       ctx.beginPath();
       ctx.moveTo(hoseOutX, hoseOutY);
-      ctx.quadraticCurveTo(hoseOutX - 10, hoseOutY - 18, hoseOutX - 5, hoseOutY - 38);
+      ctx.quadraticCurveTo(hoseOutX - 8, hoseOutY - 16, hoseOutX - 4, hoseOutY - 35);
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(50,140,230,0.5)';
+      ctx.strokeStyle = 'rgba(55,145,235,0.45)';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(hoseOutX, hoseOutY);
-      ctx.quadraticCurveTo(hoseOutX - 10, hoseOutY - 18, hoseOutX - 5, hoseOutY - 38);
+      ctx.quadraticCurveTo(hoseOutX - 8, hoseOutY - 16, hoseOutX - 4, hoseOutY - 35);
       ctx.stroke();
       ctx.restore();
     }
-  },
 
-  drawReceiver: function(ctx, rc, state) {
     ctx.save();
-    var cx = rc.cx;
-    var neckTop = rc.cy - rc.bodyR - rc.neckH;
-    var neckBot = rc.cy - rc.bodyR;
-    var r = rc.bodyR;
-    ctx.fillStyle = '#f5f5f0';
-    ctx.fillRect(cx - 35, rc.cy + r - 2, 70, 6);
+    var rcx = rc.cx;
+    var rcNeckBot = rc.cy - rc.bodyR;
+    var rr = rc.bodyR;
+    ctx.fillStyle = '#f0f0ea';
+    ctx.fillRect(rcx - 32, rc.cy + rr, 64, 5);
     ctx.strokeStyle = '#ddd';
     ctx.lineWidth = 0.5;
-    ctx.strokeRect(cx - 35, rc.cy + r - 2, 70, 6);
-    ctx.strokeStyle = 'rgba(90,130,170,0.75)';
+    ctx.strokeRect(rcx - 32, rc.cy + rr, 64, 5);
+    ctx.strokeStyle = 'rgba(80,120,160,0.8)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(cx - rc.neckW / 2, neckTop);
-    ctx.lineTo(cx - rc.neckW / 2, neckBot);
-    ctx.lineTo(cx - r, rc.cy + r * 0.65);
-    ctx.lineTo(cx - r + 4, rc.cy + r);
-    ctx.quadraticCurveTo(cx, rc.cy + r + 5, cx + r - 4, rc.cy + r);
-    ctx.lineTo(cx + r, rc.cy + r * 0.65);
-    ctx.lineTo(cx + rc.neckW / 2, neckBot);
-    ctx.lineTo(cx + rc.neckW / 2, neckTop);
+    ctx.moveTo(rcx - rc.neckW / 2, rcNeckTop);
+    ctx.lineTo(rcx - rc.neckW / 2, rcNeckBot);
+    ctx.lineTo(rcx - rr, rc.cy + rr * 0.65);
+    ctx.lineTo(rcx - rr + 4, rc.cy + rr);
+    ctx.quadraticCurveTo(rcx, rc.cy + rr + 5, rcx + rr - 4, rc.cy + rr);
+    ctx.lineTo(rcx + rr, rc.cy + rr * 0.65);
+    ctx.lineTo(rcx + rc.neckW / 2, rcNeckBot);
+    ctx.lineTo(rcx + rc.neckW / 2, rcNeckTop);
     ctx.closePath();
-    var gg = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
-    gg.addColorStop(0, 'rgba(170,205,235,0.3)');
-    gg.addColorStop(0.2, 'rgba(225,240,255,0.15)');
-    gg.addColorStop(0.5, 'rgba(250,255,255,0.08)');
-    gg.addColorStop(0.8, 'rgba(225,240,255,0.15)');
-    gg.addColorStop(1, 'rgba(170,205,235,0.3)');
-    ctx.fillStyle = gg;
+    var rgg = ctx.createLinearGradient(rcx - rr, 0, rcx + rr, 0);
+    rgg.addColorStop(0, 'rgba(160,200,235,0.3)');
+    rgg.addColorStop(0.2, 'rgba(220,238,255,0.15)');
+    rgg.addColorStop(0.5, 'rgba(248,255,255,0.06)');
+    rgg.addColorStop(0.8, 'rgba(220,238,255,0.15)');
+    rgg.addColorStop(1, 'rgba(160,200,235,0.3)');
+    ctx.fillStyle = rgg;
     ctx.fill();
     ctx.stroke();
-    if (state.distCollected) {
-      var collectH = r * 1.1;
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(cx - r, rc.cy + r * 0.65);
-      ctx.lineTo(cx - r + 4, rc.cy + r);
-      ctx.quadraticCurveTo(cx, rc.cy + r + 4, cx + r - 4, rc.cy + r);
-      ctx.lineTo(cx + r, rc.cy + r * 0.65);
-      ctx.closePath();
-      ctx.clip();
-      var lg = ctx.createLinearGradient(0, rc.cy + r - collectH, 0, rc.cy + r + 5);
-      lg.addColorStop(0, 'rgba(175,210,248,0.3)');
-      lg.addColorStop(1, 'rgba(155,195,238,0.55)');
-      ctx.fillStyle = lg;
-      ctx.fillRect(cx - r, rc.cy + r - collectH, r * 2, collectH);
-      ctx.restore();
-    }
+    var initLiqH = rr * 0.35;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(rcx - rr, rc.cy + rr * 0.65);
+    ctx.lineTo(rcx - rr + 4, rc.cy + rr);
+    ctx.quadraticCurveTo(rcx, rc.cy + rr + 4, rcx + rr - 4, rc.cy + rr);
+    ctx.lineTo(rcx + rr, rc.cy + rr * 0.65);
+    ctx.closePath();
+    ctx.clip();
+    var rlg = ctx.createLinearGradient(0, rc.cy + rr - initLiqH, 0, rc.cy + rr + 5);
+    rlg.addColorStop(0, 'rgba(175,210,248,0.3)');
+    rlg.addColorStop(1, 'rgba(150,195,240,0.5)');
+    ctx.fillStyle = rlg;
+    ctx.fillRect(rcx - rr, rc.cy + rr - initLiqH, rr * 2, initLiqH);
+    ctx.restore();
     ctx.strokeStyle = 'rgba(255,255,255,0.4)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(cx - r + 10, rc.cy - r * 0.1);
-    ctx.lineTo(cx - r + 7, rc.cy + r * 0.5);
+    ctx.moveTo(rcx - rr + 10, rc.cy - rr * 0.1);
+    ctx.lineTo(rcx - rr + 7, rc.cy + rr * 0.5);
     ctx.stroke();
     ctx.restore();
   },
@@ -677,13 +701,19 @@ var DistillationRenderer = {
       ctx.fill();
     }
     if (progress > 0.5) {
-      var collectH = (progress - 0.5) * 2 * sim.receiver.bodyR * 0.8;
+      var rc = sim.receiver;
+      var extraH = (progress - 0.5) * 2 * rc.bodyR * 0.6;
+      var totalH = rc.bodyR * 0.35 + extraH;
       ctx.save();
       ctx.beginPath();
-      ctx.arc(sim.receiver.cx, sim.receiver.cy, sim.receiver.bodyR - 3, 0, Math.PI * 2);
+      ctx.moveTo(rc.cx - rc.bodyR, rc.cy + rc.bodyR * 0.65);
+      ctx.lineTo(rc.cx - rc.bodyR + 4, rc.cy + rc.bodyR);
+      ctx.quadraticCurveTo(rc.cx, rc.cy + rc.bodyR + 4, rc.cx + rc.bodyR - 4, rc.cy + rc.bodyR);
+      ctx.lineTo(rc.cx + rc.bodyR, rc.cy + rc.bodyR * 0.65);
+      ctx.closePath();
       ctx.clip();
       ctx.fillStyle = sim.firstFraction.color;
-      ctx.fillRect(sim.receiver.cx - sim.receiver.bodyR, sim.receiver.cy + sim.receiver.bodyR - collectH, sim.receiver.bodyR * 2, collectH);
+      ctx.fillRect(rc.cx - rc.bodyR, rc.cy + rc.bodyR - totalH, rc.bodyR * 2, totalH);
       ctx.restore();
     }
     if (progress < 1) {
