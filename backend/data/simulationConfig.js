@@ -8,11 +8,11 @@ var SIMULATION_CONFIG = {
     label: "SIMULATED EDUCATIONAL VALUES — not real laboratory measurements",
     paper: {
       width: 80,
-      height: 300,
-      baselineY: 380,
-      topY: 80
+      height: 240,
+      baselineY: 200,
+      topY: 0
     },
-    beaker: { cx: 290, cy: 340, w: 190, h: 280, solventLevel: 0.22, rimY: 80 },
+    beaker: { cx: 290, cy: 240, w: 190, h: 310, solventLevel: 0.2, rimY: 75 },
     stick: { x: 175, y: 72, w: 230, h: 8 },
     clip: { cx: 290, cy: 72, w: 24, h: 30 },
     solventBeaker: { cx: 455, cy: 400, w: 80, h: 110, solventLevel: 0.5 },

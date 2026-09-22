@@ -213,9 +213,9 @@ var ChromatographyRenderer = {
     var paperW = sim.paper.width;
     var paperH = sim.paper.height;
     var paperX = bk.cx - paperW / 2;
-    var paperTop = bk.rimY + 20;
-    var baseAbsY = paperTop + (sim.paper.baselineY - sim.paper.topY);
-    var topAbsY = paperTop;
+    var paperTop = bk.rimY + 15;
+    var baseAbsY = paperTop + sim.paper.baselineY;
+    var topAbsY = paperTop + sim.paper.topY;
     return { cw: cw, ch: ch, paperW: paperW, paperH: paperH, paperX: paperX, paperTop: paperTop, baseAbsY: baseAbsY, topAbsY: topAbsY, sim: sim };
   },
 
