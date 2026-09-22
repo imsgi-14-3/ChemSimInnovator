@@ -17,14 +17,15 @@ var SIMULATION_CONFIG = {
     clip: { cx: 290, cy: 72, w: 24, h: 30 },
     solventBeaker: { cx: 455, cy: 400, w: 80, h: 110, solventLevel: 0.5 },
     inkBottles: [
-      { cx: 75, cy: 420, w: 40, h: 80, label: 'Black Ink', liquidColor: '#1a1a1a', capColor: '#222' },
-      { cx: 135, cy: 420, w: 40, h: 80, label: 'Blue Ink', liquidColor: '#0044cc', capColor: '#222' },
-      { cx: 195, cy: 420, w: 40, h: 80, label: 'Red Ink', liquidColor: '#cc0033', capColor: '#222' }
+      { cx: 55, cy: 430, w: 38, h: 75, label: 'Black Ink', liquidColor: '#1a1a1a', capColor: '#1a1a1a', glassColor: 'rgba(30,30,30,0.7)' },
+      { cx: 110, cy: 430, w: 38, h: 75, label: 'Blue Ink', liquidColor: '#003399', capColor: '#1a1a1a', glassColor: 'rgba(0,40,120,0.5)' },
+      { cx: 165, cy: 430, w: 38, h: 75, label: 'Red Ink', liquidColor: '#aa0022', capColor: '#1a1a1a', glassColor: 'rgba(140,0,30,0.5)' }
     ],
-    capillary: { x1: 130, y1: 540, x2: 230, y2: 555 },
-    pencil: { x: 290, y: 548, w: 130, h: 8 },
-    ruler: { x: 380, y: 535, w: 140, h: 18 },
-    dropper: { cx: 468, cy: 340, w: 6, h: 120 },
+    capillary: { x1: 100, y1: 545, x2: 200, y2: 558 },
+    pencil: { x: 270, y: 550, w: 130, h: 8 },
+    ruler: { x: 370, y: 538, w: 140, h: 16 },
+    solventBeaker: { cx: 460, cy: 410, w: 75, h: 100, solventLevel: 0.55 },
+    dropper: { cx: 468, cy: 370, w: 5, h: 100 },
     solventFrontMaxDist: 250,
     animationDurationMs: 4500,
     components: [
