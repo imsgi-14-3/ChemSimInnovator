@@ -24,13 +24,62 @@ var ChemSim = (function() {
 
   function navigateTo(screen, options) {
     options = options || {};
-    appState.screen = screen;
     if (options.experimentId) {
       startExperiment(options.experimentId);
       return;
     }
+    if (screen === 'experiment-select') {
+      showExperimentListing();
+      return;
+    }
+    appState.screen = screen;
     renderCurrentScreen();
     updateSidebarActive();
+  }
+
+  function showExperimentListing() {
+    var workspace = document.getElementById('workspace-content');
+    var instructionPanel = document.getElementById('instruction-content');
+    var sidebarExperiments = document.getElementById('sidebar-experiments');
+    var headerCenter = document.getElementById('header-center');
+    var headerProgress = document.getElementById('header-progress');
+    var btnBack = document.getElementById('btn-back');
+    var btnActionBack = document.getElementById('btn-action-back');
+    var btnActionNext = document.getElementById('btn-action-next');
+    var btnActionReset = document.getElementById('btn-action-reset');
+    var actionCenter = document.getElementById('action-center');
+
+    headerCenter.innerHTML = '';
+    headerProgress.style.display = 'none';
+    btnBack.style.display = 'none';
+    btnActionBack.style.display = 'none';
+    btnActionNext.style.display = 'none';
+    btnActionReset.style.display = 'none';
+    actionCenter.innerHTML = '';
+    instructionPanel.innerHTML = '<div class="instruction-placeholder"><p>Select an experiment from the sidebar or below to begin.</p></div>';
+    if (sidebarExperiments) sidebarExperiments.style.display = '';
+
+    var experiments = ApiClient.getExperiments();
+    var majorHtml = '<div class="experiment-group"><h3 class="subsection-title">Major Practicals</h3><div class="home-modules">';
+    var minorHtml = '<div class="experiment-group"><h3 class="subsection-title">Minor Practicals</h3><div class="home-modules">';
+    for (var i = 0; i < experiments.length; i++) {
+      var exp = experiments[i];
+      var cardHtml = '<button class="module-card" data-exp-id="' + exp.id + '">' +
+        '<h3>' + escapeHtml(exp.id) + '</h3>' +
+        '<p>' + escapeHtml(exp.title.substring(0, 60)) + '</p>' +
+        '<span class="module-tag ' + (exp.section === 'major' ? 'module-tag--major' : 'module-tag--minor') + '">' +
+        (exp.section === 'major' ? 'Major' : 'Minor') + '</span></button>';
+      if (exp.section === 'major') majorHtml += cardHtml; else minorHtml += cardHtml;
+    }
+    majorHtml += '</div></div>';
+    minorHtml += '</div></div>';
+    workspace.innerHTML = '<div class="home-screen">' + majorHtml + minorHtml + '</div>';
+
+    workspace.querySelectorAll('[data-exp-id]').forEach(function(el) {
+      el.addEventListener('click', function() {
+        startExperiment(el.getAttribute('data-exp-id'));
+      });
+    });
   }
 
   function goHome() {
