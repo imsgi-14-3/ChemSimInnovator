@@ -49,14 +49,14 @@ var SIMULATION_CONFIG = {
       color: "rgba(180, 210, 240, 0.4)"
     },
     initialTemp: 25,
-    stand: { baseX: 60, baseY: 595, baseW: 100, rodX: 110, rodTop: 30, rodBot: 595 },
-    mantle: { cx: 165, cy: 530, w: 110, h: 70, dialX: 165, dialY: 555 },
-    flask: { cx: 165, cy: 460, bodyR: 60, neckW: 22, neckH: 45 },
-    column: { x: 154, y: 105, width: 22 },
-    condenser: { x1: 176, y1: 120, x2: 395, y2: 380, width: 20, innerW: 8 },
-    receiver: { cx: 420, cy: 445, bodyR: 45, neckW: 16, neckH: 25, type: 'erlenmeyer' },
-    clampFlask: { x: 95, y: 348, w: 60, h: 8 },
-    clampColumn: { x: 95, y: 200, w: 60, h: 8 }
+    stand: { baseX: 50, baseY: 598, baseW: 110, rodX: 105, rodTop: 25, rodBot: 598 },
+    mantle: { cx: 175, cy: 535, w: 120, h: 75, dialX: 175, dialY: 560 },
+    flask: { cx: 175, cy: 455, bodyR: 62, neckW: 20, neckH: 48 },
+    column: { x: 165, y: 115, width: 20 },
+    condenser: { x1: 185, y1: 125, x2: 385, y2: 375, width: 22, innerW: 8 },
+    receiver: { cx: 415, cy: 440, bodyR: 48, neckW: 14, neckH: 22, type: 'erlenmeyer' },
+    clampFlask: { x: 90, y: 348, w: 75, h: 8 },
+    clampColumn: { x: 90, y: 210, w: 75, h: 8 }
   },
   "A4": {
     label: "SIMULATED EDUCATIONAL VALUES — not real laboratory measurements",
