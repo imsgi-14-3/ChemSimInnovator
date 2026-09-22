@@ -21,9 +21,9 @@ var SIMULATION_CONFIG = {
       { cx: 110, cy: 430, w: 38, h: 75, label: 'Blue Ink', liquidColor: '#003399', capColor: '#1a1a1a', glassColor: 'rgba(0,40,120,0.5)' },
       { cx: 165, cy: 430, w: 38, h: 75, label: 'Red Ink', liquidColor: '#aa0022', capColor: '#1a1a1a', glassColor: 'rgba(140,0,30,0.5)' }
     ],
-    capillary: { x1: 100, y1: 545, x2: 200, y2: 558 },
-    pencil: { x: 270, y: 550, w: 130, h: 8 },
-    ruler: { x: 370, y: 538, w: 140, h: 16 },
+    capillary: { x1: 80, y1: 548, x2: 180, y2: 560 },
+    pencil: { x: 220, y: 552, w: 120, h: 7 },
+    ruler: { x: 380, y: 542, w: 130, h: 14 },
     solventBeaker: { cx: 460, cy: 410, w: 75, h: 100, solventLevel: 0.55 },
     dropper: { cx: 468, cy: 370, w: 5, h: 100 },
     solventFrontMaxDist: 250,
