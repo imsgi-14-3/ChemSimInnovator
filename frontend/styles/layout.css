@@ -365,3 +365,15 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+
+.stage-next-btn-wrap {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-4) 0 var(--space-2) 0;
+}
+
+.stage-next-btn {
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}

@@ -201,6 +201,10 @@ var DistillationRenderer = {
     if (state.simulation && (state.currentStage === 'monitor' || state.currentStage === 'observe' || state.currentStage === 'collect')) {
       this.drawAnimation(ctx, sim, state, canvas);
     }
+    if (state.distHeating && !state.simulation) {
+      var self = this;
+      requestAnimationFrame(function() { self.draw(canvas, ctx, state, exp); });
+    }
   },
 
   drawStand: function(ctx, s) {

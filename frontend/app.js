@@ -228,6 +228,9 @@ var ChemSim = (function() {
 
     var isLastStage = stage === 'complete';
     var stageHtml = ExperimentScreen.renderStage(exp, stage, appState.state, appState);
+    if (hasNext) {
+      stageHtml += '<div class="stage-next-btn-wrap"><button class="btn btn-primary stage-next-btn" id="stage-next-btn">Next Step →</button></div>';
+    }
     workspace.innerHTML = stageHtml;
 
     var instrHtml = InstructionPanel.render(exp, stage, appState.state);
@@ -238,6 +241,10 @@ var ChemSim = (function() {
 
     attachStageListeners(exp, stage);
     renderCanvasForStage(exp, stage);
+    var stageNextBtn = document.getElementById('stage-next-btn');
+    if (stageNextBtn) {
+      stageNextBtn.addEventListener('click', goNext);
+    }
   }
 
   function renderCanvasForStage(exp, stage) {
