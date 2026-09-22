@@ -37,16 +37,27 @@ var SIMULATION_CONFIG = {
   "A3": {
     label: "SIMULATED EDUCATIONAL VALUES — not real laboratory measurements",
     paper: {
-      width: 160,
-      height: 420,
-      baselineY: 350,
-      topY: 20
+      width: 80,
+      height: 240,
+      baselineY: 200,
+      topY: 0
     },
-    solventFrontMaxDist: 330,
+    beaker: { cx: 290, cy: 240, w: 190, h: 310, solventLevel: 0.2, rimY: 75 },
+    stick: { x: 175, y: 72, w: 230, h: 8 },
+    clip: { cx: 290, cy: 72, w: 24, h: 30 },
+    solventBeaker: { cx: 460, cy: 410, w: 75, h: 100, solventLevel: 0.55 },
+    inkBottles: [
+      { cx: 65, cy: 430, w: 42, h: 80, label: 'Pb²⁺ Solution', liquidColor: 'rgba(200,200,210,0.6)', capColor: '#1a1a1a', glassColor: 'rgba(180,190,200,0.4)' },
+      { cx: 140, cy: 430, w: 42, h: 80, label: 'Cd²⁺ Solution', liquidColor: 'rgba(160,200,230,0.5)', capColor: '#1a1a1a', glassColor: 'rgba(140,180,210,0.35)' }
+    ],
+    capillary: { x1: 60, y1: 555, x2: 160, y2: 565 },
+    pencil: { x: 220, y: 552, w: 120, h: 7 },
+    ruler: { x: 380, y: 542, w: 130, h: 14 },
+    solventFrontMaxDist: 250,
     animationDurationMs: 4500,
     components: [
-      { name: "Pb²⁺ (Lead ion)", color: "#b8860b", relativeRate: 0.82 },
-      { name: "Cd²⁺ (Cadmium ion)", color: "#cc44cc", relativeRate: 0.55 }
+      { name: "Cd²⁺", color: "#4488dd", relativeRate: 0.65 },
+      { name: "Pb²⁺", color: "#9933aa", relativeRate: 0.35 }
     ]
   },
   "A1": {
