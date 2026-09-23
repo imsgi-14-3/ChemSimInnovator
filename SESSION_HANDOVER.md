@@ -13,7 +13,7 @@ ChemSim — Interactive Virtual Chemistry Laboratory for Grade 9/10 FBISE PBA ex
 - Repo: `https://github.com/imsgi-14-3/ChemSimInnovator.git`
 - Branch: `main`
 - Author: `imsgi-14-3 <imsgi14.3cb2@gmail.com>`
-- Last commit: pending
+- Last commit: `840cd6e`
 
 ## How to Run
 1. Open `index.html` in browser
