@@ -374,9 +374,13 @@ var ExpLog = (function() {
 
   /* ---- Event Handler ---- */
 
+  var listenersAttached = false;
+
   function attachListeners(appState) {
+    if (listenersAttached) return;
     var workspace = document.getElementById('workspace-content');
     if (!workspace) return;
+    listenersAttached = true;
 
     workspace.addEventListener('click', function(e) {
       var target = e.target;
@@ -427,6 +431,7 @@ var ExpLog = (function() {
   function renderInto(appState) {
     var workspace = document.getElementById('workspace-content');
     if (!workspace) return;
+    attachListeners(appState);
     var screen = appState.logState.screen;
     if (screen === 'list') {
       workspace.innerHTML = renderList();
@@ -463,7 +468,6 @@ ChemSim.registerScreen('log', function(appState) {
   if (!appState.logState) {
     appState.logState = { screen: 'menu', detailId: null };
   }
-  ExpLog.attachListeners(appState);
   var screen = appState.logState.screen;
   if (screen === 'list') {
     return ExpLog.renderList();
