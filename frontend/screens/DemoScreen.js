@@ -196,6 +196,7 @@ var DemoEngine = (function() {
   function renderInto(appState) {
     var workspace = document.getElementById('workspace-content');
     if (!workspace) return;
+    attachListeners(appState);
     var ds = appState.demoState;
     var screen = ds.screen;
 
