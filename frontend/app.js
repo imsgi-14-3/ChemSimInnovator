@@ -214,7 +214,12 @@ var ChemSim = (function() {
       try {
         var record = ExpLog.buildPracticalRecord(appState.experiment, appState.state);
         ExpLog.add(record);
-      } catch(e) {}
+        console.log('Experiment log record created:', record.id);
+      } catch(e) {
+        console.error('Failed to create experiment log record:', e);
+      }
+    } else {
+      console.warn('finishExperiment: no experiment or state available');
     }
     goHome();
   }
