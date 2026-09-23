@@ -91,6 +91,8 @@ var ChemSim = (function() {
     appState.stageIndex = -1;
     appState.state = null;
     appState.simulation = null;
+    appState.pbaState = null;
+    appState.mysteryState = null;
     renderCurrentScreen();
     updateSidebarActive();
   }
@@ -101,6 +103,36 @@ var ChemSim = (function() {
         appState.stageIndex--;
         appState.currentStage = appState.stages[appState.stageIndex];
         renderExperimentStage();
+      } else {
+        goHome();
+      }
+    } else if (appState.screen === 'pba' && appState.pbaState) {
+      var pba = appState.pbaState;
+      if (pba.phase === 'practice' && pba.currentPart > 0) {
+        pba.currentPart--;
+        renderPbaScreen();
+      } else if (pba.phase === 'result') {
+        pba.phase = 'select';
+        pba.currentQ = null;
+        renderPbaScreen();
+      } else {
+        pba.phase = 'select';
+        pba.currentQ = null;
+        renderCurrentScreen();
+      }
+    } else if (appState.screen === 'mystery' && appState.mysteryState) {
+      var mystery = appState.mysteryState;
+      if (mystery.phase === 'investigate') {
+        mystery.phase = 'select';
+        mystery.currentSample = null;
+        renderMysteryScreen();
+      } else if (mystery.phase === 'identify') {
+        mystery.phase = 'investigate';
+        renderMysteryScreen();
+      } else if (mystery.phase === 'result') {
+        mystery.phase = 'select';
+        mystery.currentSample = null;
+        renderMysteryScreen();
       } else {
         goHome();
       }
@@ -215,6 +247,34 @@ var ChemSim = (function() {
     btnActionReset.style.display = 'none';
     actionCenter.innerHTML = '';
     instructionPanel.innerHTML = '<div class="instruction-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-light)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><p>Select an experiment to begin</p></div>';
+
+    if (appState.screen === 'pba' && appState.pbaState && appState.pbaState.phase !== 'select') {
+      headerCenter.innerHTML = '<span class="header-experiment-title">PBA Practice</span>';
+      headerCenter.style.display = '';
+      btnBack.style.display = '';
+      renderPbaScreen();
+      updateSidebarActive();
+      return;
+    }
+
+    if (appState.screen === 'mystery' && appState.mysteryState && appState.mysteryState.phase !== 'select') {
+      headerCenter.innerHTML = '<span class="header-experiment-title">Mystery Lab</span>';
+      headerCenter.style.display = '';
+      btnBack.style.display = '';
+      renderMysteryScreen();
+      updateSidebarActive();
+      return;
+    }
+
+    if (appState.screen === 'mystery') {
+      headerCenter.innerHTML = '';
+      headerCenter.style.display = 'none';
+      btnBack.style.display = 'none';
+      instructionPanel.innerHTML = '<div class="instruction-placeholder"><p>Select a mystery sample to investigate.</p></div>';
+      renderMysteryScreen();
+      updateSidebarActive();
+      return;
+    }
 
     var handler = screens[appState.screen];
     if (handler) {

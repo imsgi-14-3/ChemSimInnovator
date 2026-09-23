@@ -185,7 +185,7 @@ var EXPERIMENTS = [
   {
     id: "A4",
     title: "Determine the exact molarity of the NaOH solution Volumetrically",
-    section: "Major Practical",
+    section: "major",
     slos: ["C-10-B-13", "C-09-F-04", "C-09-F-09"],
     objective:
       "To determine the exact molarity of a NaOH solution by titrating it against a standard HCl solution of known concentration.",
@@ -244,7 +244,7 @@ var EXPERIMENTS = [
   {
     id: "A5",
     title: "Detection and confirmation of gases: NH₃, CO₂, Cl₂",
-    section: "Major Practical",
+    section: "major",
     slos: ["C-09-F-15", "C-09-10-G-10"],
     objective:
       "To detect and confirm the presence of NH₃, CO₂, and Cl₂ gases using appropriate chemical tests.",
