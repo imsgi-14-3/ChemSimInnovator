@@ -14,7 +14,8 @@ var ChemSim = (function() {
     stageIndex: -1,
     state: null,
     simulation: null,
-    logState: { screen: 'menu', detailId: null }
+    logState: { screen: 'menu', detailId: null },
+    demoState: { screen: 'intro', step: 0, practicalFinished: false }
   };
 
   var screens = {};
@@ -95,6 +96,7 @@ var ChemSim = (function() {
     appState.pbaState = null;
     appState.mysteryState = null;
     appState.logState = { screen: 'menu', detailId: null };
+    appState.demoState = { screen: 'intro', step: 0, practicalFinished: false };
     renderCurrentScreen();
     updateSidebarActive();
   }
@@ -150,6 +152,8 @@ var ChemSim = (function() {
       } else {
         goHome();
       }
+    } else if (appState.screen === 'demo') {
+      goHome();
     } else {
       goHome();
     }
@@ -218,8 +222,13 @@ var ChemSim = (function() {
       } catch(e) {
         console.error('Failed to create experiment log record:', e);
       }
-    } else {
-      console.warn('finishExperiment: no experiment or state available');
+    }
+    /* Demo mode: detect practical finish */
+    if (appState.demoState && appState.demoState.screen === 'practical' && !appState.demoState.practicalFinished) {
+      appState.demoState.practicalFinished = true;
+      appState.screen = 'demo';
+      renderCurrentScreen();
+      return;
     }
     goHome();
   }
@@ -296,6 +305,16 @@ var ChemSim = (function() {
       btnBack.style.display = '';
       instructionPanel.innerHTML = '<div class="instruction-placeholder"><p>View your completed experiment records.</p></div>';
       ExpLog.renderInto(appState);
+      updateSidebarActive();
+      return;
+    }
+
+    if (appState.screen === 'demo') {
+      headerCenter.innerHTML = '<span class="header-experiment-title">Demo Mode</span>';
+      headerCenter.style.display = '';
+      btnBack.style.display = '';
+      instructionPanel.innerHTML = '<div class="instruction-placeholder"><p>Guided demonstration of ChemSim features.</p></div>';
+      DemoEngine.renderInto(appState);
       updateSidebarActive();
       return;
     }

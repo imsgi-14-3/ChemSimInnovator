@@ -13,7 +13,7 @@ ChemSim — Interactive Virtual Chemistry Laboratory for Grade 9/10 FBISE PBA ex
 - Repo: `https://github.com/imsgi-14-3/ChemSimInnovator.git`
 - Branch: `main`
 - Author: `imsgi-14-3 <imsgi14.3cb2@gmail.com>`
-- Last commit: `f9b9794`
+- Last commit: pending
 
 ## How to Run
 1. Open `index.html` in browser
@@ -34,9 +34,9 @@ ChemSimInnovator/
 │   └── services/
 │       ├── mysteryService.js           ← getSample(), getSampleIds()
 │       ├── pbaService.js               ← getQuestions(), getQuestion(), etc.
-│       └── logService.js               ← Legacy stub (not used, ExpLog replaces it)
+│       └── logService.js               ← Legacy stub (replaced by ExpLog)
 ├── frontend/
-│   ├── app.js                          ← Main controller (~1080 lines)
+│   ├── app.js                          ← Main controller (~1090 lines)
 │   ├── renderers/
 │   │   ├── DistillationRenderer.js     ← A1 canvas (complete)
 │   │   ├── ChromatographyRenderer.js   ← A2/A3 canvas (complete)
@@ -54,10 +54,11 @@ ChemSimInnovator/
 │   │   ├── MysteryLabScreen.js         ← Mystery Lab select/investigate/result
 │   │   ├── PBAScreen.js                ← PBA Practice with inline feedback
 │   │   ├── LogScreen.js                ← Experiment Log (ExpLog module)
+│   │   ├── DemoScreen.js               ← Demo Mode (DemoEngine module)
 │   │   └── PBAController.js
 │   └── styles/
 │       ├── layout.css
-│       ├── components.css              ← All UI + mystery tool visuals + log styles
+│       ├── components.css              ← All UI + mystery + log + demo styles
 │       ├── design-system.css
 │       └── responsive.css
 ```
@@ -70,122 +71,98 @@ ChemSimInnovator/
 - Mystery Lab — 6 mystery samples, tool visual graphics, auto-revealed answers
 - Revision Hub — MCQ quiz per experiment
 - Experiment Log — full CRUD, auto-records on experiment/mystery finish
-- Demo/Presentation Mode
+- Demo Mode — guided 5-step presentation of all features
 - Learning & Revision Hub
+
+## Demo Mode — Current State
+
+### What's Done
+- Full `DemoEngine` module in `DemoScreen.js`
+- 5-step guided presentation: Practical Lab → Experiment Log → Learning & Revision → Mystery Lab → PBA Practice
+- Intro screen with feature list, Start/Exit buttons
+- Progress dots showing completed/active/upcoming steps
+- Each step has presenter instruction text + feature description + action button
+- Practical step detects finish via `finishExperiment()` and shows completion badge
+- Launch buttons navigate to real modules (A2 practical, Mystery Lab, PBA Practice, Revision Hub)
+- Continue Demo button advances to next step
+- Complete screen with summary + Restart/Return buttons
+- Demo state resets on exit
+
+### Demo Mode Flow
+1. **Intro** — Title, feature list, "Start Demo" button
+2. **Practical Lab** — Launch A2 Paper Chromatography → finish → completion badge → Continue
+3. **Experiment Log** — Shows log records from completed practical
+4. **Learning & Revision** — Feature description + Open Revision Hub button
+5. **Mystery Lab** — Feature description + Open Mystery Lab button
+6. **PBA Practice** — Feature description + Open PBA Practice button
+7. **Complete** — Summary + Restart/Return to Main Menu
+
+### Demo State Structure
+```javascript
+appState.demoState = {
+  screen: 'intro',           // intro|practical|log|revision|mystery|pba|complete
+  step: 0,                   // current step index (0-4)
+  practicalFinished: false    // set true when A2 finishes
+}
+```
+
+### Demo Integration Points
+- `app.js:renderCurrentScreen()` — Routes `screen === 'demo'` to `DemoEngine.renderInto()`
+- `app.js:goBack()` — Handles demo back → goHome
+- `app.js:goHome()` — Resets demoState
+- `app.js:finishExperiment()` — Detects practical finish in demo mode, sets `practicalFinished = true`, returns to demo screen
+- Sidebar button `data-screen="demo"` navigates to demo
+- HomeScreen.js module card navigates to demo
+
+### Demo CSS Classes
+- `.demo-panel` — Container (max-width 600px, centered)
+- `.demo-instruction` — Orange left-border presenter instruction box
+- `.demo-step-content` — Centered step content area
+- `.demo-feature-list` / `.demo-feature-box` — Feature description boxes
+- `.demo-completed-badge` — Green completion notification
+- `.demo-progress` — Progress dots container
+- `.demo-progress-dot` — Gray dot (`.active` = orange, `.completed` = green)
+- `.demo-start-btn` / `.demo-continue-btn` — Orange action buttons
+- `.demo-mystery-btn` — Purple Mystery Lab button
 
 ## Experiment Log — Current State
 
 ### What's Done
-- Full `ExpLog` module in `LogScreen.js` with storage, record builders, renderers
-- localStorage key: `chemsim_experiment_log` (JSON array)
-- Auto-creates log records when:
-  - Student finishes a practical (`finishExperiment()` → `ExpLog.buildPracticalRecord()`)
-  - Student sees mystery result (`mystery-go-result` click → `ExpLog.buildMysteryRecord()`)
+- Full `ExpLog` module in `LogScreen.js` with localStorage CRUD
 - Three views: Menu → List → Detail
-- CRUD: View, Delete individual, Clear All (with confirm dialog)
-- Practical records include: objective, apparatus, materials, procedure, observations, measurements, calculations, result, conclusion
-- Mystery records include: sample identity, tests performed, evidence, score
-- Simulation notice on every record
-- Back navigation handled in `goBack()` for all log phases
-
-### Experiment Log Flow
-1. **Menu** — Title, description, "Open Experiment Log (N records)" button
-2. **List** — Record cards with type badge (Major/Minor/Mystery Lab), date, View/Delete buttons, Clear All
-3. **Detail** — Full record display with metadata, sections, evidence, simulation notice
-
-### Log Record Structure (Practical)
-```javascript
-{
-  id, experimentId, title, section, type: "practical",
-  date, time, slos, objective, apparatus, materials, procedure,
-  observations, measurements, calculations, result, conclusion,
-  sourceLabel, simulatedNotice
-}
-```
-
-### Log Record Structure (Mystery)
-```javascript
-{
-  id, experimentId: "mystery", title, section: "investigation", type: "mystery",
-  date, time, sampleId, sampleTitle, sampleIdentity,
-  testsPerformed, evidence[], score, totalMarks,
-  conclusion, sourceLabel, simulatedNotice
-}
-```
-
-### Log CSS Classes
-- `.log-panel` — Container (max-width 700px, centered)
-- `.log-menu-header` — Menu title area
-- `.log-open-btn` — Blue "Open Experiment Log" button
-- `.log-list-header` — List header with record count + Clear All
-- `.log-empty` — Empty state (dashed border)
-- `.log-card` — Record card with hover shadow
-- `.log-badge` — Type badge (Major=green, Minor=orange, Mystery=purple)
-- `.log-detail-meta` — Metadata box (type, date, SLOs)
-- `.log-detail-section` — Section divider with heading
-- `.log-evidence-entry` — Evidence card with left border
-- `.log-sim-notice` — Orange simulation notice box
-
-### Log Integration Points
-- `app.js:finishExperiment()` — Creates practical record via `ExpLog.buildPracticalRecord()`
-- `MysteryLabScreen.js` — Creates mystery record on "See Result" click via `ExpLog.buildMysteryRecord()`
-- `app.js:renderCurrentScreen()` — Routes `screen === 'log'` to `ExpLog.renderInto()`
-- `app.js:goBack()` — Handles log phase navigation (detail → list → menu → home)
-- `app.js:goHome()` — Resets `logState` to `{ screen: 'menu', detailId: null }`
+- Auto-creates records on experiment/mystery finish
+- CRUD: View, Delete individual, Clear All
 
 ## Mystery Lab — Current State
 
 ### What's Done
-- 6 mystery samples: NaCl, NH₃, CuSO₄, CO₂, Naphthalene, CuSO₄ displacement
-- 3-4 tests per sample with observations and interpretations
-- Tool visual equipment graphics (Bunsen burner, test tubes, beakers, reagent bottles, litmus paper, funnel set)
-- Animated test performance (flame flicker, steam, dripping)
-- Auto-revealed answers — no typing required from students
-- Optional notes — students CAN add their own observations if they want
+- 6 mystery samples with tool visual graphics
+- Auto-revealed answers, optional notes
 - Score based on tests performed
-- Evidence summary table in results
-- Difficulty badges (Easy/Medium/Hard) and marks display
-
-### Mystery Lab Flow
-1. **Select** — Grid of 6 mystery samples with difficulty + marks
-2. **Investigate** — Perform 3-4 tests, each auto-shows observation + interpretation + tool visual
-3. **See Result** — Click button after all tests, score + correct identity revealed automatically
 
 ## PBA Practice — Current State
 
 ### What's Done
-- 11 questions total: 3 Section A (Major, 6 marks each), 8 Section B (Minor, 4 marks each)
-- 4 question types: MCQ, Short Answer, Calculation, Matching
-- Inline feedback after each part (correct/incorrect + explanation)
-- Previous parts' feedback shown, current part highlighted
-- Total result at bottom after all parts (score, percentage, grade, per-part breakdown)
-- Back button, Home button, navigation flow
-- A1-A5 all classified as Major (`section: "A"`) in both experiments.js and pbaQuestions.js
-
-### PBA Flow
-1. Select a question from the list
-2. Answer each part — feedback shown inline after submitting
-3. After all parts, see total result with breakdown table
-4. Back to question list or Home
+- 11 questions, inline feedback per part, total score at end
 
 ## Rendering Flow (app.js)
 
 ### renderCurrentScreen()
-- Handles header, sidebar, instruction panel per screen
 - PBA: calls `renderPbaScreen()` for all phases
-- Mystery: calls `renderMysteryScreen()` for all phases (select + non-select)
-- Log: calls `ExpLog.renderInto(appState)` for all log phases
+- Mystery: calls `renderMysteryScreen()` for all phases
+- Log: calls `ExpLog.renderInto(appState)`
+- Demo: calls `DemoEngine.renderInto(appState)`
 - Experiments: calls registered handler → `renderExperimentStage()`
 
 ### Key Navigation
-- `goBack()` — handles PBA phases, Mystery phases, Log phases, experiment stages, then home
-- `goHome()` — resets all state (experiment, pbaState, mysteryState, logState)
-- `handleAction()` — experiment stage actions (start, reset, next, prev)
+- `goBack()` — handles PBA, Mystery, Log, Demo, experiment stages, then home
+- `goHome()` — resets all state (experiment, pbaState, mysteryState, logState, demoState)
+- `finishExperiment()` — creates log record + detects demo practical finish
 
 ## Known Issues
 1. No automated tests
 2. Canvas renderers need browser testing verification
-3. `logService.js` is legacy stub — replaced by `ExpLog` module in `LogScreen.js`
+3. `logService.js` is legacy stub — replaced by `ExpLog` module
 
 ## Non-Negotiables
 - ALL 13 experiment logic, chemistry, validation, calculations preserved exactly
@@ -196,8 +173,10 @@ ChemSimInnovator/
 - `var` declarations for global scope
 
 ## Next Steps When You Resume
-1. Open `index.html` in browser and test Experiment Log end-to-end
-2. Finish a practical → verify log record created → view in Log
-3. Finish Mystery Lab → verify log record created → view in Log
-4. Test Delete and Clear All functionality
-5. Run `git status` before starting any work
+1. Open `index.html` in browser and test Demo Mode end-to-end
+2. Click "Start Demo" → verify step progression
+3. Launch A2 practical from demo → finish → verify return to demo with completion badge
+4. Verify Experiment Log step shows records
+5. Test Mystery Lab and PBA Practice launch buttons
+6. Test Restart and Return to Main Menu
+7. Run `git status` before starting any work

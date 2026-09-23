@@ -2508,3 +2508,159 @@ input.form-range[type="range"]::-moz-range-thumb {
   text-align: center;
   margin-top: var(--space-3);
 }
+
+/* ============================================================
+   Demo Mode
+   ============================================================ */
+
+.demo-panel {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.demo-panel-center {
+  text-align: center;
+}
+
+.demo-panel-center h2 {
+  margin-bottom: var(--space-1);
+}
+
+.demo-instruction {
+  background: var(--color-bg);
+  border-left: 3px solid #ea580c;
+  padding: 0.85rem 1rem;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin-bottom: var(--space-3);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.demo-step-content {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.demo-step-content h3 {
+  margin-bottom: var(--space-1);
+}
+
+.demo-footer {
+  text-align: center;
+  margin-top: var(--space-3);
+}
+
+.demo-feature-list {
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.demo-feature-list p {
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.demo-feature-list ol {
+  font-size: 0.9rem;
+  padding-left: 1.25rem;
+}
+
+.demo-feature-list li {
+  margin-bottom: 0.35rem;
+}
+
+.demo-feature-box {
+  text-align: left;
+  max-width: 400px;
+  margin: 0 auto var(--space-3);
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.demo-feature-box p {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.demo-feature-box ul {
+  font-size: 0.85rem;
+  padding-left: 1.25rem;
+}
+
+.demo-feature-box li {
+  margin-bottom: 0.25rem;
+}
+
+.demo-log-preview {
+  text-align: left;
+  max-width: 400px;
+  margin: 1rem auto;
+}
+
+.demo-log-preview .log-card {
+  margin-bottom: 0.5rem;
+}
+
+.demo-completed-badge {
+  max-width: 400px;
+  margin: 0 auto 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-success-bg);
+  color: var(--color-success-dark);
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.demo-start-btn {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  background: #e65100;
+}
+
+.demo-continue-btn {
+  padding: 0.75rem 2rem;
+  margin-top: 1rem;
+  background: #e65100;
+}
+
+.demo-mystery-btn {
+  padding: 0.75rem 2rem;
+  margin-top: 1rem;
+  background: #6a1b9a;
+}
+
+/* Progress dots */
+.demo-progress {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.demo-progress-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-border);
+  transition: background var(--transition-fast);
+}
+
+.demo-progress-dot.active {
+  background: #e65100;
+}
+
+.demo-progress-dot.completed {
+  background: var(--color-success);
+}
+
+.demo-progress-label {
+  margin-left: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
