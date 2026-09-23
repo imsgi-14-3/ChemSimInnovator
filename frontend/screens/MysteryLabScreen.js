@@ -438,6 +438,11 @@ function attachInvestigateListeners(state) {
       state.identification = state.currentSample.identity;
       scoreMystery(state);
       state.phase = 'result';
+      /* Create log record */
+      try {
+        var logRecord = ExpLog.buildMysteryRecord(state);
+        ExpLog.add(logRecord);
+      } catch(e) {}
       renderMysteryScreen();
     });
   }

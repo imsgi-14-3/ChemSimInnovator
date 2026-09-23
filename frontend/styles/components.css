@@ -2279,3 +2279,232 @@ input.form-range[type="range"]::-moz-range-thumb {
   color: #6a1b9a;
   font-weight: 700;
 }
+
+/* ============================================================
+   Experiment Log
+   ============================================================ */
+
+.log-panel {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.log-menu-header {
+  text-align: center;
+  margin-bottom: var(--space-3);
+}
+
+.log-menu-header h2 {
+  margin-bottom: var(--space-1);
+}
+
+.log-menu-desc {
+  color: var(--color-text-secondary);
+  max-width: 450px;
+  margin: 0 auto var(--space-3);
+  text-align: center;
+}
+
+.log-menu-actions {
+  text-align: center;
+  margin: var(--space-3) 0;
+}
+
+.log-open-btn {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 1rem;
+  font-size: 1.1rem;
+  background: #1565c0;
+}
+
+.log-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: var(--space-3);
+}
+
+.log-list-header h3 {
+  margin: 0;
+}
+
+.log-clear-btn {
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+}
+
+.log-empty {
+  text-align: center;
+  padding: 2rem;
+  background: var(--color-bg);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  margin: 1rem 0;
+}
+
+.log-empty-title {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.log-empty-desc {
+  color: var(--color-text-secondary);
+}
+
+.log-entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.log-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.log-card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-border-strong);
+}
+
+.log-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.log-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.log-card-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log-card-meta {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.log-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.log-card-actions .btn {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.log-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.log-list-footer {
+  text-align: center;
+  margin-top: var(--space-3);
+}
+
+.log-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.log-detail-header h3 {
+  margin: 0;
+}
+
+.log-detail-meta {
+  padding: 0.85rem 1rem;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-3);
+}
+
+.log-detail-meta p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.log-detail-section {
+  margin: 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.log-detail-section:last-of-type {
+  border-bottom: none;
+}
+
+.log-detail-section h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.log-detail-section ul,
+.log-detail-section ol {
+  margin: 0.25rem 0;
+  padding-left: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.log-detail-section li {
+  margin: 0.2rem 0;
+}
+
+.log-evidence-entry {
+  padding: 0.5rem 0.75rem;
+  margin: 0.35rem 0;
+  background: var(--color-bg);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.9rem;
+}
+
+.log-sim-notice {
+  margin-top: 1.5rem;
+  padding: 0.85rem 1rem;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  color: #9a3412;
+}
+
+.log-sim-notice p {
+  margin: 0.25rem 0;
+}
+
+.log-detail-footer {
+  text-align: center;
+  margin-top: var(--space-3);
+}

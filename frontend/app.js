@@ -13,7 +13,8 @@ var ChemSim = (function() {
     currentStage: null,
     stageIndex: -1,
     state: null,
-    simulation: null
+    simulation: null,
+    logState: { screen: 'menu', detailId: null }
   };
 
   var screens = {};
@@ -93,6 +94,7 @@ var ChemSim = (function() {
     appState.simulation = null;
     appState.pbaState = null;
     appState.mysteryState = null;
+    appState.logState = { screen: 'menu', detailId: null };
     renderCurrentScreen();
     updateSidebarActive();
   }
@@ -133,6 +135,18 @@ var ChemSim = (function() {
         mystery.phase = 'select';
         mystery.currentSample = null;
         renderMysteryScreen();
+      } else {
+        goHome();
+      }
+    } else if (appState.screen === 'log' && appState.logState) {
+      var log = appState.logState;
+      if (log.screen === 'detail') {
+        log.screen = 'list';
+        log.detailId = null;
+        renderCurrentScreen();
+      } else if (log.screen === 'list') {
+        log.screen = 'menu';
+        renderCurrentScreen();
       } else {
         goHome();
       }
@@ -196,15 +210,10 @@ var ChemSim = (function() {
   }
 
   function finishExperiment() {
-    if (appState.state && appState.state.conclusion && appState.state.conclusion.trim()) {
+    if (appState.experiment && appState.state) {
       try {
-        ApiClient.addLogEntry({
-          experimentId: appState.experimentId,
-          title: appState.experiment.title,
-          date: new Date().toISOString(),
-          conclusion: appState.state.conclusion,
-          interpretation: appState.state.interpretation || ''
-        });
+        var record = ExpLog.buildPracticalRecord(appState.experiment, appState.state);
+        ExpLog.add(record);
       } catch(e) {}
     }
     goHome();
@@ -272,6 +281,16 @@ var ChemSim = (function() {
       btnBack.style.display = 'none';
       instructionPanel.innerHTML = '<div class="instruction-placeholder"><p>Select a mystery sample to investigate.</p></div>';
       renderMysteryScreen();
+      updateSidebarActive();
+      return;
+    }
+
+    if (appState.screen === 'log') {
+      headerCenter.innerHTML = '<span class="header-experiment-title">Experiment Log</span>';
+      headerCenter.style.display = '';
+      btnBack.style.display = '';
+      instructionPanel.innerHTML = '<div class="instruction-placeholder"><p>View your completed experiment records.</p></div>';
+      ExpLog.renderInto(appState);
       updateSidebarActive();
       return;
     }
