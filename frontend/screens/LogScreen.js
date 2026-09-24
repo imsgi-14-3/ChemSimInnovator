@@ -174,11 +174,13 @@ var ExpLog = (function() {
       for (var i = 0; i < sample.tests.length; i++) {
         var test = sample.tests[i];
         if (mysteryState.testsPerformed[test.id]) {
-          evidenceText.push(test.name + ': ' + test.observation + ' (interpretation: ' + test.interpretation + ')');
+          var student = (mysteryState.interpretations && mysteryState.interpretations[test.id]) || '\u2014';
+          evidenceText.push(test.name + ': ' + test.observation + ' | your interpretation: ' + student + ' | correct: ' + test.interpretation);
         }
       }
     }
 
+    var detail = mysteryState.scoreDetail || {};
     return {
       id: id,
       experimentId: 'mystery',
@@ -190,7 +192,12 @@ var ExpLog = (function() {
       sampleId: sample ? sample.id : 'unknown',
       sampleTitle: sample ? sample.title : 'Unknown Sample',
       sampleIdentity: sample ? sample.identity : 'Unknown',
+      identification: detail.selectedLabel || '',
+      identificationCorrect: !!detail.correct,
+      hintsUsed: detail.hintCount || 0,
+      timeBonus: detail.timeBonus || 0,
       testsPerformed: evidenceText.length,
+      testBudget: detail.budget || 0,
       evidence: evidenceText,
       score: mysteryState.score || 0,
       totalMarks: mysteryState.totalMarks || 0,
