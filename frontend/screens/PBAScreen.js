@@ -529,17 +529,30 @@ function renderMatchPart(part, partIdx, state, isScored) {
    INLINE FEEDBACK — Shown after each part is answered
    ============================================================ */
 
+function pbaScoreRowClass(earned, marks) {
+  if (earned >= marks) return 'row-correct';
+  if (earned > 0) return 'row-partial';
+  return 'row-incorrect';
+}
+
 function renderPartFeedback(part, partIdx, state) {
   var ans = state.answers['part_' + partIdx];
   var earned = state.answers['part_' + partIdx + '_score'] || 0;
   var marks = part.marks || 1;
   var isCorrect = earned === marks;
+  var isPartial = earned > 0 && earned < marks;
+  var feedbackClass = isCorrect ? 'feedback-correct' : (isPartial ? 'feedback-partial' : 'feedback-incorrect');
+  var icon = isCorrect ? '&#10003;' : (isPartial ? '&#9679;' : '&#10007;');
   var h = '';
 
-  h += '<div class="pba-inline-feedback ' + (isCorrect ? 'feedback-correct' : 'feedback-incorrect') + '">';
+  h += '<div class="pba-inline-feedback ' + feedbackClass + '">';
   h += '<div class="pba-feedback-header">';
-  h += '<span class="pba-feedback-icon">' + (isCorrect ? '&#10003;' : '&#10007;') + '</span>';
-  h += '<span class="pba-feedback-score">' + earned + ' / ' + marks + ' mark' + (marks > 1 ? 's' : '') + '</span>';
+  h += '<span class="pba-feedback-icon">' + icon + '</span>';
+  h += '<span class="pba-feedback-score">' + earned + ' / ' + marks + ' mark' + (marks > 1 ? 's' : '');
+  if (isPartial && part.type === 'short') {
+    h += ' — partial credit (correct idea, reworded)';
+  }
+  h += '</span>';
   h += '</div>';
 
   if (part.type === 'mcq') {
@@ -605,7 +618,7 @@ function renderFinalResult(state) {
     var part = q.parts[i];
     var earned = state.answers['part_' + i + '_score'] || 0;
     var marks = part.marks || 1;
-    h += '<tr class="' + (earned === marks ? 'row-correct' : 'row-incorrect') + '">';
+    h += '<tr class="' + pbaScoreRowClass(earned, marks) + '">';
     h += '<td>' + (i + 1) + '</td>';
     h += '<td>' + part.type.toUpperCase() + '</td>';
     h += '<td>' + marks + '</td>';
@@ -774,6 +787,137 @@ function saveCurrentAnswer(state) {
   }
 }
 
+function pbaNormalizeText(s) {
+  var t = String(s || '').toLowerCase();
+  t = t.replace(/[\u2080-\u2089]/g, function (c) {
+    return String.fromCharCode(c.charCodeAt(0) - 0x2080 + 48);
+  });
+  t = t.replace(/\u207a/g, '+').replace(/\u207b/g, '-').replace(/\u2212/g, '-');
+  t = t.replace(/\u00b2/g, '2').replace(/\u00b3/g, '3').replace(/\u00b9/g, '1');
+  t = t.replace(/\u2013|\u2014/g, '-');
+  t = t.replace(/colour/g, 'color').replace(/sulph/g, 'sulf').replace(/odour/g, 'odor');
+  t = t.replace(/[^a-z0-9+]+/g, ' ');
+  return t.replace(/\s+/g, ' ').trim();
+}
+
+var PBA_SHORT_WORD_GROUPS = [
+  ['alkaline', 'basic'],
+  ['acidic', 'acid'],
+  ['colourless', 'colorless'],
+  ['precipitate', 'precipitation', 'ppt'],
+  ['soluble', 'solubility', 'dissolves', 'dissolve', 'dissolved'],
+  ['milky', 'cloudy'],
+  ['sublime', 'sublimation'],
+  ['ammonia', 'nh3'],
+  ['sodium', 'na'],
+  ['potassium', 'k'],
+  ['calcium', 'ca'],
+  ['copper', 'cu'],
+  ['zinc', 'zn'],
+  ['chloride', 'cl'],
+  ['no change', 'unchanged', 'remains'],
+  ['boiling point', 'boils', 'bp'],
+  ['melting point', 'melts', 'mp'],
+  ['lower boiling', 'lower bp'],
+  ['higher boiling', 'higher bp'],
+  ['vapour', 'vapor'],
+  ['distillate', 'distils', 'distills'],
+  ['impure', 'impurities', 'impurity'],
+  ['pure', 'purity'],
+  ['toxic', 'poisonous', 'poison'],
+  ['contamination', 'contaminated', 'contaminates'],
+  ['false', 'wrong', 'error'],
+  ['reliable', 'accurate', 'accuracy'],
+  ['secure', 'sealed', 'tight'],
+  ['clamp', 'clamped', 'fix firmly'],
+  ['evaporate', 'evaporates', 'evaporation', 'lost'],
+  ['affinity', 'affinities'],
+  ['separated', 'separate', 'separates', 'separation'],
+  ['components', 'component', 'dyes', 'dye']
+];
+
+function pbaKeywordHit(lowered, kw) {
+  var forms = [kw];
+  for (var g = 0; g < PBA_SHORT_WORD_GROUPS.length; g++) {
+    var group = PBA_SHORT_WORD_GROUPS[g];
+    if (group.indexOf(kw) === -1) continue;
+    for (var gi = 0; gi < group.length; gi++) {
+      if (forms.indexOf(group[gi]) === -1) forms.push(group[gi]);
+    }
+  }
+  for (var f = 0; f < forms.length; f++) {
+    var form = forms[f];
+    if (!form) continue;
+    if ((' ' + lowered + ' ').indexOf(' ' + form + ' ') !== -1) return true;
+    if (form.length >= 4 && lowered.indexOf(form) !== -1) return true;
+  }
+  return false;
+}
+
+var PBA_SHORT_STOP_WORDS = {
+  'the': 1, 'a': 1, 'an': 1, 'of': 1, 'is': 1, 'are': 1, 'to': 1, 'in': 1, 'for': 1, 'and': 1, 'or': 1,
+  'with': 1, 'that': 1, 'this': 1, 'it': 1, 'by': 1, 'be': 1, 'as': 1, 'at': 1, 'on': 1, 'from': 1,
+  'which': 1, 'when': 1, 'where': 1, 'was': 1, 'were': 1, 'been': 1, 'being': 1, 'have': 1, 'has': 1,
+  'had': 1, 'you': 1, 'your': 1, 'they': 1, 'their': 1, 'there': 1, 'then': 1, 'than': 1, 'can': 1,
+  'could': 1, 'would': 1, 'should': 1, 'will': 1, 'also': 1, 'into': 1, 'onto': 1, 'over': 1,
+  'under': 1, 'between': 1, 'during': 1, 'after': 1, 'before': 1, 'because': 1, 'since': 1,
+  'using': 1, 'used': 1, 'use': 1, 'makes': 1, 'make': 1, 'made': 1, 'gives': 1, 'give': 1,
+  'shows': 1, 'show': 1, 'indicates': 1, 'indicate': 1, 'suggests': 1, 'suggest': 1
+};
+
+function pbaStemMatch(a, b) {
+  if (a === b) return true;
+  var minLen = a.length < b.length ? a.length : b.length;
+  if (minLen < 4) return false;
+  return a.indexOf(b) === 0 || b.indexOf(a) === 0;
+}
+
+function pbaKeywordRatio(part, text) {
+  var keywords = part.keywords || [];
+  if (!keywords.length) return 0;
+  var lowered = pbaNormalizeText(text);
+  if (!lowered) return 0;
+  var hits = 0;
+  for (var i = 0; i < keywords.length; i++) {
+    if (pbaKeywordHit(lowered, pbaNormalizeText(keywords[i]))) hits++;
+  }
+  return hits / keywords.length;
+}
+
+function pbaReferenceRatio(part, text) {
+  var ref = pbaNormalizeText(part.expected || '');
+  var ans = pbaNormalizeText(text);
+  if (!ref || !ans) return 0;
+  var refWords = ref.split(' ');
+  var content = [];
+  for (var i = 0; i < refWords.length; i++) {
+    var w = refWords[i];
+    if (w.length > 2 && !PBA_SHORT_STOP_WORDS[w]) content.push(w);
+  }
+  if (!content.length) return 0;
+  var ansWords = ans.split(' ');
+  var hits = 0;
+  for (var j = 0; j < content.length; j++) {
+    for (var k = 0; k < ansWords.length; k++) {
+      if (pbaStemMatch(content[j], ansWords[k])) { hits++; break; }
+    }
+  }
+  return hits / content.length;
+}
+
+/* Correct meaning with different wording still earns at least half credit */
+function pbaShortRatio(part, text) {
+  if (!pbaNormalizeText(text)) return 0;
+  var kr = pbaKeywordRatio(part, text);
+  var rr = pbaReferenceRatio(part, text);
+  var ratio = Math.max(kr, rr);
+  if (ratio > 0 && ratio < 0.5) {
+    if (kr > 0 || rr >= 0.3) ratio = 0.5;
+  }
+  if (ratio > 1) ratio = 1;
+  return ratio;
+}
+
 function scoreCurrentPart(state) {
   var partIdx = state.currentPart;
   var part = state.currentQ.parts[partIdx];
@@ -790,14 +934,11 @@ function scoreCurrentPart(state) {
     }
   } else if (part.type === 'short') {
     if (ans && ans.trim().length > 0) {
-      var text = ans.toLowerCase();
-      var keywordsFound = 0;
-      for (var k = 0; k < part.keywords.length; k++) {
-        if (text.indexOf(part.keywords[k].toLowerCase()) !== -1) keywordsFound++;
-      }
-      var pct = keywordsFound / part.keywords.length;
-      if (pct >= 0.5) earned = marks;
-      else if (pct >= 0.25) earned = Math.ceil(marks / 2);
+      var kr = pbaKeywordRatio(part, ans);
+      var rr = pbaReferenceRatio(part, ans);
+      if (kr >= 0.75 || (kr >= 0.5 && rr >= 0.4)) earned = marks;
+      else if (kr > 0 || rr >= 0.3) earned = Math.ceil(marks / 2);
+      else earned = 0;
     }
   } else if (part.type === 'match') {
     if (ans) {
@@ -885,7 +1026,7 @@ function renderResultPhase(appState, state) {
     h += '<tbody>';
     for (var i = 0; i < sessionRows.length; i++) {
       var row = sessionRows[i];
-      h += '<tr class="' + (row.marks > 0 && row.score === row.marks ? 'row-correct' : 'row-incorrect') + '">';
+      h += '<tr class="' + pbaScoreRowClass(row.score, row.marks) + '">';
       h += '<td>' + (i + 1) + '</td>';
       h += '<td>' + ChemSim.escapeHtml(row.title) + '</td>';
       h += '<td>' + row.section + '</td>';
@@ -903,7 +1044,7 @@ function renderResultPhase(appState, state) {
       var part = q.parts[j];
       var earned = state.answers['part_' + j + '_score'] || 0;
       var marks = part.marks || 1;
-      h += '<tr class="' + (earned === marks ? 'row-correct' : 'row-incorrect') + '">';
+      h += '<tr class="' + pbaScoreRowClass(earned, marks) + '">';
       h += '<td>' + (j + 1) + '</td>';
       h += '<td>' + part.type.toUpperCase() + '</td>';
       h += '<td>' + marks + '</td>';

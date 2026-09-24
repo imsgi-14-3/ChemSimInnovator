@@ -1396,6 +1396,10 @@ input.form-range[type="range"]::-moz-range-thumb {
   background: var(--color-error-bg);
 }
 
+.row-partial {
+  background: var(--color-warning-bg);
+}
+
 /* ============================================================
    PBA Inline Feedback Styles
    ============================================================ */
@@ -1410,6 +1414,11 @@ input.form-range[type="range"]::-moz-range-thumb {
 .feedback-correct {
   background: var(--color-success-bg);
   border-left-color: var(--color-success);
+}
+
+.feedback-partial {
+  background: var(--color-warning-bg);
+  border-left-color: var(--color-warning);
 }
 
 .feedback-incorrect {
@@ -1431,6 +1440,10 @@ input.form-range[type="range"]::-moz-range-thumb {
 
 .feedback-correct .pba-feedback-icon {
   color: var(--color-success);
+}
+
+.feedback-partial .pba-feedback-icon {
+  color: var(--color-warning);
 }
 
 .feedback-incorrect .pba-feedback-icon {
