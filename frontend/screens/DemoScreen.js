@@ -1259,7 +1259,7 @@ var DemoEngine = (function() {
     drawProgressRing(ctx, W, t);
   }
 
-  /* A4 — Titration: burette of HCl dripping into pink NaOH in a conical flask */
+  /* A4 — Titration: retort stand + clamped burette tip directly above flask on white tile */
   function animTitration(ctx, W, H, t) {
     drawDemoBg(ctx, W, H);
 
@@ -1273,83 +1273,167 @@ var DemoEngine = (function() {
     var pour = phase(0.1, 0.85);
     var dropPhase = (t * 60) % 1;
     var pink = Math.max(0, 1 - pour); /* pink fades as acid is added */
+    var swirl = (pour > 0.08 && pour < 0.92) ? Math.sin(t * 16 * Math.PI) * 3.5 : 0;
 
-    /* white tile */
+    /* aligned layout: stand | burette tip above flask | reagents on right */
+    var standBaseX = 200;
+    var standRodX = 228;
+    var buretteCX = 300;
+    var flaskCX = 300;
+    var tileTopY = 306;
+    var buretteTopY = 48;
+    var buretteBotY = 218;
+    var tipY = 232;
+    var flaskNeckTop = 238;
+    var flaskBotY = 304;
+
+    /* reagent bottles (left of stand) */
+    function bottle(x, y, w, h, cap, label) {
+      ctx.fillStyle = 'rgba(148,163,184,0.35)';
+      roundRect(ctx, x, y, w, h, 5);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(100,116,139,0.55)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = cap;
+      roundRect(ctx, x + w * 0.25, y - 8, w * 0.5, 10, 2);
+      ctx.fill();
+      ctx.fillStyle = '#334155';
+      ctx.font = 'bold 8px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x + w / 2, y + h * 0.55);
+    }
+    bottle(36, 248, 40, 58, '#dc2626', 'HCl');
+    bottle(84, 248, 40, 58, '#2563eb', 'NaOH');
+    bottle(132, 264, 28, 42, '#f8fafc', 'Pp');
+
+    /* retort stand: base + rod + clamp holding burette */
+    ctx.fillStyle = '#64748b';
+    roundRect(ctx, standBaseX - 4, 300, 76, 12, 3);
+    ctx.fill();
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(standRodX, 40, 7, 260);
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(standRodX - 2, 40, 11, 6);
+    /* clamp arm → burette */
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(standRodX + 7, 96, buretteCX - standRodX - 8, 7);
+    roundRect(ctx, buretteCX - 16, 88, 32, 22, 4);
+    ctx.fill();
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    /* burette glass */
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    roundRect(ctx, buretteCX - 11, buretteTopY, 22, buretteBotY - buretteTopY, 4);
+    ctx.stroke();
+    /* acid level lowers as titre is delivered */
+    var acidTop = lerp(buretteTopY + 8, buretteBotY - 10, pour);
+    ctx.fillStyle = 'rgba(191,219,254,0.9)';
+    ctx.fillRect(buretteCX - 9, acidTop, 18, buretteBotY - acidTop - 4);
+    /* graduations */
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1;
+    for (var g = 0; g < 9; g++) {
+      var gy = buretteTopY + 8 + g * 18;
+      ctx.beginPath();
+      ctx.moveTo(buretteCX + 11, gy);
+      ctx.lineTo(buretteCX + 4, gy);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#475569';
+    ctx.font = '9px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('0', buretteCX + 13, buretteTopY + 12);
+    ctx.fillText('50', buretteCX + 13, buretteBotY - 6);
+
+    /* stopcock / tap */
+    ctx.fillStyle = '#64748b';
+    roundRect(ctx, buretteCX - 14, buretteBotY, 28, 9, 2);
+    ctx.fill();
+    ctx.fillStyle = '#e65100';
+    ctx.fillRect(buretteCX - 3, buretteBotY + 9, 6, 10);
+    /* taper tip */
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.moveTo(buretteCX - 4, buretteBotY + 18);
+    ctx.lineTo(buretteCX + 4, buretteBotY + 18);
+    ctx.lineTo(buretteCX + 1, tipY);
+    ctx.lineTo(buretteCX - 1, tipY);
+    ctx.closePath();
+    ctx.fill();
+
+    /* white tile under flask (procedure step 4) */
     ctx.fillStyle = '#f1f5f9';
     ctx.beginPath();
-    ctx.ellipse(300, 306, 130, 38, 0, 0, Math.PI * 2);
+    ctx.ellipse(flaskCX, tileTopY + 4, 58, 12, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#cbd5e1';
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    /* burette (vertical) */
-    ctx.strokeStyle = '#94a3b8';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    roundRect(ctx, 165, 40, 26, 190, 4);
-    ctx.stroke();
-    /* acid level in burette lowers */
-    var acidTop = lerp(50, 210, pour);
-    ctx.fillStyle = 'rgba(191,219,254,0.85)';
-    ctx.fillRect(167, acidTop, 22, 190 - (acidTop - 40));
-    /* graduations */
-    ctx.strokeStyle = '#94a3b8';
-    ctx.lineWidth = 1;
-    for (var g = 0; g < 10; g++) {
-      var gy = 48 + g * 16;
-      ctx.beginPath();
-      ctx.moveTo(190, gy);
-      ctx.lineTo(180, gy);
-      ctx.stroke();
-    }
-    ctx.fillStyle = '#475569';
-    ctx.font = '10px system-ui, sans-serif';
-    ctx.fillText('0', 172, 52);
-    ctx.fillStyle = '#475569';
-    ctx.fillText('50', 172, 208);
-
-    /* tap */
-    ctx.fillStyle = '#64748b';
-    ctx.fillRect(184, 228, 30, 10);
-
-    /* dripping acid drops */
-    if (pour > 0 && pour < 0.95) {
-      ctx.fillStyle = 'rgba(96,165,250,0.9)';
-      ctx.beginPath();
-      ctx.arc(195, 246 + dropPhase * 34, 3, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    /* conical flask */
-    var flaskX = 300, flaskTopY = 210, flaskW = 110;
+    /* conical flask — mouth centred under burette tip */
     ctx.save();
-    var liqTop = lerp(256, 246, pour);
-    ctx.fillStyle = pink > 0.05 ? 'rgba(236,72,153,' + (0.15 + 0.6 * pink) + ')' : 'rgba(203,213,225,0.5)';
+    ctx.translate(swirl, 0);
+    var neckW = 26;
+    var bodyTop = flaskNeckTop + 36;
+    var liqTop = lerp(bodyTop + 6, bodyTop + 2, pour);
+    /* liquid */
+    ctx.fillStyle = pink > 0.05 ? 'rgba(236,72,153,' + (0.15 + 0.6 * pink) + ')' : 'rgba(203,213,225,0.55)';
     ctx.beginPath();
-    ctx.moveTo(flaskX - flaskW / 2 + 14, flaskTopY);
-    ctx.lineTo(flaskX + flaskW / 2 - 14, flaskTopY);
-    ctx.lineTo(flaskX + flaskW / 2, liqTop + 40);
-    ctx.lineTo(flaskX - flaskW / 2, liqTop + 40);
+    ctx.moveTo(flaskCX - neckW / 2, bodyTop);
+    ctx.lineTo(flaskCX + neckW / 2, bodyTop);
+    ctx.lineTo(flaskCX + 48, flaskBotY - 4);
+    ctx.quadraticCurveTo(flaskCX, flaskBotY + 2, flaskCX - 48, flaskBotY - 4);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
+    /* glass outline: neck + shoulders + body */
+    ctx.strokeStyle = 'rgba(100,140,180,0.75)';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.moveTo(flaskX - flaskW / 2 + 14, flaskTopY);
-    ctx.lineTo(flaskX + flaskW / 2 - 14, flaskTopY);
-    ctx.lineTo(flaskX + flaskW / 2, 306);
-    ctx.quadraticCurveTo(flaskX, 320, flaskX - flaskW / 2, 306);
-    ctx.lineTo(flaskX - flaskW / 2 + 14, flaskTopY);
+    ctx.moveTo(flaskCX - neckW / 2, flaskNeckTop);
+    ctx.lineTo(flaskCX - neckW / 2, bodyTop);
+    ctx.lineTo(flaskCX - 48, flaskBotY - 4);
+    ctx.quadraticCurveTo(flaskCX, flaskBotY + 2, flaskCX + 48, flaskBotY - 4);
+    ctx.lineTo(flaskCX + neckW / 2, bodyTop);
+    ctx.lineTo(flaskCX + neckW / 2, flaskNeckTop);
+    ctx.stroke();
+    /* lip */
+    ctx.beginPath();
+    ctx.moveTo(flaskCX - neckW / 2 - 3, flaskNeckTop);
+    ctx.lineTo(flaskCX + neckW / 2 + 3, flaskNeckTop);
     ctx.stroke();
     ctx.restore();
 
-    /* labels */
+    /* drops fall from burette tip into flask mouth */
+    if (pour > 0 && pour < 0.95) {
+      ctx.fillStyle = 'rgba(96,165,250,0.95)';
+      ctx.beginPath();
+      ctx.arc(buretteCX + swirl * 0.3, tipY + 4 + dropPhase * (flaskNeckTop - tipY - 2), 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      if (dropPhase > 0.85) {
+        ctx.beginPath();
+        ctx.arc(buretteCX + swirl * 0.3, tipY + 4 + dropPhase * (flaskNeckTop - tipY - 2), 4.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    /* labels — clear of caption bar (starts y=324) */
     ctx.fillStyle = '#475569';
-    ctx.font = '12px system-ui, sans-serif';
+    ctx.font = '11px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Burette (HCl 0.100 M)', 178, 250);
-    ctx.fillText('NaOH + phenolphthalein', flaskX, 330);
+    ctx.fillText('Retort stand', standBaseX + 34, 322);
+    ctx.fillText('Burette \u2014 HCl 0.100 M', buretteCX, buretteTopY - 8);
+    ctx.fillText('NaOH + phenolphthalein', flaskCX, flaskBotY + 20);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '10px system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('White tile', flaskCX + 70, tileTopY + 4);
+    ctx.textAlign = 'left';
+    ctx.fillText('Reagents', 56, 240);
 
     var caption = '';
     if (t < 0.1) caption = 'Step 1: Fill the burette with standard HCl and pipette NaOH + indicator.';
@@ -1366,7 +1450,7 @@ var DemoEngine = (function() {
     drawProgressRing(ctx, W, t);
   }
 
-  /* A5 — Gas detection: NH₃, CO₂, Cl₂ sequential tests */
+  /* A5 — Gas detection: gas jar + delivery tube → test for NH₃, CO₂, Cl₂ */
   function animGases(ctx, W, H, t) {
     drawDemoBg(ctx, W, H);
 
@@ -1376,81 +1460,199 @@ var DemoEngine = (function() {
       return (t - a) / (b - a);
     }
     function lerp(a, b, k) { return a + (b - a) * k; }
+    function lerpColor(r1, g1, b1, r2, g2, b2, k) {
+      var rr = Math.round(r1 + (r2 - r1) * k);
+      var gg = Math.round(g1 + (g2 - g1) * k);
+      var bb = Math.round(b1 + (b2 - b1) * k);
+      return 'rgb(' + rr + ',' + gg + ',' + bb + ')';
+    }
 
-    var seg = t * 0.95; /* three equal segments */
-    var active = Math.min(2, Math.floor(seg / (1 / 3)));
-    var sub = (seg - active * (1 / 3)) * 3;
+    var active = Math.min(2, Math.floor(t * 0.95 * 3));
+    var sub = Math.min(1, ((t * 0.95 * 3) % 1));
 
     var tests = [
-      { gas: 'NH\u2083', obs: 'Damp red litmus turns blue', color: '#f59e0b', result: '#22c55e' },
-      { gas: 'CO\u2082', obs: 'Limewater turns milky', color: '#94a3b8', result: '#e2e8f0' },
-      { gas: 'Cl\u2082', obs: 'Damp litmus is bleached', color: '#84cc16', result: '#94a3b8' }
+      { gas: 'NH\u2083', full: 'Ammonia', obs: 'Damp red litmus turns blue', jar: 'rgba(236,72,153,0.12)' },
+      { gas: 'CO\u2082', full: 'Carbon dioxide', obs: 'Limewater turns milky', jar: 'rgba(148,163,184,0.15)' },
+      { gas: 'Cl\u2082', full: 'Chlorine', obs: 'Damp litmus is bleached', jar: 'rgba(132,204,22,0.18)' }
     ];
     var test = tests[active];
 
-    /* three test-tube racks */
+    /* ---- left: gas jar on bench with stopper + delivery tube ---- */
+    var jarCX = 108, jarTop = 218, jarBot = 298, jarW = 54;
+    /* wooden rack base under jar */
+    ctx.fillStyle = '#8b6914';
+    roundRect(ctx, jarCX - 34, jarBot - 2, 68, 12, 3);
+    ctx.fill();
+    /* jar glass */
+    ctx.fillStyle = test.jar;
+    ctx.strokeStyle = 'rgba(100,140,180,0.7)';
+    ctx.lineWidth = 2.5;
+    roundRect(ctx, jarCX - jarW / 2, jarTop, jarW, jarBot - jarTop, 6);
+    ctx.fill();
+    ctx.stroke();
+    /* gas inside (faint haze rising) */
+    var haze = 0.25 + 0.15 * Math.sin(t * 12 * Math.PI);
+    ctx.fillStyle = 'rgba(148,163,184,' + haze + ')';
+    ctx.beginPath();
+    ctx.moveTo(jarCX - jarW / 2 + 4, jarTop + 18);
+    ctx.lineTo(jarCX + jarW / 2 - 4, jarTop + 18);
+    ctx.lineTo(jarCX + jarW / 2 - 4, jarBot - 4);
+    ctx.lineTo(jarCX - jarW / 2 + 4, jarBot - 4);
+    ctx.closePath();
+    ctx.fill();
+    /* stopper */
+    ctx.fillStyle = '#92400e';
+    roundRect(ctx, jarCX - 16, jarTop - 10, 32, 12, 3);
+    ctx.fill();
+    /* label on jar */
+    ctx.fillStyle = '#fff';
+    roundRect(ctx, jarCX - 24, jarTop + 40, 48, 26, 3);
+    ctx.fill();
+    ctx.fillStyle = '#334155';
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(test.gas, jarCX, jarTop + 56);
+    ctx.font = '7px system-ui, sans-serif';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText('GAS JAR', jarCX, jarTop + 66);
+    ctx.fillStyle = '#475569';
+    ctx.font = '10px system-ui, sans-serif';
+    ctx.fillText('Gas jar', jarCX, 318);
+
+    /* delivery tube: jar stopper → active test station */
+    var activeTX = [250, 350, 450][active];
+    var tubeEndY = active === 1 ? 256 : 224; /* into limewater vs near mouth */
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(jarCX, jarTop - 10);
+    ctx.lineTo(jarCX, jarTop - 42);
+    ctx.quadraticCurveTo(jarCX, jarTop - 58, jarCX + 40, jarTop - 58);
+    ctx.lineTo(activeTX - 30, jarTop - 58);
+    ctx.quadraticCurveTo(activeTX, jarTop - 58, activeTX, jarTop - 42);
+    ctx.lineTo(activeTX, tubeEndY);
+    ctx.stroke();
+    /* bore highlight */
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(jarCX, jarTop - 12);
+    ctx.lineTo(jarCX, jarTop - 42);
+    ctx.quadraticCurveTo(jarCX, jarTop - 57, jarCX + 40, jarTop - 57);
+    ctx.lineTo(activeTX - 30, jarTop - 57);
+    ctx.quadraticCurveTo(activeTX, jarTop - 57, activeTX, jarTop - 42);
+    ctx.lineTo(activeTX, tubeEndY - 2);
+    ctx.stroke();
+
+    /* ---- right: wooden test-tube rack with 3 tubes ---- */
+    var rackX = 210, rackY = 288, rackW = 300;
+    ctx.fillStyle = '#8b6914';
+    roundRect(ctx, rackX, rackY, rackW, 14, 4);
+    ctx.fill();
+    ctx.fillStyle = '#6b4f10';
+    ctx.fillRect(rackX + 6, rackY + 14, rackW - 12, 5);
+    /* upper rack bar with holes */
+    ctx.fillStyle = '#a67c52';
+    roundRect(ctx, rackX, rackY - 16, rackW, 10, 3);
+    ctx.fill();
+
+    var tubeCXs = [250, 350, 450];
     for (var r = 0; r < 3; r++) {
-      var tx = 100 + r * 180;
-      /* tube */
-      ctx.strokeStyle = 'rgba(100,140,180,0.6)';
-      ctx.lineWidth = 2.5;
+      var tx = tubeCXs[r];
+      var onRack = r === active;
+
+      /* tube body */
+      var tubeTop = onRack ? 220 : 228;
+      var tubeBot = 296;
+      ctx.strokeStyle = onRack ? 'rgba(100,140,180,0.85)' : 'rgba(100,140,180,0.45)';
+      ctx.lineWidth = onRack ? 2.5 : 2;
       ctx.beginPath();
-      ctx.moveTo(tx - 22, 130);
-      ctx.lineTo(tx - 22, 250);
-      ctx.quadraticCurveTo(tx, 268, tx + 22, 250);
-      ctx.lineTo(tx + 22, 130);
-      ctx.stroke();
-      /* liquid in tube */
-      ctx.fillStyle = r === active ? (r === 1 ? 'rgba(203,213,225,0.65)' : 'rgba(191,219,254,0.6)') : 'rgba(226,232,240,0.5)';
-      ctx.fillRect(tx - 20, 238, 40, 20);
-      /* straw / delivery into tube */
-      ctx.strokeStyle = '#94a3b8';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(tx, 80);
-      ctx.lineTo(tx, 230);
+      ctx.moveTo(tx - 14, tubeTop);
+      ctx.lineTo(tx - 14, tubeBot - 14);
+      ctx.quadraticCurveTo(tx, tubeBot + 4, tx + 14, tubeBot - 14);
+      ctx.lineTo(tx + 14, tubeTop);
       ctx.stroke();
 
-      /* gas label */
-      ctx.fillStyle = r === active ? '#334155' : '#94a3b8';
-      ctx.font = r === active ? 'bold 13px system-ui,sans-serif' : '12px system-ui,sans-serif';
-      ctx.fillText(tests[r].gas + ' gas', tx, 100);
-
-      /* litmus strip for NH₃ / Cl₂ */
-      if (r === 0 || r === 2) {
-        var litY = 205;
-        var litColor = '#ef4444';
-        if (r === 2) litColor = '#2563eb';
-        if (r === active) {
-          var litK = Math.min(1, sub * 2);
-          litColor = r === 0 ? lerpColor(0xef, 0x22, 0x22, 0x22, 0xc5, 0x5e, litK) : lerpColor(0x25, 0x63, 0xeb, 0xe2, 0xe8, 0xf0, litK);
-        }
-        ctx.fillStyle = litColor;
-        ctx.fillRect(tx - 6, litY, 12, 26);
+      /* liquid */
+      var liqTop = 268;
+      if (r === 1) {
+        /* limewater → milky */
+        var milk = onRack ? Math.min(1, sub * 2) : 0;
+        var mr = Math.round(203 + (226 - 203) * milk);
+        var mg = Math.round(213 + (232 - 213) * milk);
+        var mb = Math.round(225 + (240 - 225) * milk);
+        ctx.fillStyle = 'rgb(' + mr + ',' + mg + ',' + mb + ',' + (0.55 + 0.35 * milk) + ')';
+      } else {
+        ctx.fillStyle = onRack ? 'rgba(191,219,254,0.55)' : 'rgba(226,232,240,0.4)';
       }
-      /* limewater milky dots for CO₂ */
-      if (r === 1 && r === active) {
-        var milk = Math.min(1, sub * 2);
-        ctx.fillStyle = 'rgba(226,232,240,' + (0.2 + 0.7 * milk) + ')';
-        ctx.fillRect(tx - 18, 236, 36, 22);
+      ctx.beginPath();
+      ctx.moveTo(tx - 12, liqTop);
+      ctx.lineTo(tx + 12, liqTop);
+      ctx.lineTo(tx + 12, tubeBot - 16);
+      ctx.quadraticCurveTo(tx, tubeBot, tx - 12, tubeBot - 16);
+      ctx.closePath();
+      ctx.fill();
+
+      /* delivery tip only into active CO₂ tube; others stop above */
+      if (onRack && active === 1 && sub > 0.2) {
+        /* bubbles in limewater */
+        for (var bi = 0; bi < 4; bi++) {
+          var by = tubeBot - 10 - ((sub * 40 + bi * 14) % 30);
+          ctx.fillStyle = 'rgba(255,255,255,0.7)';
+          ctx.beginPath();
+          ctx.arc(tx - 6 + (bi % 3) * 6, by, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      /* litmus strip for NH₃ / Cl₂ held at mouth of active tube */
+      if ((r === 0 || r === 2) && onRack) {
+        var litColor = r === 0 ? '#ef4444' : '#2563eb';
+        if (sub > 0.35) {
+          var litK = Math.min(1, (sub - 0.35) / 0.35);
+          litColor = r === 0
+            ? lerpColor(0xef, 0x44, 0x44, 0x22, 0xc5, 0x5e, litK)
+            : lerpColor(0x25, 0x63, 0xeb, 0xe2, 0xe8, 0xf0, litK);
+        }
+        /* damp paper slightly above mouth */
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(tx - 10, tubeTop - 22, 20, 8);
+        ctx.fillStyle = litColor;
+        ctx.fillRect(tx - 8, tubeTop - 20, 16, 5);
+        ctx.fillStyle = '#64748b';
+        ctx.font = '8px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(r === 0 ? 'damp red litmus' : 'damp litmus', tx, tubeTop - 28);
+      }
+
+      /* gas label under rack (above caption bar y=324) */
+      ctx.fillStyle = onRack ? '#334155' : '#94a3b8';
+      ctx.font = onRack ? 'bold 12px system-ui,sans-serif' : '11px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(tests[r].gas, tx, rackY + 34);
+      ctx.font = '9px system-ui, sans-serif';
+      ctx.fillText(tests[r].full, tx, rackY + 46);
+
+      /* active highlight ring */
+      if (onRack) {
+        ctx.strokeStyle = '#e65100';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 3]);
+        roundRect(ctx, tx - 22, tubeTop - 34, 44, tubeBot - tubeTop + 46, 6);
+        ctx.stroke();
+        ctx.setLineDash([]);
       }
     }
 
-    /* highlight active tube */
-    ctx.strokeStyle = '#e65100';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(100 + active * 180 - 28, 124, 56, 150);
-
+    /* rack caption plate */
     ctx.fillStyle = '#334155';
-    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.font = 'bold 12px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(test.gas + ': ' + test.obs, W / 2, 300);
-
-    /* small result state */
+    ctx.fillText(test.gas + ': ' + test.obs, 360, 176);
     if (sub > 0.6) {
       ctx.fillStyle = '#16a34a';
-      ctx.font = 'bold 12px system-ui, sans-serif';
-      ctx.fillText('\u2713 ' + test.gas + ' identified', W / 2, 318);
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      ctx.fillText('\u2713 ' + test.gas + ' confirmed', 360, 192);
     }
 
     var caption = '';
@@ -1465,13 +1667,6 @@ var DemoEngine = (function() {
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
-
-    function lerpColor(r1, g1, b1, r2, g2, b2, k) {
-      var rr = Math.round(r1 + (r2 - r1) * k);
-      var gg = Math.round(g1 + (g2 - g1) * k);
-      var bb = Math.round(b1 + (b2 - b1) * k);
-      return 'rgb(' + rr + ',' + gg + ',' + bb + ')';
-    }
   }
 
   /* M7_1 — Sublimation: naphthalene vapour rising to inverted funnel */
