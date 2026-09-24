@@ -2645,6 +2645,16 @@ input.form-range[type="range"]::-moz-range-thumb {
   max-width: 560px;
 }
 
+.demo-section-label {
+  margin: 0.5rem auto 0.6rem;
+  max-width: 560px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
 .demo-card {
   display: flex;
   flex-direction: column;
@@ -2657,6 +2667,10 @@ input.form-range[type="range"]::-moz-range-thumb {
   text-align: left;
   cursor: pointer;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.demo-card span.demo-card-tag {
+  align-self: flex-start;
 }
 
 .demo-card:hover {
