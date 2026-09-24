@@ -592,10 +592,10 @@ var DemoEngine = (function() {
       }
       if (target.id === 'btn-demo-exit' || target.id === 'btn-demo-exit-complete') {
         stopAnimation();
-appState.demoState = { screen: 'intro', step: 0, practicalKind: 'major' };
-    appState.screen = 'home';
-    ChemSim.goHome();
-    return;
+        appState.demoState = { screen: 'intro', step: 0, practicalKind: 'major' };
+        appState.screen = 'home';
+        ChemSim.goHome();
+        return;
       }
       if (target.id === 'btn-demo-next-step') {
         stopAnimation();
@@ -612,12 +612,12 @@ appState.demoState = { screen: 'intro', step: 0, practicalKind: 'major' };
         runPracticalAnimation(ds.practicalKind || 'major');
         return;
       }
-      if (target.id === 'btn-demo-card-major') {
+      if (target.closest && target.closest('#btn-demo-card-major')) {
         ds.practicalKind = 'major';
         renderInto(appState);
         return;
       }
-      if (target.id === 'btn-demo-card-minor') {
+      if (target.closest && target.closest('#btn-demo-card-minor')) {
         ds.practicalKind = 'minor';
         renderInto(appState);
         return;
