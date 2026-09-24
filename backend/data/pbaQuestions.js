@@ -59,7 +59,7 @@ var PBA_QUESTIONS = [
         question: "During fractional distillation of a water-alcohol mixture, the first fraction distils at approximately 78°C. What does this indicate?",
         expected: "Alcohol (ethanol) has a lower boiling point (~78°C) than water (100°C), so it distils first.",
         keywords: ["alcohol", "lower boiling point", "78", "distils first"],
-        marks: 2
+        marks: 3
       }
     ]
   },
@@ -111,7 +111,7 @@ var PBA_QUESTIONS = [
         question: "A student obtains Rf values of 0.42 and 0.78 from an ink mixture. Explain what this tells you about the ink.",
         expected: "The ink mixture contains at least two different components (dyes) that have different affinities for the mobile and stationary phases.",
         keywords: ["two components", "different", "separated", "dyes"],
-        marks: 1
+        marks: 2
       }
     ]
   },
@@ -163,7 +163,7 @@ var PBA_QUESTIONS = [
         question: "Why is it important to mark the solvent front immediately after removing the paper from the beaker?",
         expected: "The solvent evaporates quickly from the paper. If not marked immediately, the solvent front position is lost, making Rf calculations impossible.",
         keywords: ["evaporate", "lost", "position", "mark quickly"],
-        marks: 1
+        marks: 2
       }
     ]
   },
@@ -220,7 +220,7 @@ var PBA_QUESTIONS = [
         correct: 0.090,
         tolerance: 0.001,
         unit: "mol/L",
-        marks: 2
+        marks: 3
       }
     ]
   },
@@ -274,7 +274,7 @@ var PBA_QUESTIONS = [
         question: "A gas is passed through limewater and the solution turns milky. The gas also turns damp blue litmus paper red. Identify the gas and explain your reasoning.",
         expected: "The gas is CO₂. It turns limewater milky (forming CaCO₃ precipitate) and turns blue litmus red because the resulting carbonic acid is acidic.",
         keywords: ["CO₂", "limewater milky", "acidic", "carbonic acid"],
-        marks: 2
+        marks: 3
       }
     ]
   },
