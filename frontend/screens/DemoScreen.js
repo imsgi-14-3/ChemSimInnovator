@@ -29,6 +29,23 @@ var DemoEngine = (function() {
     { id: 'M7_8', code: 'M7.8', title: 'Purity of Water', short: 'Melting & boiling point tests', anim: 'purity', section: 'minor' }
   ];
 
+  function resolveAnimFrame(kind) {
+    if (kind === 'titration') return animTitration;
+    if (kind === 'gases') return animGases;
+    if (kind === 'distill') return animDistill;
+    if (kind === 'ionChrom') return animIonChrom;
+    if (kind === 'sublimation') return animSublimation;
+    if (kind === 'minor') return animMinor;
+    if (kind === 'crystals') return animCrystals;
+    if (kind === 'melting') return animMelting;
+    if (kind === 'boiling') return animBoiling;
+    if (kind === 'displacement') return animDisplacement;
+    if (kind === 'waterTest') return animWaterTest;
+    if (kind === 'purity') return animPurity;
+    if (kind === 'major') return animMajor;
+    return animMajor;
+  }
+
   var ANIM_FRAMES = {
     'distill': animDistill,
     'major': animMajor,
@@ -476,7 +493,7 @@ var DemoEngine = (function() {
 
     ctx.clearRect(0, 0, W, H);
 
-    var frame = ANIM_FRAMES[animKind] || ANIM_FRAMES['major'];
+    var frame = resolveAnimFrame(animKind) || ANIM_FRAMES[animKind] || animMajor;
     if (frame) frame(ctx, W, H, t);
     syncDemoPhaseDom(t, elapsed);
 
