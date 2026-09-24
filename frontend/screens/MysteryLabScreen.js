@@ -2,7 +2,8 @@
    ChemSim — Mystery Lab Screen
    Unknown sample identification through chemical testing
    Detective case-file mode: test budget, countdown, paid hints,
-   keyword-scored interpretation and decoy-candidate identification.
+   keyword/synonym-scored interpretation with half-credit floor for
+   correct wording, and decoy-candidate identification.
    ================================================================ */
 
 var mysteryTimerHandle = null;
@@ -693,7 +694,7 @@ function scoreMystery(state) {
   for (var i = 0; i < sample.tests.length; i++) {
     var test = sample.tests[i];
     if (!state.testsPerformed[test.id]) continue;
-    interpScore += perTest * keywordRatio(test, state.interpretations[test.id] || '');
+    interpScore += perTest * interpretationRatio(test, state.interpretations[test.id] || '');
   }
 
   var correct = isCorrectCandidate(sample, state.selectedCandidate);
@@ -732,16 +733,124 @@ function scoreMystery(state) {
   };
 }
 
+function interpNormalize(s) {
+  var t = String(s || '').toLowerCase();
+  t = t.replace(/[\u2080-\u2089]/g, function (c) {
+    return String.fromCharCode(c.charCodeAt(0) - 0x2080 + 48);
+  });
+  t = t.replace(/\u207a/g, '+').replace(/\u207b/g, '-').replace(/\u2212/g, '-');
+  t = t.replace(/\u00b2/g, '2').replace(/\u00b3/g, '3').replace(/\u00b9/g, '1');
+  t = t.replace(/\u2013|\u2014/g, '-');
+  t = t.replace(/colour/g, 'color').replace(/sulph/g, 'sulf').replace(/odour/g, 'odor');
+  t = t.replace(/[^a-z0-9+]+/g, ' ');
+  return t.replace(/\s+/g, ' ').trim();
+}
+
+var INTERP_WORD_GROUPS = [
+  ['ammonia', 'nh3'],
+  ['sodium', 'na'],
+  ['potassium', 'k'],
+  ['calcium', 'ca'],
+  ['copper', 'cu'],
+  ['zinc', 'zn'],
+  ['chloride', 'cl', 'agcl'],
+  ['alkaline', 'basic'],
+  ['neutral'],
+  ['precipitate', 'precipitation', 'ppt'],
+  ['soluble', 'solubility', 'dissolves', 'dissolve', 'dissolved', 'dissolving'],
+  ['no change', 'unchanged', 'remains'],
+  ['pungent', 'choking', 'sharp'],
+  ['white fumes', 'fumes', 'smoke'],
+  ['sublime', 'sublimation'],
+  ['combustion', 'burns', 'support'],
+  ['excess', 'over'],
+  ['complex'],
+  ['hydroxide', 'oh'],
+  ['acidic', 'acid'],
+  ['milky', 'cloudy'],
+  ['colorless', 'colourless'],
+  ['insoluble', 'does not dissolve']
+];
+
+function keywordHit(lowered, kw) {
+  var forms = [kw];
+  for (var g = 0; g < INTERP_WORD_GROUPS.length; g++) {
+    var group = INTERP_WORD_GROUPS[g];
+    if (group.indexOf(kw) === -1) continue;
+    for (var gi = 0; gi < group.length; gi++) {
+      if (forms.indexOf(group[gi]) === -1) forms.push(group[gi]);
+    }
+  }
+  for (var f = 0; f < forms.length; f++) {
+    var form = forms[f];
+    if (!form) continue;
+    if ((' ' + lowered + ' ').indexOf(' ' + form + ' ') !== -1) return true;
+    if (form.length >= 4 && lowered.indexOf(form) !== -1) return true;
+  }
+  return false;
+}
+
 function keywordRatio(test, text) {
   var keywords = test.keywords || [];
   if (!keywords.length) return 0;
-  var lowered = (text || '').toLowerCase();
+  var lowered = interpNormalize(text);
   if (!lowered) return 0;
   var hits = 0;
   for (var i = 0; i < keywords.length; i++) {
-    if (lowered.indexOf(String(keywords[i]).toLowerCase()) !== -1) hits++;
+    if (keywordHit(lowered, interpNormalize(keywords[i]))) hits++;
   }
   return hits / keywords.length;
+}
+
+var INTERP_STOP_WORDS = {
+  'the': 1, 'a': 1, 'an': 1, 'of': 1, 'is': 1, 'are': 1, 'to': 1, 'in': 1, 'for': 1, 'and': 1, 'or': 1,
+  'with': 1, 'that': 1, 'this': 1, 'it': 1, 'by': 1, 'be': 1, 'as': 1, 'at': 1, 'on': 1, 'from': 1,
+  'which': 1, 'often': 1, 'typically': 1, 'consistent': 1, 'suggests': 1, 'suggesting': 1,
+  'presence': 1, 'confirms': 1, 'confirm': 1, 'indicating': 1, 'indicates': 1, 'indicate': 1,
+  'ions': 1, 'ion': 1, 'presenceof': 1, 'combined': 1, 'does': 1, 'not': 1, 'form': 1, 'forms': 1,
+  'formed': 1, 'give': 1, 'gives': 1, 'given': 1, 'its': 1, 'their': 1, 'there': 1, 'then': 1,
+  'when': 1, 'where': 1, 'was': 1, 'were': 1, 'been': 1, 'being': 1, 'have': 1, 'has': 1, 'had': 1
+};
+
+function stemMatch(a, b) {
+  if (a === b) return true;
+  var minLen = a.length < b.length ? a.length : b.length;
+  if (minLen < 4) return false;
+  return a.indexOf(b) === 0 || b.indexOf(a) === 0;
+}
+
+function referenceRatio(test, text) {
+  var ref = interpNormalize(test.interpretation || '');
+  var ans = interpNormalize(text);
+  if (!ref || !ans) return 0;
+  var refWords = ref.split(' ');
+  var content = [];
+  for (var i = 0; i < refWords.length; i++) {
+    var w = refWords[i];
+    if (w.length > 2 && !INTERP_STOP_WORDS[w]) content.push(w);
+  }
+  if (!content.length) return 0;
+  var ansWords = ans.split(' ');
+  var hits = 0;
+  for (var j = 0; j < content.length; j++) {
+    for (var k = 0; k < ansWords.length; k++) {
+      if (stemMatch(content[j], ansWords[k])) { hits++; break; }
+    }
+  }
+  return hits / content.length;
+}
+
+function interpretationRatio(test, text) {
+  if (!interpNormalize(text)) return 0;
+  var kr = keywordRatio(test, text);
+  var rr = referenceRatio(test, text);
+  var ratio = Math.max(kr, rr);
+  /* Correct meaning with different wording: keep at least half credit */
+  if (ratio > 0 && ratio < 0.5) {
+    if (kr > 0 || rr >= 0.3) ratio = 0.5;
+  }
+  if (ratio > 1) ratio = 1;
+  return ratio;
 }
 
 /* ============================================================
@@ -781,7 +890,7 @@ function renderMysteryResultHTML(state) {
   /* Score breakdown */
   h += '<div class="mystery-score-breakdown"><h4>Mark Breakdown</h4>';
   h += '<table class="pba-breakdown-table"><tbody>';
-  h += '<tr class="row-correct"><td>Interpretations (' + d.budget + ' test budget, keyword graded)</td><td>' + (Math.round((d.interpScore || 0) * 10) / 10) + ' / ' + d.interpMax + '</td></tr>';
+  h += '<tr class="row-correct"><td>Interpretations (' + d.budget + ' test budget, partial credit for correct wording)</td><td>' + (Math.round((d.interpScore || 0) * 10) / 10) + ' / ' + d.interpMax + '</td></tr>';
   h += '<tr class="' + (correct ? 'row-correct' : 'row-incorrect') + '"><td>Identification' + (correct ? '' : ' (wrong suspect)') + '</td><td>' + (d.identScore || 0) + ' / ' + d.identMax + '</td></tr>';
   h += '<tr class="row-correct"><td>Time bonus</td><td>+' + (d.timeBonus || 0) + ' / +' + d.timeBonusMax + '</td></tr>';
   h += '<tr class="' + (d.hintCount ? 'row-incorrect' : 'row-correct') + '"><td>Hints used (' + (d.hintCount || 0) + ' × ' + (sample.hintCost || 1) + ')</td><td>−' + (d.hintPenalty || 0) + '</td></tr>';
@@ -796,12 +905,11 @@ function renderMysteryResultHTML(state) {
   for (var i = 0; i < sample.tests.length; i++) {
     var test = sample.tests[i];
     var performed = state.testsPerformed[test.id];
-    var ratio = performed ? keywordRatio(test, state.interpretations[test.id] || '') : 0;
-    var kwTotal = (test.keywords || []).length;
+    var ratio = performed ? interpretationRatio(test, state.interpretations[test.id] || '') : 0;
     h += '<div class="mystery-evidence-card' + (performed ? '' : ' evidence-missing') + '">';
     h += '<div class="mystery-evidence-head"><span>' + test.icon + ' ' + esc(test.name) + '</span>';
     if (performed) {
-      h += '<span class="mystery-evidence-score">★ ' + Math.round(ratio * kwTotal) + '/' + kwTotal + ' key ideas</span>';
+      h += '<span class="mystery-evidence-score">★ ' + Math.round(ratio * 100) + '% credit</span>';
     } else {
       h += '<span class="mystery-evidence-score evidence-none">not performed</span>';
     }
