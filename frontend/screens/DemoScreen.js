@@ -1425,7 +1425,7 @@ var DemoEngine = (function() {
     ctx.fillStyle = '#475569';
     ctx.font = '11px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Retort stand', standBaseX + 34, 322);
+    ctx.fillText('Retort stand', standBaseX + 34, 320);
     ctx.fillText('Burette \u2014 HCl 0.100 M', buretteCX, buretteTopY - 8);
     ctx.fillText('NaOH + phenolphthalein', flaskCX, flaskBotY + 20);
     ctx.fillStyle = '#64748b';
@@ -1433,7 +1433,7 @@ var DemoEngine = (function() {
     ctx.textAlign = 'right';
     ctx.fillText('White tile', flaskCX + 70, tileTopY + 4);
     ctx.textAlign = 'left';
-    ctx.fillText('Reagents', 56, 240);
+    ctx.fillText('Reagents', 44, 240);
 
     var caption = '';
     if (t < 0.1) caption = 'Step 1: Fill the burette with standard HCl and pipette NaOH + indicator.';
@@ -1478,7 +1478,7 @@ var DemoEngine = (function() {
     var test = tests[active];
 
     /* ---- left: gas jar on bench with stopper + delivery tube ---- */
-    var jarCX = 108, jarTop = 218, jarBot = 298, jarW = 54;
+    var jarCX = 108, jarTop = 214, jarBot = 292, jarW = 54;
     /* wooden rack base under jar */
     ctx.fillStyle = '#8b6914';
     roundRect(ctx, jarCX - 34, jarBot - 2, 68, 12, 3);
@@ -1521,7 +1521,7 @@ var DemoEngine = (function() {
 
     /* delivery tube: jar stopper → active test station */
     var activeTX = [250, 350, 450][active];
-    var tubeEndY = active === 1 ? 256 : 224; /* into limewater vs near mouth */
+    var tubeEndY = active === 1 ? 254 : 220; /* into limewater vs near mouth */
     ctx.strokeStyle = '#94a3b8';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -1545,7 +1545,7 @@ var DemoEngine = (function() {
     ctx.stroke();
 
     /* ---- right: wooden test-tube rack with 3 tubes ---- */
-    var rackX = 210, rackY = 288, rackW = 300;
+    var rackX = 210, rackY = 296, rackW = 300;
     ctx.fillStyle = '#8b6914';
     roundRect(ctx, rackX, rackY, rackW, 14, 4);
     ctx.fill();
@@ -1561,9 +1561,9 @@ var DemoEngine = (function() {
       var tx = tubeCXs[r];
       var onRack = r === active;
 
-      /* tube body */
-      var tubeTop = onRack ? 220 : 228;
-      var tubeBot = 296;
+      /* tube body — bottom rests in rack */
+      var tubeTop = onRack ? 208 : 216;
+      var tubeBot = 292;
       ctx.strokeStyle = onRack ? 'rgba(100,140,180,0.85)' : 'rgba(100,140,180,0.45)';
       ctx.lineWidth = onRack ? 2.5 : 2;
       ctx.beginPath();
@@ -1574,7 +1574,7 @@ var DemoEngine = (function() {
       ctx.stroke();
 
       /* liquid */
-      var liqTop = 268;
+      var liqTop = 252;
       if (r === 1) {
         /* limewater → milky */
         var milk = onRack ? Math.min(1, sub * 2) : 0;
@@ -1593,11 +1593,10 @@ var DemoEngine = (function() {
       ctx.closePath();
       ctx.fill();
 
-      /* delivery tip only into active CO₂ tube; others stop above */
+      /* bubbles only in active CO₂ limewater tube */
       if (onRack && active === 1 && sub > 0.2) {
-        /* bubbles in limewater */
         for (var bi = 0; bi < 4; bi++) {
-          var by = tubeBot - 10 - ((sub * 40 + bi * 14) % 30);
+          var by = tubeBot - 14 - ((sub * 40 + bi * 14) % 24);
           ctx.fillStyle = 'rgba(255,255,255,0.7)';
           ctx.beginPath();
           ctx.arc(tx - 6 + (bi % 3) * 6, by, 2.2, 0, Math.PI * 2);
@@ -1605,7 +1604,7 @@ var DemoEngine = (function() {
         }
       }
 
-      /* litmus strip for NH₃ / Cl₂ held at mouth of active tube */
+      /* damp litmus held near mouth of active NH₃ / Cl₂ tube */
       if ((r === 0 || r === 2) && onRack) {
         var litColor = r === 0 ? '#ef4444' : '#2563eb';
         if (sub > 0.35) {
@@ -1614,7 +1613,6 @@ var DemoEngine = (function() {
             ? lerpColor(0xef, 0x44, 0x44, 0x22, 0xc5, 0x5e, litK)
             : lerpColor(0x25, 0x63, 0xeb, 0xe2, 0xe8, 0xf0, litK);
         }
-        /* damp paper slightly above mouth */
         ctx.fillStyle = '#f8fafc';
         ctx.fillRect(tx - 10, tubeTop - 22, 20, 8);
         ctx.fillStyle = litColor;
@@ -1625,26 +1623,24 @@ var DemoEngine = (function() {
         ctx.fillText(r === 0 ? 'damp red litmus' : 'damp litmus', tx, tubeTop - 28);
       }
 
-      /* gas label under rack (above caption bar y=324) */
+      /* single-line gas label under rack (clears caption bar y=324) */
       ctx.fillStyle = onRack ? '#334155' : '#94a3b8';
-      ctx.font = onRack ? 'bold 12px system-ui,sans-serif' : '11px system-ui,sans-serif';
+      ctx.font = onRack ? 'bold 11px system-ui,sans-serif' : '11px system-ui,sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(tests[r].gas, tx, rackY + 34);
-      ctx.font = '9px system-ui, sans-serif';
-      ctx.fillText(tests[r].full, tx, rackY + 46);
+      ctx.fillText(tests[r].gas + '  ' + tests[r].full, tx, 320);
 
       /* active highlight ring */
       if (onRack) {
         ctx.strokeStyle = '#e65100';
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 3]);
-        roundRect(ctx, tx - 22, tubeTop - 34, 44, tubeBot - tubeTop + 46, 6);
+        roundRect(ctx, tx - 22, tubeTop - 34, 44, tubeBot - tubeTop + 48, 6);
         ctx.stroke();
         ctx.setLineDash([]);
       }
     }
 
-    /* rack caption plate */
+    /* result plate above the rack */
     ctx.fillStyle = '#334155';
     ctx.font = 'bold 12px system-ui, sans-serif';
     ctx.textAlign = 'center';
@@ -1652,7 +1648,7 @@ var DemoEngine = (function() {
     if (sub > 0.6) {
       ctx.fillStyle = '#16a34a';
       ctx.font = 'bold 11px system-ui, sans-serif';
-      ctx.fillText('\u2713 ' + test.gas + ' confirmed', 360, 192);
+      ctx.fillText('\u2713 ' + test.gas + ' confirmed', 360, 194);
     }
 
     var caption = '';
