@@ -15,7 +15,7 @@ var ChemSim = (function() {
     state: null,
     simulation: null,
     logState: { screen: 'menu', detailId: null },
-    demoState: { screen: 'intro', step: 0 }
+    demoState: { screen: 'intro', step: 0, practicalKind: 'major' }
   };
 
   var screens = {};
@@ -96,7 +96,7 @@ var ChemSim = (function() {
     appState.pbaState = null;
     appState.mysteryState = null;
     appState.logState = { screen: 'menu', detailId: null };
-    appState.demoState = { screen: 'intro', step: 0 };
+    appState.demoState = { screen: 'intro', step: 0, practicalKind: 'major' };
     renderCurrentScreen();
     updateSidebarActive();
   }

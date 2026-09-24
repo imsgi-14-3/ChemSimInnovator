@@ -54,11 +54,24 @@ var DemoEngine = (function() {
   }
 
   function renderStepPractical(demoState) {
+    var kind = demoState.practicalKind || 'major';
     var h = '<div class="demo-panel">';
     h += '<div class="demo-instruction"><strong>Presenter:</strong> ' + STEPS[0].instruction + '</div>';
     h += '<div class="demo-step-content">';
-    h += '<h3>Paper Chromatography (A2) \u2014 Animated Demo</h3>';
-    h += '<p class="text-secondary">Auto-playing animation of the step-by-step procedure. No student input required in demo mode.</p>';
+    h += '<h3>Practical Lab \u2014 Animated Demo</h3>';
+    h += '<p class="text-secondary">Choose a card to watch its short animated demonstration. No student input required in demo mode.</p>';
+    h += '<div class="demo-cards">';
+    h += '<button class="demo-card' + (kind === 'major' ? ' selected' : '') + '" id="btn-demo-card-major">';
+    h += '<span class="demo-card-tag demo-card-tag--major">Major Practical</span>';
+    h += '<strong>A2 \u2014 Paper Chromatography</strong>';
+    h += '<small>Separate a mixture of inks</small>';
+    h += '</button>';
+    h += '<button class="demo-card' + (kind === 'minor' ? ' selected' : '') + '" id="btn-demo-card-minor">';
+    h += '<span class="demo-card-tag demo-card-tag--minor">Minor Practical</span>';
+    h += '<strong>M7.2 \u2014 Flame Test</strong>';
+    h += '<small>Identify ions by flame colour</small>';
+    h += '</button>';
+    h += '</div>';
     h += '<div class="demo-anim-wrap"><canvas id="demo-anim-canvas" width="560" height="360"></canvas></div>';
     h += '<div class="demo-anim-controls">';
     h += '<button class="btn btn-secondary" id="btn-demo-anim-replay">Replay Animation</button>';
@@ -196,6 +209,7 @@ var DemoEngine = (function() {
   var animCtx = null;
   var animReqId = null;
   var animStart = 0;
+  var animKind = 'major';
 
   function roundRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
@@ -212,11 +226,12 @@ var DemoEngine = (function() {
   }
 
   /* Paper chromatography animated demo — self-playing, no user input */
-  function runPracticalAnimation() {
+  function runPracticalAnimation(kind) {
     var canvas = document.getElementById('demo-anim-canvas');
     if (!canvas) return;
     animCanvas = canvas;
     animCtx = canvas.getContext('2d');
+    animKind = kind || 'major';
     animStart = (typeof performance !== 'undefined') ? performance.now() : Date.now();
     if (animReqId) cancelAnimationFrame(animReqId);
     animReqId = requestAnimationFrame(practicalAnimFrame);
@@ -233,12 +248,149 @@ var DemoEngine = (function() {
 
     ctx.clearRect(0, 0, W, H);
 
+    if (animKind === 'minor') {
+      minorAnimFrame(ctx, W, H, t);
+    } else {
+      majorAnimFrame(ctx, W, H, t);
+    }
+
+    animReqId = requestAnimationFrame(practicalAnimFrame);
+  }
+
+  /* Flame test (M7_2 / Minor Practical) animated demo — self-playing, no user input */
+  function minorAnimFrame(ctx, W, H, t) {
     /* bench background */
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(0, 0, W, H);
     ctx.strokeStyle = '#e2e8f0';
     ctx.lineWidth = 1;
     ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
+
+    function phase(a, b) {
+      if (t < a) return 0;
+      if (t > b) return 1;
+      return (t - a) / (b - a);
+    }
+    function lerp(a, b, k) { return a + (b - a) * k; }
+
+    /* sequence of ions: each occupies a portion of the loop */
+    var ions = [
+      { name: 'Na\u207a', colour: '#fbbf24', label: 'Golden yellow' },
+      { name: 'K\u207a', colour: '#c084fc', label: 'Lilac' },
+      { name: 'Ca\u00b2\u207a', colour: '#ef4444', label: 'Brick red' },
+      { name: 'Cu\u00b2\u207a', colour: '#22d3ee', label: 'Blue-green' },
+      { name: 'Ba\u00b2\u207a', colour: '#4ade80', label: 'Apple green' }
+    ];
+
+    /* bunsen burner */
+    var burnerX = 230, burnerTopY = 240, burnerW = 26, burnerH = 100;
+    var baseY = burnerTopY + burnerH;
+
+    /* stage: flame colour cycle begins after intro */
+    var introStart = 0.05, introEnd = 0.12;
+    var segLen = (1 - introEnd) / ions.length;
+    var seqProg = lerp(introEnd, 1, phase(0, 1));
+
+    /* determine active ion */
+    var ionIndex = 0;
+    for (var i = 0; i < ions.length; i++) {
+      if (t >= introEnd + i * segLen) ionIndex = i;
+    }
+    var ion = ions[ionIndex];
+    var ionProgress = (t - (introEnd + ionIndex * segLen)) / segLen; /* 0..1 for current ion */
+    var ionReveal = lerp(0, 1, phase(0, 0.2)); /* flame colour fades in */
+
+    /* ---- bunsen burner ---- */
+    /* tripod / stand */
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = 3;
+    /* wire holder from right */
+    ctx.beginPath();
+    ctx.moveTo(W - 110, 150);
+    ctx.lineTo(burnerX + burnerW / 2 + 10, burnerTopY - 18);
+    ctx.stroke();
+
+    /* bunsen tube */
+    ctx.fillStyle = '#94a3b8';
+    roundRect(ctx, burnerX, burnerTopY, burnerW, burnerH, 3);
+    ctx.fill();
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, burnerX, burnerTopY, burnerW, burnerH, 3);
+    ctx.stroke();
+
+    /* base */
+    ctx.fillStyle = '#64748b';
+    roundRect(ctx, burnerX - 18, baseY - 6, burnerW + 36, 12, 3);
+    ctx.fill();
+
+    /* nichrome wire with sample */
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(W - 110, 150);
+    ctx.quadraticCurveTo(W - 90, 210, burnerX + burnerW / 2 + 10, burnerTopY - 18);
+    ctx.stroke();
+
+    /* ---- flame ---- */
+    var flame = ion.colour;
+    var alpha = ionReveal;
+    var flicker = 0.9 + 0.1 * Math.sin(t * 40 * Math.PI);
+
+    /* inner blue flame at base */
+    ctx.fillStyle = 'rgba(59,130,246,0.65)';
+    ctx.beginPath();
+    ctx.moveTo(burnerX + 4, burnerTopY + 4);
+    ctx.quadraticCurveTo(burnerX + burnerW / 2, burnerTopY - 8 * flicker, burnerX + burnerW - 4, burnerTopY + 4);
+    ctx.closePath();
+    ctx.fill();
+
+    /* coloured outer flame (ion colour) */
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = flame;
+    ctx.beginPath();
+    ctx.moveTo(burnerX - 2, burnerTopY + 2);
+    ctx.quadraticCurveTo(burnerX + burnerW / 2, burnerTopY - (42 * flicker + 8), burnerX + burnerW + 2, burnerTopY + 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    /* ---- caption / narration ---- */
+    var caption = '';
+    if (t < introEnd) {
+      caption = 'Step 1: Clean the nichrome wire in concentrated HCl and heat it until no colour shows.';
+    } else {
+      caption = 'Ion ' + ion.name + ' produces a ' + ion.label.toLowerCase() + ' flame \u2014 record the colour and identify the ion.';
+    }
+
+    ctx.fillStyle = '#334155';
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(caption, W / 2, H - 10);
+
+    /* ion sequence chips at top */
+    var chipW = 88, chipH = 26, startX = (W - (ions.length * chipW + (ions.length - 1) * 8)) / 2;
+    for (var c = 0; c < ions.length; c++) {
+      ctx.fillStyle = c === ionIndex ? ions[c].colour : '#e2e8f0';
+      ctx.globalAlpha = c === ionIndex ? 1 : 0.6;
+      ctx.fillRect(startX + c * (chipW + 8), 16, chipW, chipH);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = c === ionIndex ? '#ffffff' : '#475569';
+      ctx.font = '12px system-ui, sans-serif';
+      ctx.fillText(ions[c].name, startX + c * (chipW + 8) + chipW / 2, 16 + chipH / 2 + 4);
+    }
+
+    /* progress ring indicator */
+    ctx.strokeStyle = '#e65100';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(W - 22, 22, 10, -Math.PI / 2, -Math.PI / 2 + t * 2 * Math.PI);
+    ctx.stroke();
+  }
+
+  /* Paper chromatography (A2 / Major Practical) animated demo — self-playing, no user input */
+  function majorAnimFrame(ctx, W, H, t) {
 
     /* ---- phase helpers ---- */
     function phase(a, b) { /* returns 0..1 progress within phase window */
@@ -376,8 +528,6 @@ var DemoEngine = (function() {
     ctx.beginPath();
     ctx.arc(W - 22, 22, 10, -Math.PI / 2, -Math.PI / 2 + t * 2 * Math.PI);
     ctx.stroke();
-
-    animReqId = requestAnimationFrame(practicalAnimFrame);
   }
 
   function stopAnimation() {
@@ -398,7 +548,7 @@ var DemoEngine = (function() {
 
     if (screen === 'practical') {
       workspace.innerHTML = renderStepPractical(ds);
-      runPracticalAnimation();
+      runPracticalAnimation(ds.practicalKind || 'major');
     } else if (screen === 'log') {
       stopAnimation();
       workspace.innerHTML = renderStepLog();
@@ -442,10 +592,10 @@ var DemoEngine = (function() {
       }
       if (target.id === 'btn-demo-exit' || target.id === 'btn-demo-exit-complete') {
         stopAnimation();
-        appState.demoState = { screen: 'intro', step: 0 };
-        appState.screen = 'home';
-        ChemSim.goHome();
-        return;
+appState.demoState = { screen: 'intro', step: 0, practicalKind: 'major' };
+    appState.screen = 'home';
+    ChemSim.goHome();
+    return;
       }
       if (target.id === 'btn-demo-next-step') {
         stopAnimation();
@@ -459,7 +609,17 @@ var DemoEngine = (function() {
         return;
       }
       if (target.id === 'btn-demo-anim-replay') {
-        runPracticalAnimation();
+        runPracticalAnimation(ds.practicalKind || 'major');
+        return;
+      }
+      if (target.id === 'btn-demo-card-major') {
+        ds.practicalKind = 'major';
+        renderInto(appState);
+        return;
+      }
+      if (target.id === 'btn-demo-card-minor') {
+        ds.practicalKind = 'minor';
+        renderInto(appState);
         return;
       }
       if (target.id === 'btn-demo-open-revision') {
@@ -497,7 +657,7 @@ var DemoEngine = (function() {
 /* Register demo screen with ChemSim */
 ChemSim.registerScreen('demo', function(appState) {
   if (!appState.demoState) {
-    appState.demoState = { screen: 'intro', step: 0 };
+    appState.demoState = { screen: 'intro', step: 0, practicalKind: 'major' };
   }
   DemoEngine.attachListeners(appState);
   return ''; /* content rendered by renderInto */
