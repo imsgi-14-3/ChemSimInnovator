@@ -176,7 +176,7 @@ function renderPbaScreen() {
     btnActionNext.style.display = 'none';
     btnActionReset.style.display = 'none';
     actionCenter.innerHTML = '';
-    attachResultListeners(state);
+    attachPbaResultListeners(state);
   }
 }
 
@@ -680,7 +680,7 @@ function renderResultPhase(appState, state) {
   return h;
 }
 
-function attachResultListeners(state) {
+function attachPbaResultListeners(state) {
   var homeBtn = document.getElementById('pba-result-home');
   if (homeBtn) {
     homeBtn.addEventListener('click', function() {

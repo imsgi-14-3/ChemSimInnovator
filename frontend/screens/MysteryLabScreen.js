@@ -102,7 +102,7 @@ function renderMysteryScreen() {
     headerCenter.style.display = '';
     instructionPanel.innerHTML = '<div class="instruction-placeholder"><p>Review your investigation results.</p></div>';
     workspace.innerHTML = renderMysteryResultHTML(state);
-    attachResultListeners(state);
+    attachMysteryResultListeners(state);
   }
 
   updateMysteryTimerDisplay(state);
@@ -842,7 +842,7 @@ function renderMysteryResultHTML(state) {
   return h;
 }
 
-function attachResultListeners(state) {
+function attachMysteryResultListeners(state) {
   var homeBtn = document.getElementById('mystery-back-to-list');
   if (homeBtn) {
     homeBtn.addEventListener('click', function() {
