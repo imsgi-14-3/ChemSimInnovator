@@ -146,7 +146,7 @@ var DemoEngine = (function() {
   }
 
   var PRACTICAL_APPARATUS = {
-    'A1': ['Round-bottom flask', 'Fractionating column', 'Condenser', 'Thermometer', 'Receiver', 'Bunsen burner'],
+    'A1': ['Heating mantle', 'Round-bottom flask', 'Fractionating column', 'Thermometer', 'Condenser', 'Receiving flask', 'Retort stand'],
     'A2': ['Beaker', 'Chromatography paper', 'Pencil & capillary', 'Solvent (mobile phase)', 'Stand & clip'],
     'A3': ['Beaker', 'Chromatography paper', 'Pb\u00b2\u207a/Cd\u00b2\u207a solutions', 'Solvent', 'Stand & clip'],
     'A4': ['Burette (with HCl)', 'NaOH solution (unknown molarity)', 'HCl solution (0.100 M)', 'Conical flask (NaOH + indicator)', 'Phenolphthalein indicator', 'White tile', 'Pipette (for initial sample)'],
@@ -962,7 +962,7 @@ var DemoEngine = (function() {
     ctx.fillText('SIMULATED', W - 12, barY + 22);
   }
 
-  /* A1 — Fractional distillation: flask + fractionating column + condenser */
+  /* A1 — Fractional distillation: mantle → flask → packed column → condenser → receiver */
   function animDistill(ctx, W, H, t) {
     drawDemoBg(ctx, W, H);
 
@@ -972,174 +972,454 @@ var DemoEngine = (function() {
       return (t - a) / (b - a);
     }
     function lerp(a, b, k) { return a + (b - a) * k; }
-
-    /* ---- positions ---- */
-    var stillX = 170, stillTopY = 140, stillBotY = 305; /* column to flask */
-    var flaskX = 150, flaskTopY = 175, flaskBotY = 310, flaskW = 180;
-
-    /* heating phase 0.05-0.35, boiling 0.35-0.75, distill 0.55-0.95 */
-    var heat = phase(0.05, 0.35);
-    var boil = phase(0.30, 0.55);
-    var distil = phase(0.55, 0.95);
-    var temp = t < 0.35 ? lerp(25, 78, phase(0.1, 0.35)) : (t < 0.55 ? lerp(78, 100, phase(0.35, 0.55)) : 100);
-
-    /* ---- retort stand + clamps (support column) ---- */
-    ctx.fillStyle = '#64748b';
-    ctx.fillRect(stillX - 28, stillTopY - 6, 8, stillBotY - stillTopY + 14); /* rod */
-    ctx.fillRect(stillX - 40, stillBotY - 2, 190, 10); /* base */
-
-    /* ---- Bunsen burner ---- */
-    var flameH = (18 + 14 * heat) * (0.85 + 0.15 * Math.sin(t * 30 * Math.PI));
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillRect(stillX + 8, stillBotY - 8, 22, 8);
-    ctx.fillStyle = '#475569';
-    ctx.fillRect(stillX + 12, stillBotY - 34, 14, 26);
-    /* flame above burner */
-    var flameX = stillX + 19;
-    ctx.fillStyle = '#3b82f6';
-    ctx.beginPath();
-    ctx.moveTo(flameX - 6, stillBotY - 34);
-    ctx.quadraticCurveTo(flameX, stillBotY - 34 - flameH, flameX + 6, stillBotY - 34);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,170,0,0.85)';
-    ctx.beginPath();
-    ctx.moveTo(flameX - 4, stillBotY - 34);
-    ctx.quadraticCurveTo(flameX, stillBotY - 34 - flameH + 4, flameX + 4, stillBotY - 34);
-    ctx.closePath();
-    ctx.fill();
-
-    /* ---- flask ---- */
-    /* liquid */
-    var liqY = lerp(flaskTopY + flaskW * 0.35, flaskTopY + flaskW * 0.22, phase(0.15, 0.75));
-    ctx.save();
-    ctx.beginPath();
-    roundRect(ctx, flaskX - 60, liqY, flaskW + 120, (flaskBotY - flaskTopY) - (liqY - flaskTopY), 12);
-    ctx.closePath();
-    ctx.clip();
-    ctx.fillStyle = 'rgba(200,220,255,0.55)';
-    ctx.fillRect(flaskX - 120, liqY, 420, flaskBotY);
-    ctx.restore();
-
-    /* flask glass body */
-    ctx.beginPath();
-    roundRect(ctx, flaskX - 60, flaskTopY, flaskW + 120, flaskBotY - flaskTopY, 14);
-    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
-
-    /* neck to column */
-    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(flaskX, flaskTopY);
-    ctx.lineTo(stillX, stillTopY);
-    ctx.stroke();
-
-    /* fractionating column (packed) */
-    ctx.fillStyle = '#e2e8f0';
-    ctx.fillRect(stillX - 10, stillTopY, 20, stillBotY - flaskTopY - 12);
-    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(stillX - 10, stillTopY, 20, stillBotY - flaskTopY - 12);
-    /* packing dots */
-    for (var p = 1; p < 9; p++) {
-      var py = stillTopY + 8 + p * 9;
-      var wob = 2.5;
-      ctx.fillStyle = '#94a3b8';
+    function callout(bx, by, bw, bh, text, lx, ly) {
+      var lines = text.split('\n');
+      ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+      ctx.lineWidth = 1.3;
       ctx.beginPath();
-      ctx.arc(stillX + (p % 2 ? -3 : 3) * wob, py, 3, 0, Math.PI * 2);
+      ctx.moveTo(lx, ly);
+      var edge = lx < bx ? bx : (lx > bx + bw ? bx + bw : bx + bw / 2);
+      ctx.lineTo(edge, (lx < bx || lx > bx + bw) ? by + bh / 2 : by + bh);
+      ctx.stroke();
+      ctx.fillStyle = '#0b3d6e';
+      roundRect(ctx, bx, by, bw, bh, 6);
       ctx.fill();
-    }
-
-    /* thermometer in column head */
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(stillX - 34, stillTopY + 6);
-    ctx.lineTo(stillX - 10, stillTopY + 6);
-    ctx.stroke();
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(stillX - 26, stillTopY + 4, 12, 4);
-    /* vapor temperature readout */
-    ctx.fillStyle = '#dc2626';
-    ctx.font = 'bold 12px system-ui, sans-serif';
-    ctx.fillText(Math.round(temp) + '\u00b0C', stillX - 30, stillTopY - 8);
-
-    /* vapour bubbles rising in flask */
-    if (boil > 0) {
-      for (var b = 0; b < 6; b++) {
-        var bt = (boil + t * 0.02) * 3 - b * 0.5;
-        if (bt > 1) continue;
-        var by = (flaskBotY - 8) - bt * (flaskBotY - flaskTopY - 20);
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.beginPath();
-        ctx.arc(flaskX + 40 + b * 18, by, 4 + b, 0, Math.PI * 2);
-        ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 10px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      for (var i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], bx + 7, by + 14 + i * 13);
       }
     }
 
-    /* distillate dripping at column top into condenser */
-    if (distil > 0.1) {
-      ctx.fillStyle = '#60a5fa';
-      ctx.beginPath();
-      ctx.arc(stillX, stillTopY + 2, 3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#60a5fa';
-      ctx.fillRect(stillX - 1, stillTopY + 4, 2, distil * 18);
-    }
+    var heat = phase(0.05, 0.30);
+    var boil = phase(0.28, 0.55);
+    var rise = phase(0.35, 0.70);
+    var distil = phase(0.55, 0.95);
+    var temp = t < 0.35 ? lerp(25, 78, phase(0.1, 0.35))
+      : (t < 0.55 ? lerp(78, 100, phase(0.35, 0.55)) : 100);
 
-    /* condenser (slanted tube to right) */
-    ctx.strokeStyle = '#94a3b8';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(stillX + 8, stillTopY);
-    ctx.lineTo(stillX + 150, stillBotY - 60);
+    var benchY = H * 0.62;
+    var mantleCX = 168;
+    var mantleTopY = benchY + 48;
+    var mantleH = 52;
+    var flaskCX = mantleCX;
+    var flaskCY = mantleTopY - 6;
+    var flaskR = 44;
+    var neckW = 18;
+    var neckTopY = flaskCY - flaskR - 52;
+    var colX = flaskCX - 11;
+    var colW = 22;
+    var colBotY = flaskCY - flaskR + 8;
+    var colTopY = 48;
+    var standRodX = 78;
+    var condX1 = flaskCX + colW / 2;
+    var condY1 = colTopY + 22;
+    var condX2 = 400;
+    var condY2 = 248;
+    var rcCX = 448;
+    var rcCY = benchY + 42;
+    var rcR = 36;
+
+    /* ---- retort stand ---- */
+    ctx.fillStyle = '#1e1e1e';
+    roundRect(ctx, 40, benchY + 62, 90, 14, 3);
+    ctx.fill();
+    ctx.fillStyle = '#2a2a2a';
+    roundRect(ctx, 48, benchY + 52, 74, 12, 2);
+    ctx.fill();
+    var rodG = ctx.createLinearGradient(standRodX - 4, 0, standRodX + 4, 0);
+    rodG.addColorStop(0, '#707070');
+    rodG.addColorStop(0.35, '#d0d0d0');
+    rodG.addColorStop(0.65, '#c0c0c0');
+    rodG.addColorStop(1, '#707070');
+    ctx.fillStyle = rodG;
+    ctx.fillRect(standRodX - 4, 36, 8, benchY + 50 - 36);
+    /* clamps on column + flask neck */
+    function clampBar(y, gripX) {
+      ctx.fillStyle = '#888';
+      ctx.fillRect(standRodX + 4, y, gripX - standRodX - 4, 6);
+      ctx.fillStyle = '#aaa';
+      roundRect(ctx, gripX - 6, y - 4, 14, 14, 2);
+      ctx.fill();
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    clampBar(colTopY + 48, colX + colW / 2);
+    clampBar(neckTopY + 18, flaskCX - neckW / 2);
+
+    /* ---- heating mantle (flask sits in the cup) ---- */
+    var mLeft = mantleCX - 58;
+    var mBody = ctx.createLinearGradient(mLeft, 0, mLeft + 116, 0);
+    mBody.addColorStop(0, '#15356a');
+    mBody.addColorStop(0.15, '#1c4a88');
+    mBody.addColorStop(0.45, '#2460a5');
+    mBody.addColorStop(0.75, '#1c4a88');
+    mBody.addColorStop(1, '#15356a');
+    ctx.fillStyle = mBody;
+    roundRect(ctx, mLeft, mantleTopY, 116, mantleH, 8);
+    ctx.fill();
+    ctx.strokeStyle = '#0e2850';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
-    ctx.strokeStyle = '#cbd5e1';
+    /* metal rim / cup opening */
+    var rimG = ctx.createLinearGradient(mLeft, 0, mLeft + 116, 0);
+    rimG.addColorStop(0, '#7a7a7a');
+    rimG.addColorStop(0.35, '#d5d5d5');
+    rimG.addColorStop(0.5, '#e8e8e8');
+    rimG.addColorStop(0.65, '#d5d5d5');
+    rimG.addColorStop(1, '#7a7a7a');
+    ctx.fillStyle = rimG;
+    ctx.beginPath();
+    ctx.ellipse(mantleCX, mantleTopY + 4, 56, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    /* cup interior (flask nestles here) */
+    ctx.fillStyle = heat > 0.05 ? 'rgba(255,90,20,' + (0.15 + 0.45 * heat) + ')' : '#4a4a4a';
+    ctx.beginPath();
+    ctx.ellipse(mantleCX, mantleTopY + 6, 40, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    /* heat glow under flask */
+    if (heat > 0.05) {
+      ctx.fillStyle = 'rgba(255,100,20,' + (0.12 + 0.3 * heat * (0.7 + 0.3 * Math.sin(t * 40))) + ')';
+      ctx.beginPath();
+      ctx.ellipse(mantleCX, mantleTopY + 8, 48, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    /* control dial + power LED */
+    ctx.fillStyle = '#ccc';
+    ctx.beginPath();
+    ctx.arc(mantleCX, mantleTopY + mantleH - 16, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    var dialA = heat > 0.1 ? -0.5 : 0.9;
+    ctx.strokeStyle = '#333';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(stillX + 8, stillTopY);
-    ctx.lineTo(stillX + 150, stillBotY - 60);
+    ctx.moveTo(mantleCX, mantleTopY + mantleH - 16);
+    ctx.lineTo(mantleCX + Math.cos(dialA) * 7, mantleTopY + mantleH - 16 + Math.sin(dialA) * 7);
     ctx.stroke();
-    /* distillate drops entering receiver */
-    if (distil > 0.2) {
-      ctx.fillStyle = '#93c5fd';
+    if (heat > 0.1) {
+      ctx.fillStyle = '#ff5500';
       ctx.beginPath();
-      ctx.arc(stillX + 150, stillBotY - 60, 4, 0, Math.PI * 2);
+      ctx.arc(mantleCX + 38, mantleTopY + mantleH - 16, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,85,0,0.3)';
+      ctx.beginPath();
+      ctx.arc(mantleCX + 38, mantleTopY + mantleH - 16, 6, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    /* receiving flask */
-    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
-    ctx.lineWidth = 2.5;
+    /* ---- round-bottom flask seated in mantle ---- */
+    /* liquid inside */
+    var liqTop = flaskCY + 4;
+    ctx.save();
     ctx.beginPath();
-    roundRect(ctx, stillX + 120, stillBotY - 96, 70, 70, 10);
+    ctx.arc(flaskCX, flaskCY, flaskR - 3, 0, Math.PI * 2);
+    ctx.clip();
+    var lg = ctx.createLinearGradient(0, liqTop, 0, flaskCY + flaskR);
+    lg.addColorStop(0, 'rgba(230,242,255,0.35)');
+    lg.addColorStop(0.4, 'rgba(200,225,248,0.5)');
+    lg.addColorStop(1, 'rgba(170,200,235,0.65)');
+    ctx.fillStyle = lg;
+    ctx.fillRect(flaskCX - flaskR, liqTop, flaskR * 2, flaskR * 2);
+    /* boiling bubbles + chips */
+    if (boil > 0.15) {
+      var tt = t * 80;
+      for (var bi = 0; bi < 14; bi++) {
+        var seed = Math.sin(tt * 0.4 + bi * 2.1) * 0.5 + 0.5;
+        var bx = flaskCX - flaskR * 0.55 + seed * flaskR * 1.1;
+        var cycle = (tt * 0.6 + bi * 7) % 28;
+        var by = flaskCY + flaskR * 0.55 - cycle * (0.9 + boil * 0.5);
+        var br = 1.5 + seed * 2.5;
+        if (by < flaskCY + flaskR * 0.15) {
+          ctx.fillStyle = 'rgba(255,255,255,' + (0.2 + seed * 0.35) + ')';
+          ctx.beginPath();
+          ctx.arc(bx, by, br, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      /* rolling boil surface */
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.beginPath();
+      for (var wv = 0; wv <= 20; wv++) {
+        var wx = flaskCX - flaskR + (wv / 20) * flaskR * 2;
+        var wy = liqTop + Math.sin(tt * 0.15 + wv * 0.9) * 2.5;
+        if (wv === 0) ctx.moveTo(wx, wy);
+        else ctx.lineTo(wx, wy);
+      }
+      ctx.lineTo(flaskCX + flaskR, flaskCY + flaskR);
+      ctx.lineTo(flaskCX - flaskR, flaskCY + flaskR);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+
+    /* glass sphere + neck */
+    var fg = ctx.createLinearGradient(flaskCX - flaskR, 0, flaskCX + flaskR, 0);
+    fg.addColorStop(0, 'rgba(120,168,210,0.48)');
+    fg.addColorStop(0.25, 'rgba(210,235,255,0.14)');
+    fg.addColorStop(0.5, 'rgba(255,255,255,0.06)');
+    fg.addColorStop(0.75, 'rgba(210,235,255,0.14)');
+    fg.addColorStop(1, 'rgba(120,168,210,0.48)');
+    ctx.fillStyle = fg;
+    ctx.strokeStyle = 'rgba(50,90,130,0.85)';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(flaskCX - neckW / 2, neckTopY);
+    ctx.lineTo(flaskCX - neckW / 2, flaskCY - flaskR + 18);
+    ctx.bezierCurveTo(flaskCX - neckW / 2 - 8, flaskCY - flaskR + 30, flaskCX - flaskR + 8, flaskCY - 10, flaskCX - flaskR, flaskCY);
+    ctx.arc(flaskCX, flaskCY, flaskR, Math.PI, 0, false);
+    ctx.bezierCurveTo(flaskCX + flaskR - 8, flaskCY - 10, flaskCX + neckW / 2 + 8, flaskCY - flaskR + 30, flaskCX + neckW / 2, flaskCY - flaskR + 18);
+    ctx.lineTo(flaskCX + neckW / 2, neckTopY);
+    ctx.closePath();
+    ctx.fill();
     ctx.stroke();
-    if (distil > 0.3) {
-      var recFill = lerp(stillBotY - 34, stillBotY - 16, phase(0.3, 0.9));
-      ctx.fillStyle = 'rgba(147,197,253,0.65)';
-      ctx.fillRect(stillX + 122, recFill, 66, (stillBotY - 30) - recFill);
+    /* shine */
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(flaskCX - flaskR + 12, flaskCY - flaskR * 0.55);
+    ctx.quadraticCurveTo(flaskCX - flaskR + 7, flaskCY, flaskCX - flaskR + 14, flaskCY + flaskR * 0.45);
+    ctx.stroke();
+
+    /* ---- fractionating column mounted on flask neck ---- */
+    ctx.fillStyle = 'rgba(200,225,248,0.18)';
+    ctx.strokeStyle = 'rgba(80,120,160,0.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(colX, colTopY, colW, colBotY - colTopY);
+    ctx.fill();
+    ctx.stroke();
+    /* packed glass beads */
+    var beadN = Math.floor((colBotY - colTopY - 16) / 14);
+    for (var bi2 = 0; bi2 < beadN; bi2++) {
+      var byy = colTopY + 14 + bi2 * 14;
+      var bxx = colX + colW / 2 + (bi2 % 2 ? -3 : 3);
+      var bg2 = ctx.createRadialGradient(bxx - 1, byy - 1, 0, bxx, byy, 5);
+      bg2.addColorStop(0, 'rgba(255,255,255,0.85)');
+      bg2.addColorStop(0.4, 'rgba(220,235,250,0.45)');
+      bg2.addColorStop(1, 'rgba(160,185,210,0.15)');
+      ctx.fillStyle = bg2;
+      ctx.beginPath();
+      ctx.arc(bxx, byy, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(120,145,170,0.35)';
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+    }
+    /* vapour rising through column */
+    if (rise > 0.1) {
+      for (var vi = 0; vi < 8; vi++) {
+        var vphase = (rise * 2 + t * 3 + vi * 0.13) % 1;
+        var vy = colBotY - vphase * (colBotY - colTopY - 6);
+        var vx = colX + colW / 2 + Math.sin(t * 20 + vi * 2) * 5;
+        ctx.fillStyle = 'rgba(200,225,255,' + (0.15 + 0.25 * (1 - Math.abs(vphase - 0.5) * 2)) + ')';
+        ctx.beginPath();
+        ctx.arc(vx, vy, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      /* faint vapour column fill */
+      ctx.fillStyle = 'rgba(200,225,255,0.12)';
+      ctx.fillRect(colX + 3, colTopY + 6, colW - 6, (colBotY - colTopY - 12) * rise);
     }
 
-    /* ---- labels ---- */
-    ctx.fillStyle = '#475569';
-    ctx.font = '12px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Round-bottom flask', flaskX, flaskBotY + 16);
-    ctx.fillText('Fractionating column', stillX, stillTopY - 22);
-    ctx.fillText('Receiver', stillX + 155, stillBotY - 20);
+    /* ---- side arm + thermometer at column head ---- */
+    /* side arm to condenser */
+    ctx.strokeStyle = 'rgba(80,120,160,0.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(colX + colW, colTopY + 18);
+    ctx.lineTo(colX + colW + 14, colTopY + 22);
+    ctx.stroke();
+    /* thermometer (bulb at branch / column head) */
+    var thX = colX + colW / 2;
+    var thTop = colTopY - 40;
+    var thBot = colTopY + 28;
+    ctx.fillStyle = 'rgba(248,248,252,0.94)';
+    ctx.strokeStyle = 'rgba(150,150,160,0.7)';
+    ctx.lineWidth = 1;
+    roundRect(ctx, thX - 4, thTop, 8, thBot - thTop, 3);
+    ctx.fill();
+    ctx.stroke();
+    var fillH = Math.min(thBot - thTop - 8, (temp / 110) * (thBot - thTop - 8));
+    ctx.fillStyle = '#c62828';
+    ctx.fillRect(thX - 1.3, thBot - fillH, 2.6, fillH - 5);
+    ctx.beginPath();
+    ctx.arc(thX, thBot - 2, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    /* scale marks */
+    for (var tm = 0; tm <= 8; tm++) {
+      var tmy = thBot - 8 - (tm / 8) * (thBot - thTop - 14);
+      ctx.strokeStyle = 'rgba(80,80,80,0.4)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(thX + 4, tmy);
+      ctx.lineTo(thX + (tm % 4 === 0 ? 8 : 6), tmy);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#dc2626';
+    ctx.font = 'bold 12px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(Math.round(temp) + '\u00b0C', thX + 12, thTop + 14);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '8px system-ui, sans-serif';
+    ctx.fillText('simulated', thX + 12, thTop + 26);
+
+    /* ---- Liebig condenser (double jacket + hoses) ---- */
+    var cdx = condX2 - condX1;
+    var cdy = condY2 - condY1;
+    var cdLen = Math.sqrt(cdx * cdx + cdy * cdy);
+    var cdAng = Math.atan2(cdy, cdx);
+    ctx.save();
+    ctx.translate(condX1, condY1);
+    ctx.rotate(cdAng);
+    /* outer jacket */
+    ctx.fillStyle = 'rgba(190,225,255,0.22)';
+    ctx.strokeStyle = 'rgba(85,145,205,0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.rect(0, -11, cdLen, 22);
+    ctx.fill();
+    ctx.stroke();
+    /* cooling water tint */
+    ctx.fillStyle = 'rgba(100,180,255,0.14)';
+    ctx.fillRect(4, -8, cdLen - 8, 16);
+    /* inner tube */
+    ctx.fillStyle = 'rgba(230,245,255,0.3)';
+    ctx.strokeStyle = 'rgba(155,180,208,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.rect(8, -4, cdLen - 16, 8);
+    ctx.fill();
+    ctx.stroke();
+    /* distillate slug moving down condenser */
+    if (distil > 0.05) {
+      var dropP = ((distil * 3 + t * 2) % 1);
+      var dx0 = 12 + dropP * (cdLen - 28);
+      ctx.fillStyle = 'rgba(165,205,248,0.85)';
+      ctx.beginPath();
+      ctx.ellipse(dx0, 0, 5, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+    /* water hoses (in bottom, out top) */
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(25,105,205,0.85)';
+    ctx.lineWidth = 5;
+    var hoseMidX = (condX1 + condX2) / 2;
+    var hoseMidY = (condY1 + condY2) / 2;
+    /* in at lower end */
+    ctx.beginPath();
+    ctx.moveTo(condX2 - 18, condY2 + 10);
+    ctx.quadraticCurveTo(condX2 - 4, condY2 + 36, condX2 + 10, condY2 + 48);
+    ctx.stroke();
+    /* out at upper end */
+    ctx.beginPath();
+    ctx.moveTo(condX1 + 28, condY1 - 4);
+    ctx.quadraticCurveTo(condX1 + 10, condY1 - 28, condX1 + 24, condY1 - 44);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(80,170,255,0.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(condX2 - 18, condY2 + 10);
+    ctx.quadraticCurveTo(condX2 - 4, condY2 + 36, condX2 + 10, condY2 + 48);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(condX1 + 28, condY1 - 4);
+    ctx.quadraticCurveTo(condX1 + 10, condY1 - 28, condX1 + 24, condY1 - 44);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    /* drips into receiver */
+    if (distil > 0.15) {
+      var dripPh = (t * 40) % 1;
+      ctx.fillStyle = 'rgba(165,205,248,0.9)';
+      ctx.beginPath();
+      ctx.ellipse(condX2 + 2, condY2 + 6 + dripPh * 18, 3, 4.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    /* ---- receiving flask ---- */
+    ctx.fillStyle = 'rgba(200,225,248,0.18)';
+    ctx.strokeStyle = 'rgba(70,110,150,0.8)';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(rcCX - 7, rcCY - rcR - 28);
+    ctx.lineTo(rcCX - 7, rcCY - rcR + 8);
+    ctx.lineTo(rcCX - rcR, rcCY + rcR * 0.7);
+    ctx.quadraticCurveTo(rcCX - rcR, rcCY + rcR + 4, rcCX - rcR + 8, rcCY + rcR + 4);
+    ctx.lineTo(rcCX + rcR - 8, rcCY + rcR + 4);
+    ctx.quadraticCurveTo(rcCX + rcR, rcCY + rcR + 4, rcCX + rcR, rcCY + rcR * 0.7);
+    ctx.lineTo(rcCX + 7, rcCY - rcR + 8);
+    ctx.lineTo(rcCX + 7, rcCY - rcR - 28);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* distillate fill */
+    if (distil > 0.25) {
+      var fillLevel = lerp(rcCY + rcR, rcCY - rcR * 0.1, phase(0.3, 0.92));
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(rcCX - rcR, rcCY + rcR * 0.7);
+      ctx.quadraticCurveTo(rcCX - rcR, rcCY + rcR + 4, rcCX - rcR + 8, rcCY + rcR + 4);
+      ctx.lineTo(rcCX + rcR - 8, rcCY + rcR + 4);
+      ctx.quadraticCurveTo(rcCX + rcR, rcCY + rcR + 4, rcCX + rcR, rcCY + rcR * 0.7);
+      ctx.lineTo(rcCX + 7, rcCY - rcR + 8);
+      ctx.lineTo(rcCX - 7, rcCY - rcR + 8);
+      ctx.closePath();
+      ctx.clip();
+      var rg2 = ctx.createLinearGradient(0, fillLevel, 0, rcCY + rcR + 4);
+      rg2.addColorStop(0, 'rgba(200,220,255,0.55)');
+      rg2.addColorStop(1, 'rgba(170,205,245,0.75)');
+      ctx.fillStyle = rg2;
+      ctx.fillRect(rcCX - rcR, fillLevel, rcR * 2, rcCY + rcR + 4 - fillLevel);
+      /* ripples on surface */
+      ctx.fillStyle = 'rgba(230,245,255,0.5)';
+      ctx.beginPath();
+      for (var rp = 0; rp <= 16; rp++) {
+        var rx = rcCX - rcR + (rp / 16) * rcR * 2;
+        var ry = fillLevel + Math.sin(t * 25 + rp) * 1.5;
+        if (rp === 0) ctx.moveTo(rx, ry);
+        else ctx.lineTo(rx, ry);
+      }
+      ctx.lineTo(rcCX + rcR, fillLevel + 6);
+      ctx.lineTo(rcCX - rcR, fillLevel + 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    /* white pad under receiver */
+    ctx.fillStyle = '#f0f0ea';
+    roundRect(ctx, rcCX - 42, rcCY + rcR + 6, 84, 6, 2);
+    ctx.fill();
+
+    /* ---- navy callouts ---- */
+    callout(8, 40, 96, 28, 'Heating mantle', mantleCX - 20, mantleTopY + 10);
+    callout(210, 100, 108, 28, 'Fractionating\ncolumn', colX + colW + 4, colTopY + 50);
+    callout(8, 120, 78, 28, 'Round-bottom\nflask', flaskCX - flaskR - 4, flaskCY);
+    callout(300, 40, 86, 28, 'Thermometer', thX + 16, thTop + 8);
+    callout(300, 150, 72, 16, 'Condenser', hoseMidX - 10, hoseMidY - 6);
+    callout(470, 200, 84, 28, 'Receiving\nflask', rcCX + 20, rcCY - 20);
 
     /* ---- caption ---- */
     var caption = '';
-    if (t < 0.05) caption = 'Step 1: Assemble the distillation apparatus with a fractionating column.';
-    else if (t < 0.30) caption = 'Step 2: Heat the mixture gently \u2014 the temperature begins to rise.';
-    else if (t < 0.55) caption = 'Step 3: Alcohol (lower boiling point) vapours rise through the column.';
-    else if (t < 0.80) caption = 'Step 4: Collect the first fraction \u2014 it distils at about 78\u00b0C.';
+    if (t < 0.05) caption = 'Step 1: Assemble the apparatus \u2014 flask in mantle, column on flask.';
+    else if (t < 0.30) caption = 'Step 2: Heat gently with the mantle \u2014 temperature begins to rise.';
+    else if (t < 0.55) caption = 'Step 3: Alcohol vapours rise through the packed fractionating column.';
+    else if (t < 0.80) caption = 'Step 4: Collect the first fraction \u2014 distils near 78\u00b0C through the condenser.';
     else caption = 'Result: alcohol distils first at the lower temperature; water remains in the flask.';
     setDemoReadings(
       '<span class="demo-reading"><em>Temp</em><strong>' + Math.round(temp) + '\u00b0C</strong></span>' +
-      '<span class="demo-reading"><em>Heat</em><strong>' + (heat > 0.1 ? 'On' : 'Off') + '</strong></span>' +
+      '<span class="demo-reading"><em>Mantle</em><strong>' + (heat > 0.1 ? 'Heating' : 'Off') + '</strong></span>' +
       '<span class="demo-reading"><em>Distillate</em><strong>' + (distil > 0.3 ? 'Collecting' : '\u2014') + '</strong></span>'
     );
     drawCaption(ctx, caption, W, H);
