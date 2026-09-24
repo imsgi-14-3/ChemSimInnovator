@@ -60,19 +60,20 @@ var DemoEngine = (function() {
   /* ---- Renderers ---- */
 
   function renderIntro() {
-    var h = '<div class="demo-panel demo-panel-center">';
-    h += '<h2>ChemSim Demonstration Mode</h2>';
-    h += '<p class="text-secondary">A guided tour of ChemSim\'s interactive virtual chemistry laboratory.</p>';
-    h += '<div class="demo-feature-list">';
-    h += '<p>This demonstration walks through ChemSim\'s key features:</p>';
+    var h = '<div class="demo-panel demo-panel-center demo-briefing">';
+    h += '<div class="demo-briefing-crest" aria-hidden="true">CSS</div>';
+    h += '<h2>ChemSim Laboratory Briefing</h2>';
+    h += '<p class="text-secondary">Interactive virtual chemistry laboratory \u2014 guided demonstration for FBISE SSC PBA preparation.</p>';
+    h += '<div class="demo-feature-list demo-feature-list--brief">';
+    h += '<p><strong>Tour itinerary</strong> (presenter-paced):</p>';
     h += '<ol>';
     for (var i = 0; i < STEPS.length; i++) {
-      h += '<li><strong>' + STEPS[i].label + '</strong></li>';
+      h += '<li><strong>' + STEPS[i].label + '</strong> \u2014 <span class="text-secondary">' + esc(STEPS[i].instruction) + '</span></li>';
     }
     h += '</ol>';
-    h += '<p class="text-secondary" style="font-size:0.85rem;">The demonstration uses existing educational simulations. You may interact with each module normally.</p>';
+    h += '<p class="text-secondary" style="font-size:0.85rem;">All measurements in demos are <strong>simulated educational values</strong>, not real laboratory measurements. Goggles optional\u2014curiosity required.</p>';
     h += '</div>';
-    h += '<button class="btn btn-primary demo-start-btn" id="btn-demo-start">Start Demo</button>';
+    h += '<button class="btn btn-primary demo-start-btn" id="btn-demo-start">Start Lab Demonstration</button>';
     h += '<br>';
     h += '<button class="btn btn-secondary" id="btn-demo-exit" style="margin-top:0.75rem;">Exit Demo</button>';
     h += '</div>';
@@ -127,21 +128,86 @@ var DemoEngine = (function() {
     return h;
   }
 
+  var PRACTICAL_APPARATUS = {
+    'A1': ['Round-bottom flask', 'Fractionating column', 'Condenser', 'Thermometer', 'Receiver', 'Bunsen burner'],
+    'A2': ['Beaker', 'Chromatography paper', 'Pencil & capillary', 'Solvent (mobile phase)', 'Stand & clip'],
+    'A3': ['Beaker', 'Chromatography paper', 'Pb\u00b2\u207a/Cd\u00b2\u207a solutions', 'Solvent', 'Stand & clip'],
+    'A4': ['Burette (HCl)', 'Conical flask', 'Pipette', 'White tile', 'Phenolphthalein'],
+    'A5': ['Test tubes', 'Delivery tubes', 'Limewater', 'Litmus paper', 'Gas jars'],
+    'M7_1': ['Evaporating dish', 'Inverted funnel', 'Filter paper', 'Bunsen burner'],
+    'M7_2': ['Bunsen burner', 'Nichrome wire', 'Concentrated HCl', 'Observer'],
+    'M7_3': ['Beaker', 'Tripod & gauze', 'Bunsen burner', 'Filter paper'],
+    'M7_4': ['Water bath', 'Capillary tube', 'Thermometer', 'Bunsen burner'],
+    'M7_5': ['Round-bottom flask', 'Thermometer', 'Condenser', 'Bunsen burner'],
+    'M7_6': ['Test tube', 'Zn granules', 'CuSO\u2084 solution', 'Stand'],
+    'M7_7': ['Watch glass', 'Anhydrous CuSO\u2084', 'Dropper', 'Distilled water'],
+    'M7_8': ['Beaker (ice)', 'Flask (water)', 'Thermometer', 'Bunsen burner']
+  };
+
   function renderStepPracticalVideo(demoState) {
     var p = PRACTICAL_DEMOS[0];
     for (var i = 0; i < PRACTICAL_DEMOS.length; i++) {
       if (PRACTICAL_DEMOS[i].id === demoState.practicalId) { p = PRACTICAL_DEMOS[i]; break; }
     }
-    var h = '<div class="demo-panel">';
+    var apparatus = PRACTICAL_APPARATUS[p.id] || [];
+    var totalSteps = DEMO_TOTAL_STEPS[p.anim] || 4;
+    var h = '<div class="demo-panel demo-panel-wide">';
     h += '<div class="demo-instruction"><strong>Presenter:</strong> ' + STEPS[0].instruction + '</div>';
-    h += '<div class="demo-step-content">';
+    h += '<div class="demo-step-content demo-step-content--flush">';
+
+    h += '<div class="demo-lab-header">';
+    h += '<div class="demo-lab-title-block">';
+    h += '<div class="demo-live-row"><span class="demo-live-dot" aria-hidden="true"></span><span class="demo-live-label">LIVE DEMONSTRATION</span>';
+    h += '<span class="demo-elapsed" id="demo-elapsed">0:00</span></div>';
     h += '<h3>' + esc(p.code) + ' \u2014 ' + esc(p.title) + '</h3>';
-    h += '<p class="text-secondary">' + esc(p.short) + '</p>';
-    h += '<div class="demo-anim-wrap"><canvas id="demo-anim-canvas" width="560" height="360"></canvas></div>';
+    h += '<p class="text-secondary">' + esc(p.short) + ' \u00b7 ' + p.section.toUpperCase() + ' practical</p>';
+    h += '</div>';
+    h += '<span class="demo-sim-badge">SIMULATED EDUCATIONAL VALUES</span>';
+    h += '</div>';
+
+    h += '<div class="demo-lab-stage">';
+    h += '<div class="demo-stage-main">';
+    h += '<div class="demo-stage-bezel">';
+    h += '<canvas id="demo-anim-canvas" width="560" height="360"></canvas>';
+    h += '</div>';
+    h += '<div class="demo-timeline" aria-hidden="true"><div class="demo-timeline-fill" id="demo-timeline-fill"></div></div>';
     h += '<div class="demo-anim-controls">';
     h += '<button class="btn btn-secondary" id="btn-demo-anim-stop">Pause</button>';
     h += '<button class="btn btn-secondary" id="btn-demo-anim-replay">Replay Animation</button>';
     h += '</div>';
+    h += '</div>';
+
+    h += '<aside class="demo-notebook" aria-live="polite">';
+    h += '<div class="demo-nb-header"><span class="demo-nb-dot"></span> Lab notebook</div>';
+    h += '<div class="demo-nb-section">';
+    h += '<h4>Procedure</h4>';
+    h += '<div class="demo-nb-step" id="demo-nb-step">Step 1 of ' + totalSteps + '</div>';
+    h += '<p class="demo-nb-caption" id="demo-nb-caption">Starting demonstration\u2026</p>';
+    h += '</div>';
+    h += '<div class="demo-nb-section">';
+    h += '<h4>Expected observation</h4>';
+    h += '<p class="demo-nb-obs" id="demo-nb-obs">Watch the apparatus as the procedure runs.</p>';
+    h += '</div>';
+    h += '<div class="demo-nb-section">';
+    h += '<h4>Instruments</h4>';
+    h += '<div class="demo-instruments" id="demo-nb-readings"><span class="demo-reading demo-reading--idle"><em>Status</em><strong>Running\u2026</strong></span></div>';
+    h += '</div>';
+    h += '<div class="demo-nb-section">';
+    h += '<h4>Apparatus</h4>';
+    h += '<ul class="demo-apparatus-list">';
+    for (var a = 0; a < apparatus.length; a++) {
+      h += '<li>' + esc(apparatus[a]) + '</li>';
+    }
+    h += '</ul>';
+    h += '</div>';
+    h += '<div class="demo-nb-log">';
+    h += '<h4>Observation log</h4>';
+    h += '<ol id="demo-nb-log-list"></ol>';
+    h += '</div>';
+    h += '<p class="demo-nb-disclaimer">Values shown are simulated educational values \u2014 not real laboratory measurements.</p>';
+    h += '</aside>';
+    h += '</div>';
+
     h += '<div class="demo-step-actions">';
     h += '<button class="btn btn-secondary demo-back-btn" id="btn-demo-back-list">&larr; Practical List</button>';
     h += '<button class="btn btn-primary demo-continue-btn" id="btn-demo-next-step">Continue Demo &rarr;</button>';
@@ -262,18 +328,20 @@ var DemoEngine = (function() {
   }
 
   function renderComplete() {
-    var h = '<div class="demo-panel demo-panel-center">';
+    var h = '<div class="demo-panel demo-panel-center demo-briefing">';
+    h += '<div class="demo-briefing-crest demo-briefing-crest--done" aria-hidden="true">\u2713</div>';
     h += '<h2>Demonstration Complete</h2>';
-    h += '<p class="text-secondary">You have explored ChemSim\'s key features:</p>';
-    h += '<div class="demo-feature-box">';
+    h += '<p class="text-secondary">You have walked through ChemSim\'s key laboratory modules:</p>';
+    h += '<div class="demo-feature-box demo-feature-box--wide">';
     h += '<ul>';
-    h += '<li><strong>Practical Lab</strong> &mdash; Interactive experiments with simulation</li>';
-    h += '<li><strong>PBA Practice</strong> &mdash; Timed assessment workflow</li>';
+    h += '<li><strong>Practical Lab</strong> &mdash; 13 animated practicals with live lab notebook</li>';
+    h += '<li><strong>PBA Practice</strong> &mdash; Timed assessment with partial credit</li>';
     h += '<li><strong>Mystery Lab</strong> &mdash; Unknown sample investigation</li>';
     h += '<li><strong>Experiment Log</strong> &mdash; Local record keeping</li>';
     h += '<li><strong>Learning & Revision</strong> &mdash; Practical reference hub</li>';
     h += '</ul>';
     h += '</div>';
+    h += '<p class="demo-final-sim">All displayed measurements are simulated educational values \u2014 not real laboratory measurements.</p>';
     h += '<p class="text-secondary" style="font-size:0.85rem;">ChemSim is an educational simulation for FBISE SSC Chemistry Practical Based Assessment preparation.</p>';
     h += '<button class="btn btn-primary" id="btn-demo-restart" style="margin-right:0.5rem;">Restart Demo</button>';
     h += '<button class="btn btn-secondary" id="btn-demo-exit-complete">Return to Main Menu</button>';
@@ -314,6 +382,7 @@ var DemoEngine = (function() {
     animKind = key || 'major';
     animPaused = false;
     animPauseAccum = 0;
+    resetDemoPhase(animKind);
     resetAnimClock();
     if (animReqId) cancelAnimationFrame(animReqId);
     animReqId = requestAnimationFrame(practicalAnimFrame);
@@ -355,6 +424,47 @@ var DemoEngine = (function() {
     if (btn) btn.textContent = animPaused ? 'Play' : 'Pause';
   }
 
+  function appendDemoLogEntry(stepLabel, text) {
+    var list = document.getElementById('demo-nb-log-list');
+    if (!list) return;
+    var key = stepLabel + '|' + text;
+    if (list.getAttribute('data-last') === key) return;
+    list.setAttribute('data-last', key);
+    var li = document.createElement('li');
+    li.innerHTML = '<strong>' + esc(stepLabel) + '</strong> ' + esc(text);
+    list.appendChild(li);
+    while (list.children.length > 6) list.removeChild(list.firstChild);
+    list.scrollTop = list.scrollHeight;
+  }
+
+  function syncDemoPhaseDom(t, elapsedMs) {
+    var fill = document.getElementById('demo-timeline-fill');
+    if (fill) fill.style.width = Math.round(t * 100) + '%';
+    var elapsedEl = document.getElementById('demo-elapsed');
+    if (elapsedEl) {
+      var secs = Math.floor(elapsedMs / 1000);
+      var mm = Math.floor(secs / 60);
+      var ss = secs % 60;
+      elapsedEl.textContent = mm + ':' + (ss < 10 ? '0' : '') + ss;
+    }
+    var stepEl = document.getElementById('demo-nb-step');
+    var capEl = document.getElementById('demo-nb-caption');
+    var obsEl = document.getElementById('demo-nb-obs');
+    var readEl = document.getElementById('demo-nb-readings');
+    if (capEl && demoPhase.caption && demoPhase.caption !== demoPhase.lastCaption) {
+      demoPhase.lastCaption = demoPhase.caption;
+      var isResult = /^Result/i.test(demoPhase.caption);
+      var label = isResult ? 'Result' : ('Step ' + demoPhase.step);
+      if (stepEl) stepEl.textContent = label + ' of ' + demoPhase.totalSteps;
+      capEl.textContent = demoPhase.caption;
+      if (obsEl) obsEl.textContent = demoPhase.observation || demoPhase.caption;
+      appendDemoLogEntry(label, demoPhase.observation || demoPhase.caption);
+    }
+    if (readEl && demoPhase.readingsHtml) {
+      readEl.innerHTML = demoPhase.readingsHtml;
+    }
+  }
+
   function practicalAnimFrame(now) {
     var ctx = animCtx;
     if (!ctx) return;
@@ -368,6 +478,7 @@ var DemoEngine = (function() {
 
     var frame = ANIM_FRAMES[animKind] || ANIM_FRAMES['major'];
     if (frame) frame(ctx, W, H, t);
+    syncDemoPhaseDom(t, elapsed);
 
     if (!animPaused) {
       animReqId = requestAnimationFrame(practicalAnimFrame);
@@ -385,12 +496,7 @@ var DemoEngine = (function() {
 
   /* Flame test (M7_2 / Minor Practical) animated demo — self-playing, no user input */
   function animMinor(ctx, W, H, t) {
-    /* bench background */
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
+    drawDemoBg(ctx, W, H);
 
     function phase(a, b) {
       if (t < a) return 0;
@@ -489,11 +595,11 @@ var DemoEngine = (function() {
     } else {
       caption = 'Ion ' + ion.name + ' produces a ' + ion.label.toLowerCase() + ' flame \u2014 record the colour and identify the ion.';
     }
-
-    ctx.fillStyle = '#334155';
-    ctx.font = 'bold 13px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(caption, W / 2, H - 10);
+    setDemoReadings(
+      '<span class="demo-reading"><em>Ion</em><strong>' + ion.name + '</strong></span>' +
+      '<span class="demo-reading"><em>Flame</em><strong>' + ion.label + '</strong></span>'
+    );
+    drawCaption(ctx, caption, W, H);
 
     /* ion sequence chips at top */
     var chipW = 88, chipH = 26, startX = (W - (ions.length * chipW + (ions.length - 1) * 8)) / 2;
@@ -507,16 +613,12 @@ var DemoEngine = (function() {
       ctx.fillText(ions[c].name, startX + c * (chipW + 8) + chipW / 2, 16 + chipH / 2 + 4);
     }
 
-    /* progress ring indicator */
-    ctx.strokeStyle = '#e65100';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(W - 22, 22, 10, -Math.PI / 2, -Math.PI / 2 + t * 2 * Math.PI);
-    ctx.stroke();
+    drawProgressRing(ctx, W, t);
   }
 
   /* Paper chromatography (A2 / Major Practical) animated demo — self-playing, no user input */
   function animMajor(ctx, W, H, t) {
+    drawDemoBg(ctx, W, H);
 
     /* ---- phase helpers ---- */
     function phase(a, b) { /* returns 0..1 progress within phase window */
@@ -644,41 +746,203 @@ var DemoEngine = (function() {
     else if (t < 0.85) caption = 'Step 5: Components travel different distances \u2014 red travels faster than blue.';
     else caption = 'Result: the mixture is separated. Rf = distance moved by component \u00f7 distance moved by solvent front.';
 
-    ctx.fillStyle = '#334155';
-    ctx.font = 'bold 13px system-ui, sans-serif';
-    ctx.fillText(caption, W / 2, H - 10);
-
-    /* progress ring indicator */
-    ctx.strokeStyle = '#e65100';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(W - 22, 22, 10, -Math.PI / 2, -Math.PI / 2 + t * 2 * Math.PI);
-    ctx.stroke();
+    setDemoReadings(
+      '<span class="demo-reading"><em>Solvent front</em><strong>' + (phase(0.12, 0.55) < 1 ? Math.round(phase(0.12, 0.55) * 100) + '%' : '100%') + '</strong></span>' +
+      '<span class="demo-reading"><em>Rf red</em><strong>' + (sepProgress >= 1 ? '0.82' : '\u2014') + '</strong></span>' +
+      '<span class="demo-reading"><em>Rf blue</em><strong>' + (sepProgress >= 1 ? '0.55' : '\u2014') + '</strong></span>'
+    );
+    drawCaption(ctx, caption, W, H);
+    drawProgressRing(ctx, W, t);
   }
 
   /* Shared bench background + progress ring for the demo animations */
+  var demoPhase = {
+    caption: '',
+    step: 1,
+    totalSteps: 4,
+    observation: '',
+    readingsHtml: '',
+    lastCaption: ''
+  };
+
+  var DEMO_TOTAL_STEPS = {
+    'distill': 5, 'major': 6, 'ionChrom': 5, 'titration': 4, 'gases': 3,
+    'sublimation': 4, 'minor': 5, 'crystals': 4, 'melting': 4, 'boiling': 4,
+    'displacement': 4, 'waterTest': 4, 'purity': 2
+  };
+
+  function setDemoReadings(html) {
+    demoPhase.readingsHtml = html || '';
+  }
+
+  function resetDemoPhase(animKey) {
+    demoPhase.caption = '';
+    demoPhase.step = 1;
+    demoPhase.totalSteps = DEMO_TOTAL_STEPS[animKey] || 4;
+    demoPhase.observation = '';
+    demoPhase.readingsHtml = '';
+    demoPhase.lastCaption = '';
+  }
+
+  /* Realistic lab station backdrop: tiled wall, shelf, wooden bench */
   function drawDemoBg(ctx, W, H) {
-    ctx.fillStyle = '#f8fafc';
+    /* wall */
+    var wallGrad = ctx.createLinearGradient(0, 0, 0, H * 0.62);
+    wallGrad.addColorStop(0, '#e8eef4');
+    wallGrad.addColorStop(1, '#d7e0e8');
+    ctx.fillStyle = wallGrad;
+    ctx.fillRect(0, 0, W, H * 0.62);
+
+    /* wall tiles */
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 1;
+    for (var tx = 0; tx < W; tx += 40) {
+      ctx.beginPath();
+      ctx.moveTo(tx, 0);
+      ctx.lineTo(tx, H * 0.62);
+      ctx.stroke();
+    }
+    for (var ty = 0; ty < H * 0.62; ty += 32) {
+      ctx.beginPath();
+      ctx.moveTo(0, ty);
+      ctx.lineTo(W, ty);
+      ctx.stroke();
+    }
+
+    /* reagent shelf */
+    var shelfY = 48;
+    ctx.fillStyle = '#8b6914';
+    ctx.fillRect(40, shelfY, W - 80, 6);
+    ctx.fillStyle = '#6b4f10';
+    ctx.fillRect(40, shelfY + 6, W - 80, 3);
+    var bottles = ['#1a6b4f', '#4a90d9', '#dc3545', '#f0ad4e', '#6a1b9a', '#0d9e5f'];
+    for (var i = 0; i < bottles.length; i++) {
+      var bx = 56 + i * 78;
+      ctx.fillStyle = bottles[i];
+      ctx.globalAlpha = 0.75;
+      roundRect(ctx, bx, shelfY - 28, 18, 28, 3);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(bx + 5, shelfY - 34, 8, 6);
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.font = '7px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('R' + (i + 1), bx + 9, shelfY - 10);
+    }
+
+    /* safety sign */
+    ctx.fillStyle = '#fef3c7';
+    ctx.strokeStyle = '#d97706';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, W - 96, 14, 78, 36, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#92400e';
+    ctx.font = 'bold 8px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SAFETY', W - 57, 28);
+    ctx.font = '7px system-ui, sans-serif';
+    ctx.fillText('GOGGLES ON', W - 57, 40);
+
+    /* wooden bench */
+    var benchY = H * 0.62;
+    var benchGrad = ctx.createLinearGradient(0, benchY, 0, H);
+    benchGrad.addColorStop(0, '#a67c52');
+    benchGrad.addColorStop(0.08, '#8b6914');
+    benchGrad.addColorStop(0.15, '#7a5c3a');
+    benchGrad.addColorStop(1, '#5c4630');
+    ctx.fillStyle = benchGrad;
+    ctx.fillRect(0, benchY, W, H - benchY);
+
+    /* bench edge highlight */
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fillRect(0, benchY, W, 3);
+    ctx.strokeStyle = '#4a3728';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, benchY);
+    ctx.lineTo(W, benchY);
+    ctx.stroke();
+
+    /* wood grain */
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+    ctx.lineWidth = 1;
+    for (var g = 0; g < 5; g++) {
+      ctx.beginPath();
+      ctx.moveTo(0, benchY + 18 + g * 22);
+      ctx.bezierCurveTo(W * 0.3, benchY + 14 + g * 22, W * 0.7, benchY + 24 + g * 22, W, benchY + 18 + g * 22);
+      ctx.stroke();
+    }
+
+    /* subtle vignette */
+    var vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.85);
+    vig.addColorStop(0, 'rgba(0,0,0,0)');
+    vig.addColorStop(1, 'rgba(0,0,0,0.12)');
+    ctx.fillStyle = vig;
     ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = '#e2e8f0';
+
+    ctx.strokeStyle = '#cbd5e1';
     ctx.lineWidth = 1;
     ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
     ctx.textAlign = 'center';
   }
 
   function drawProgressRing(ctx, W, t) {
-    ctx.strokeStyle = '#e65100';
-    ctx.lineWidth = 2;
+    /* outer track */
+    ctx.strokeStyle = 'rgba(15,23,42,0.12)';
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(W - 22, 22, 10, -Math.PI / 2, -Math.PI / 2 + t * 2 * Math.PI);
+    ctx.arc(W - 24, 24, 11, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.strokeStyle = '#e65100';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(W - 24, 24, 11, -Math.PI / 2, -Math.PI / 2 + t * 2 * Math.PI);
+    ctx.stroke();
+    ctx.fillStyle = '#e65100';
+    ctx.font = 'bold 8px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(Math.round(t * 100) + '%', W - 24, 27);
   }
 
   function drawCaption(ctx, text, W, H) {
-    ctx.fillStyle = '#334155';
-    ctx.font = 'bold 13px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(text, W / 2, H - 10);
+    demoPhase.caption = text;
+    var stepMatch = /^Step\s+(\d+)/i.exec(text);
+    if (stepMatch) {
+      demoPhase.step = parseInt(stepMatch[1], 10);
+      demoPhase.observation = text.replace(/^Step\s+\d+:\s*/i, '');
+    } else if (/^Result/i.test(text)) {
+      demoPhase.step = demoPhase.totalSteps;
+      demoPhase.observation = text.replace(/^Result:\s*/i, '');
+    } else {
+      demoPhase.observation = text;
+    }
+
+    /* caption bar */
+    var barH = 36;
+    var barY = H - barH;
+    ctx.fillStyle = 'rgba(15,23,42,0.88)';
+    ctx.fillRect(0, barY, W, barH);
+    ctx.fillStyle = '#e65100';
+    ctx.fillRect(0, barY, 4, barH);
+
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    var stepLabel = (/^Result/i.test(text)) ? 'RESULT' : ('STEP ' + demoPhase.step + '/' + demoPhase.totalSteps);
+    ctx.fillText(stepLabel, 14, barY + 15);
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '12px system-ui, sans-serif';
+    var body = text.replace(/^Step\s+\d+:\s*/i, '').replace(/^Result:\s*/i, '');
+    if (body.length > 72) body = body.substring(0, 70) + '…';
+    ctx.fillText(body, 14, barY + 30);
+
+    ctx.fillStyle = 'rgba(148,163,184,0.9)';
+    ctx.font = '9px system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('SIMULATED', W - 12, barY + 22);
   }
 
   /* A1 — Fractional distillation: flask + fractionating column + condenser */
@@ -856,6 +1120,11 @@ var DemoEngine = (function() {
     else if (t < 0.55) caption = 'Step 3: Alcohol (lower boiling point) vapours rise through the column.';
     else if (t < 0.80) caption = 'Step 4: Collect the first fraction \u2014 it distils at about 78\u00b0C.';
     else caption = 'Result: alcohol distils first at the lower temperature; water remains in the flask.';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Temp</em><strong>' + Math.round(temp) + '\u00b0C</strong></span>' +
+      '<span class="demo-reading"><em>Heat</em><strong>' + (heat > 0.1 ? 'On' : 'Off') + '</strong></span>' +
+      '<span class="demo-reading"><em>Distillate</em><strong>' + (distil > 0.3 ? 'Collecting' : '\u2014') + '</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
@@ -980,6 +1249,11 @@ var DemoEngine = (function() {
     else if (t < 0.45) caption = 'Step 3: Place the paper in the beaker and let solvent rise.';
     else if (t < 0.85) caption = 'Step 4: Pb\u00b2\u207a travels further than Cd\u00b2\u207a \u2014 two spots separate.';
     else caption = 'Result: Pb\u00b2\u207a and Cd\u00b2\u207a ions are separated by paper chromatography.';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Front</em><strong>' + Math.round(phase(0.12, 0.55) * 100) + '%</strong></span>' +
+      '<span class="demo-reading"><em>Pb\u00b2\u207a</em><strong>' + (sepProgress >= 1 ? 'Rf 0.72' : '\u2014') + '</strong></span>' +
+      '<span class="demo-reading"><em>Cd\u00b2\u207a</em><strong>' + (sepProgress >= 1 ? 'Rf 0.45' : '\u2014') + '</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
@@ -1082,6 +1356,11 @@ var DemoEngine = (function() {
     else if (t < 0.55) caption = 'Step 2: Add HCl dropwise while swirling \u2014 pink fades slowly.';
     else if (t < 0.85) caption = 'Step 3: Endpoint \u2014 one extra drop makes pink disappear permanently.';
     else caption = 'Result: record titre. M(NaOH) = M(HCl) \u00d7 V(HCl) \u00f7 V(NaOH).';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Burette</em><strong>' + (pour * 23.5).toFixed(2) + ' mL</strong></span>' +
+      '<span class="demo-reading"><em>Indicator</em><strong>' + (pink > 0.05 ? 'Pink' : 'Colourless') + '</strong></span>' +
+      '<span class="demo-reading"><em>Endpoint</em><strong>' + (pour >= 0.85 ? 'Reached' : '\u2014') + '</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
@@ -1178,6 +1457,11 @@ var DemoEngine = (function() {
     if (t < 0.32) caption = 'Step 1: Test NH\u2083 \u2014 damp red litmus turns blue (basic gas).';
     else if (t < 0.64) caption = 'Step 2: Bubble CO\u2082 through limewater \u2014 turns milky.';
     else caption = 'Step 3: Cl\u2082 bleaches damp litmus paper \u2014 all three gases confirmed.';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Gas</em><strong>' + test.gas + '</strong></span>' +
+      '<span class="demo-reading"><em>Test</em><strong>' + (active === 0 ? 'Litmus' : (active === 1 ? 'Limewater' : 'Bleach')) + '</strong></span>' +
+      '<span class="demo-reading"><em>Status</em><strong>' + (sub > 0.6 ? 'Confirmed' : 'Testing') + '</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
@@ -1302,6 +1586,11 @@ var DemoEngine = (function() {
     else if (t < 0.2) caption = 'Step 2: Heat gently \u2014 naphthalene begins to sublime.';
     else if (t < 0.6) caption = 'Step 3: Naphthalene vapour rises and condenses on the cool funnel.';
     else caption = 'Result: white naphthalene collects on the funnel; sand and salt remain.';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Heat</em><strong>' + (heat > 0.2 ? 'On' : 'Off') + '</strong></span>' +
+      '<span class="demo-reading"><em>Vapour</em><strong>' + (vapour > 0.2 ? 'Rising' : '\u2014') + '</strong></span>' +
+      '<span class="demo-reading"><em>Sublimate</em><strong>' + (sublimate > 0.4 ? 'Forming' : '\u2014') + '</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
@@ -1408,6 +1697,10 @@ var DemoEngine = (function() {
     else if (t < 0.3) caption = 'Step 2: Filter if needed, then concentrate by evaporation.';
     else if (t < 0.6) caption = 'Step 3: Heat to concentrate \u2014 allow slow cooling.';
     else caption = 'Result: blue crystals of CuSO\u2084\u00b75H\u2082O form on cooling.';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Stage</em><strong>' + (dissolve < 1 ? 'Dissolving' : (heat > 0.2 ? 'Evaporating' : (crystal > 0.5 ? 'Crystallising' : 'Ready'))) + '</strong></span>' +
+      '<span class="demo-reading"><em>Product</em><strong>' + (crystal > 0.5 ? 'CuSO\u2084\u00b75H\u2082O' : '\u2014') + '</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
@@ -1502,6 +1795,11 @@ var DemoEngine = (function() {
     else if (t < 0.4) caption = 'Step 2: Heat gently \u2014 watch the temperature and the sample.';
     else if (t < 0.8) caption = 'Step 3: Record the temperature where the sample just melts (\u224880\u00b0C).';
     else caption = 'Result: the melting point of naphthalene is observed (\u224880\u00b0C, simulated).';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Temp</em><strong>' + Math.round(temps) + '\u00b0C</strong></span>' +
+      '<span class="demo-reading"><em>Sample</em><strong>' + (melt > 0.5 ? 'Liquid' : 'Solid') + '</strong></span>' +
+      '<span class="demo-reading"><em>Expected MP</em><strong>\u224880\u00b0C</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
@@ -1613,6 +1911,11 @@ var DemoEngine = (function() {
     else if (t < 0.35) caption = 'Step 2: Heat gently \u2014 temperature rises steadily.';
     else if (t < 0.7) caption = 'Step 3: Bubbles form \u2014 alcohol boils (\u224878\u00b0C, simulated).';
     else caption = 'Result: record the constant boiling temperature of ethyl alcohol.';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Temp</em><strong>' + Math.round(temps) + '\u00b0C</strong></span>' +
+      '<span class="demo-reading"><em>State</em><strong>' + (boil > 0.2 ? 'Boiling' : (heat > 0.2 ? 'Heating' : 'Idle')) + '</strong></span>' +
+      '<span class="demo-reading"><em>Expected BP</em><strong>\u224878\u00b0C</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
@@ -1680,6 +1983,10 @@ var DemoEngine = (function() {
     else if (t < 0.35) caption = 'Step 2: Add zinc granules to the solution.';
     else if (t < 0.85) caption = 'Step 3: Blue colour fades; brown copper deposits on zinc.';
     else caption = 'Result: Zn(s) + CuSO\u2084(aq) \u2192 ZnSO\u2084(aq) + Cu(s) \u2014 zinc displaces copper.';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Solution</em><strong>' + (blue > 0.15 ? 'Blue CuSO\u2084' : 'Pale ZnSO\u2084') + '</strong></span>' +
+      '<span class="demo-reading"><em>Deposit</em><strong>' + (react > 0.3 ? 'Cu on Zn' : '\u2014') + '</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
@@ -1747,6 +2054,10 @@ var DemoEngine = (function() {
     else if (t < 0.35) caption = 'Step 2: Add a few drops of distilled water.';
     else if (t < 0.8) caption = 'Step 3: The white powder turns blue in the presence of water.';
     else caption = 'Result: white \u2192 blue confirms water (CuSO\u2084 + 5H\u2082O \u2192 CuSO\u2084\u00b75H\u2082O).';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Powder</em><strong>' + (turnBlue > 0.5 ? 'Blue' : 'White') + '</strong></span>' +
+      '<span class="demo-reading"><em>Water</em><strong>' + (addWater > 0.2 ? 'Added' : 'Pending') + '</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
@@ -1876,6 +2187,10 @@ var DemoEngine = (function() {
     }
 
     var caption = mpTest < 1 ? 'Step 1: Determine the melting point of the sample (\u22480\u00b0C).' : 'Step 2: Determine the boiling point (\u2248100\u00b0C). Pure values confirm purity.';
+    setDemoReadings(
+      '<span class="demo-reading"><em>Test</em><strong>' + (mpTest < 1 ? 'Melting (0\u00b0C)' : 'Boiling (100\u00b0C)') + '</strong></span>' +
+      '<span class="demo-reading"><em>Purity</em><strong>' + (mpTest < 1 ? 'Checking MP' : 'Checking BP') + '</strong></span>'
+    );
     drawCaption(ctx, caption, W, H);
 
     drawProgressRing(ctx, W, t);
