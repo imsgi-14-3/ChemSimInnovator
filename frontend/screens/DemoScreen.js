@@ -74,6 +74,7 @@ var DemoEngine = (function() {
     h += '</div>';
     h += '<div class="demo-anim-wrap"><canvas id="demo-anim-canvas" width="560" height="360"></canvas></div>';
     h += '<div class="demo-anim-controls">';
+    h += '<button class="btn btn-secondary" id="btn-demo-anim-stop">Pause</button>';
     h += '<button class="btn btn-secondary" id="btn-demo-anim-replay">Replay Animation</button>';
     h += '</div>';
     h += '<button class="btn btn-primary demo-continue-btn" id="btn-demo-next-step">Continue Demo &rarr;</button>';
@@ -210,6 +211,8 @@ var DemoEngine = (function() {
   var animReqId = null;
   var animStart = 0;
   var animKind = 'major';
+  var animPaused = false;
+  var animPauseAccum = 0;
 
   function roundRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
@@ -232,9 +235,47 @@ var DemoEngine = (function() {
     animCanvas = canvas;
     animCtx = canvas.getContext('2d');
     animKind = kind || 'major';
-    animStart = (typeof performance !== 'undefined') ? performance.now() : Date.now();
+    animPaused = false;
+    animPauseAccum = 0;
+    resetAnimClock();
     if (animReqId) cancelAnimationFrame(animReqId);
     animReqId = requestAnimationFrame(practicalAnimFrame);
+    syncAnimButtons();
+  }
+
+  function animNow() {
+    return (typeof performance !== 'undefined') ? performance.now() : Date.now();
+  }
+
+  function resetAnimClock() {
+    animStart = animNow() - animPauseAccum;
+  }
+
+  function currentAnimElapsed(now) {
+    return (now - animStart);
+  }
+
+  function pausePracticalAnimation() {
+    if (animPaused || !animCanvas) return;
+    animPauseAccum = currentAnimElapsed(animNow());
+    animPaused = true;
+    if (animReqId) cancelAnimationFrame(animReqId);
+    animReqId = null;
+    syncAnimButtons();
+  }
+
+  function resumePracticalAnimation() {
+    if (!animPaused || !animCanvas) return;
+    resetAnimClock();
+    animPaused = false;
+    if (animReqId) cancelAnimationFrame(animReqId);
+    animReqId = requestAnimationFrame(practicalAnimFrame);
+    syncAnimButtons();
+  }
+
+  function syncAnimButtons() {
+    var btn = document.getElementById('btn-demo-anim-stop');
+    if (btn) btn.textContent = animPaused ? 'Play' : 'Pause';
   }
 
   function practicalAnimFrame(now) {
@@ -254,7 +295,11 @@ var DemoEngine = (function() {
       majorAnimFrame(ctx, W, H, t);
     }
 
-    animReqId = requestAnimationFrame(practicalAnimFrame);
+    if (!animPaused) {
+      animReqId = requestAnimationFrame(practicalAnimFrame);
+    } else {
+      animReqId = null;
+    }
   }
 
   /* Flame test (M7_2 / Minor Practical) animated demo — self-playing, no user input */
@@ -535,6 +580,8 @@ var DemoEngine = (function() {
       cancelAnimationFrame(animReqId);
       animReqId = null;
     }
+    animPaused = false;
+    animPauseAccum = 0;
     animCanvas = null;
     animCtx = null;
   }
@@ -610,6 +657,14 @@ var DemoEngine = (function() {
       }
       if (target.id === 'btn-demo-anim-replay') {
         runPracticalAnimation(ds.practicalKind || 'major');
+        return;
+      }
+      if (target.closest && target.closest('#btn-demo-anim-stop')) {
+        if (animPaused) {
+          resumePracticalAnimation();
+        } else {
+          pausePracticalAnimation();
+        }
         return;
       }
       if (target.closest && target.closest('#btn-demo-card-major')) {
