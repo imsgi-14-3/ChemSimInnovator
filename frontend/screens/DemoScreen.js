@@ -2112,7 +2112,7 @@ var DemoEngine = (function() {
     drawProgressRing(ctx, W, t);
   }
 
-  /* M7_6 — Displacement: zinc in copper sulphate solution */
+  /* M7_6 — Displacement: zinc granules sink into CuSO₄ in a rack-held test tube */
   function animDisplacement(ctx, W, H, t) {
     drawDemoBg(ctx, W, H);
 
@@ -2127,47 +2127,159 @@ var DemoEngine = (function() {
     var react = phase(0.3, 0.9);
     var blue = Math.max(0, 1 - react);
 
-    /* test tube */
-    var tx = 280, top = 100;
-    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(tx - 34, top);
-    ctx.lineTo(tx - 34, 250);
-    ctx.quadraticCurveTo(tx, 288, tx + 34, 250);
-    ctx.lineTo(tx + 34, top);
-    ctx.stroke();
-    /* blue CuSO₄ */
-    ctx.fillStyle = 'rgba(37,99,235,' + (0.35 + 0.5 * blue) + ')';
-    ctx.beginPath();
-    ctx.moveTo(tx - 32, top + 26);
-    ctx.lineTo(tx + 32, top + 26);
-    ctx.lineTo(tx + 32, 252);
-    ctx.quadraticCurveTo(tx, 286, tx - 32, 252);
-    ctx.closePath();
+    /* geometry — tube walls x∈[246,314], bottom curve y≈288 at centre */
+    var tx = 280;
+    var top = 96;
+    var wallL = tx - 34;
+    var wallR = tx + 34;
+    var wallBot = 250;
+    var botC = 288;
+    var liqTop = top + 28;
+
+    /* wooden rack under tube (keeps tube upright on the bench) */
+    ctx.fillStyle = '#8b6914';
+    roundRect(ctx, tx - 58, 292, 116, 12, 3);
+    ctx.fill();
+    ctx.fillStyle = '#6b4f10';
+    roundRect(ctx, tx - 10, 278, 20, 16, 3);
     ctx.fill();
 
-    /* zinc granules */
+    /* glass test tube */
+    ctx.strokeStyle = 'rgba(100,140,180,0.75)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(wallL, top);
+    ctx.lineTo(wallL, wallBot);
+    ctx.quadraticCurveTo(tx, botC, wallR, wallBot);
+    ctx.lineTo(wallR, top);
+    ctx.stroke();
+    /* rim */
+    ctx.beginPath();
+    ctx.moveTo(wallL - 4, top);
+    ctx.lineTo(wallL + 2, top);
+    ctx.moveTo(wallR - 2, top);
+    ctx.lineTo(wallR + 4, top);
+    ctx.stroke();
+
+    /* blue CuSO₄ solution (fades to pale ZnSO₄) */
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(wallL + 2, liqTop);
+    ctx.lineTo(wallL + 2, wallBot);
+    ctx.quadraticCurveTo(tx, botC - 3, wallR - 2, wallBot);
+    ctx.lineTo(wallR - 2, liqTop);
+    ctx.closePath();
+    ctx.clip();
+
+    var liqA = 0.35 + 0.5 * blue;
+    ctx.fillStyle = 'rgba(37,99,235,' + liqA + ')';
+    ctx.fillRect(wallL, liqTop, wallR - wallL, botC - liqTop + 4);
+
+    /* meniscus */
+    ctx.fillStyle = 'rgba(96,165,250,' + (0.25 + 0.35 * blue) + ')';
+    ctx.beginPath();
+    ctx.ellipse(tx, liqTop + 1, 31, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* zinc granules — fall then rest on the inner bottom (clipped inside tube) */
     if (addZn > 0) {
-      for (var z = 0; z < 5; z++) {
-        ctx.fillStyle = '#94a3b8';
+      /* resting spots fully inside walls & above bottom curve */
+      var spots = [
+        { x: tx - 16, y: 270 },
+        { x: tx - 4,  y: 274 },
+        { x: tx + 8,  y: 272 },
+        { x: tx - 10, y: 262 },
+        { x: tx + 2,  y: 260 },
+        { x: tx + 14, y: 264 }
+      ];
+      for (var z = 0; z < spots.length; z++) {
+        /* staggered drop-in: each granule finishes a little later */
+        var zStart = 0.1 + z * 0.04;
+        var zEnd = 0.32 + z * 0.03;
+        var zk = phase(zStart, zEnd);
+        if (zk <= 0) continue;
+        var fallY = lerp(top - 20, spots[z].y, zk);
+        /* bounce settle on last 15% */
+        if (zk > 0.85) {
+          fallY = spots[z].y - Math.sin((zk - 0.85) / 0.15 * Math.PI) * 3;
+        }
+        var gx = spots[z].x;
+        var gy = fallY;
+        var grx = 6.5 + (z % 3);
+        var gry = 4.5 + (z % 2);
+
+        /* metallic zinc body */
+        ctx.fillStyle = '#a8b4c0';
         ctx.beginPath();
-        ctx.ellipse(tx - 20 + z * 11, 266 - Math.floor(z / 3) * 18, 7, 5, 0, 0, Math.PI * 2);
+        ctx.ellipse(gx, gy, grx, gry, (z * 0.7) % Math.PI, 0, Math.PI * 2);
         ctx.fill();
-        /* copper deposit */
-        if (react > 0.3) {
-          ctx.fillStyle = 'rgba(180,83,9,' + (0.3 + 0.5 * react) + ')';
+        ctx.strokeStyle = 'rgba(71,85,105,0.55)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        /* highlight */
+        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        ctx.beginPath();
+        ctx.ellipse(gx - grx * 0.25, gy - gry * 0.3, grx * 0.35, gry * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        /* brown copper deposit grows on the granule once reacting */
+        if (react > 0.25 && zk >= 1) {
+          ctx.fillStyle = 'rgba(180,83,9,' + (0.35 + 0.55 * Math.min(1, react)) + ')';
           ctx.beginPath();
-          ctx.ellipse(tx - 20 + z * 11, 268 - Math.floor(z / 3) * 18, 5, 2, 0, 0, Math.PI * 2);
+          ctx.ellipse(gx + 1, gy + 1.5, grx * 0.85, gry * 0.7, (z * 0.7) % Math.PI, 0, Math.PI * 2);
+          ctx.fill();
+          /* darker copper flecks */
+          ctx.fillStyle = 'rgba(120,53,15,' + (0.4 + 0.4 * react) + ')';
+          ctx.beginPath();
+          ctx.arc(gx - 2, gy, 1.6, 0, Math.PI * 2);
+          ctx.arc(gx + 3, gy - 1, 1.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        /* fine bubbles while reaction runs */
+        if (react > 0.15 && react < 0.95 && zk >= 1) {
+          var bub = ((t * 20 + z * 0.35) % 1);
+          ctx.fillStyle = 'rgba(255,255,255,' + (0.55 * (1 - bub)) + ')';
+          ctx.beginPath();
+          ctx.arc(gx + ((z % 3) - 1) * 3, gy - 6 - bub * 40, 1.8 + bub, 0, Math.PI * 2);
           ctx.fill();
         }
       }
     }
+    ctx.restore(); /* end clip */
 
+    /* glass shine over liquid */
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.beginPath();
+    ctx.moveTo(wallL + 6, liqTop + 8);
+    ctx.lineTo(wallL + 12, liqTop + 8);
+    ctx.lineTo(wallL + 12, 240);
+    ctx.lineTo(wallL + 6, 240);
+    ctx.closePath();
+    ctx.fill();
+
+    /* empty second tube on rack (procedure: test tubes ×2) */
+    ctx.strokeStyle = 'rgba(100,140,180,0.35)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(tx + 70, 170);
+    ctx.lineTo(tx + 70, 268);
+    ctx.quadraticCurveTo(tx + 90, 288, tx + 110, 268);
+    ctx.lineTo(tx + 110, 170);
+    ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '10px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('empty', tx + 90, 250);
+
+    /* labels — above caption bar (y=324) */
     ctx.fillStyle = '#475569';
     ctx.font = '12px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('CuSO\u2084 solution + Zn granules', tx, 306);
+    ctx.fillText('Test tube: CuSO\u2084 (aq) + Zn granules', tx, 318);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '10px system-ui, sans-serif';
+    ctx.fillText('Tube rack', tx, 306);
 
     var caption = '';
     if (t < 0.1) caption = 'Step 1: Place blue copper(II) sulphate solution in a test tube.';
@@ -2176,7 +2288,8 @@ var DemoEngine = (function() {
     else caption = 'Result: Zn(s) + CuSO\u2084(aq) \u2192 ZnSO\u2084(aq) + Cu(s) \u2014 zinc displaces copper.';
     setDemoReadings(
       '<span class="demo-reading"><em>Solution</em><strong>' + (blue > 0.15 ? 'Blue CuSO\u2084' : 'Pale ZnSO\u2084') + '</strong></span>' +
-      '<span class="demo-reading"><em>Deposit</em><strong>' + (react > 0.3 ? 'Cu on Zn' : '\u2014') + '</strong></span>'
+      '<span class="demo-reading"><em>Deposit</em><strong>' + (react > 0.3 ? 'Cu on Zn' : '\u2014') + '</strong></span>' +
+      '<span class="demo-reading"><em>Zn in tube</em><strong>' + (addZn > 0.5 ? 'Yes' : 'Adding\u2026') + '</strong></span>'
     );
     drawCaption(ctx, caption, W, H);
 
