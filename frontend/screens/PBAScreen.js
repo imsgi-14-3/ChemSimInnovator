@@ -51,7 +51,7 @@ function renderSelectPhase(appState, state) {
 
   h += '<div class="pba-session-cta">';
   h += '<button class="btn btn-primary pba-session-btn" id="pba-start-session">Start Random Session — 4 to 5 questions</button>';
-  h += '<p class="text-secondary">A fresh shuffled set every turn: different questions, and MCQ options in a different order.</p>';
+  h += '<p class="text-secondary">A fresh shuffled set every turn: 3 different major practicals + 2 different minor practicals, with MCQ options in a different order.</p>';
   h += '</div>';
 
   h += '<div class="pba-overview">';
@@ -62,10 +62,11 @@ function renderSelectPhase(appState, state) {
   h += '<p class="text-secondary">Or pick a single question below for targeted practice.</p>';
   h += '</div></div></div>';
 
-  var secA = pbaGetQuestionsBySection('A');
-  var secB = pbaGetQuestionsBySection('B');
+  var secA = shuffleArray(pbaGetQuestionsBySection('A'));
+  var secB = shuffleArray(pbaGetQuestionsBySection('B'));
 
   h += '<h3 class="subsection-title">Section A — Major Practicals</h3>';
+  h += '<p class="text-secondary">' + secA.length + ' questions — order shuffles each time you open this screen.</p>';
   h += '<div class="pba-question-list">';
   for (var i = 0; i < secA.length; i++) {
     var q = secA[i];
@@ -82,6 +83,7 @@ function renderSelectPhase(appState, state) {
   h += '</div>';
 
   h += '<h3 class="subsection-title">Section B — Minor Practicals</h3>';
+  h += '<p class="text-secondary">' + secB.length + ' questions — order shuffles each time you open this screen.</p>';
   h += '<div class="pba-question-list">';
   for (var j = 0; j < secB.length; j++) {
     var qb = secB[j];
@@ -167,21 +169,34 @@ function shuffleQuestionOptions(q) {
 }
 
 function drawSessionQuestions() {
-  var poolA = pbaGetQuestionsBySection('A');
-  var poolB = pbaGetQuestionsBySection('B');
-  var a = shuffleArray(poolA);
-  var b = shuffleArray(poolB);
+  var poolA = shuffleArray(pbaGetQuestionsBySection('A'));
+  var poolB = shuffleArray(pbaGetQuestionsBySection('B'));
   var picked = [];
-  var takeA = Math.min(3, a.length);
-  var takeB = Math.min(2, b.length);
+  var usedExp = {};
   var i;
-  for (i = 0; i < takeA; i++) picked.push(a[i]);
-  for (i = 0; i < takeB; i++) picked.push(b[i]);
-  var rest = [];
-  for (i = takeA; i < a.length; i++) rest.push(a[i]);
-  for (i = takeB; i < b.length; i++) rest.push(b[i]);
-  rest = shuffleArray(rest);
-  for (i = 0; picked.length < 4 && i < rest.length; i++) picked.push(rest[i]);
+
+  /* Prefer distinct practicals so one session covers different experiments. */
+  for (i = 0; i < poolA.length && picked.length < 3; i++) {
+    if (!usedExp[poolA[i].experimentId]) {
+      usedExp[poolA[i].experimentId] = true;
+      picked.push(poolA[i]);
+    }
+  }
+  for (i = 0; i < poolB.length && picked.length < 5; i++) {
+    if (!usedExp[poolB[i].experimentId]) {
+      usedExp[poolB[i].experimentId] = true;
+      picked.push(poolB[i]);
+    }
+  }
+
+  /* Top up from whatever remains if distinct-practical draw fell short. */
+  for (i = 0; i < poolA.length && picked.length < 4; i++) {
+    if (picked.indexOf(poolA[i]) === -1) picked.push(poolA[i]);
+  }
+  for (i = 0; i < poolB.length && picked.length < 5; i++) {
+    if (picked.indexOf(poolB[i]) === -1) picked.push(poolB[i]);
+  }
+
   picked = shuffleArray(picked);
   if (picked.length > 5) picked = picked.slice(0, 5);
   return picked;
