@@ -11,6 +11,7 @@ ChemSim.registerScreen('mystery', function(appState) {
       currentTestIdx: -1,
       testsPerformed: {},
       observations: {},
+      interpretations: {},
       identification: '',
       score: 0
     };
@@ -29,7 +30,7 @@ function renderMysteryScreen() {
   var state = appState.mysteryState;
 
   if (!state) {
-    state = { phase: 'select', currentSample: null, currentTestIdx: -1, testsPerformed: {}, observations: {}, identification: '', score: 0 };
+    state = { phase: 'select', currentSample: null, currentTestIdx: -1, testsPerformed: {}, observations: {}, interpretations: {}, identification: '', score: 0 };
     appState.mysteryState = state;
   }
 
@@ -129,6 +130,7 @@ function attachSelectListeners(state) {
         currentTestIdx: 0,
         testsPerformed: {},
         observations: {},
+        interpretations: {},
         identification: '',
         score: 0
       };
@@ -210,10 +212,11 @@ function renderMysteryInvestigateHTML(state) {
       h += '<p class="mystery-obs-text">' + esc(currentTest.observation) + '</p>';
       h += '</div>';
 
-      /* Interpretation */
+      /* Ask student for their own interpretation instead of revealing it */
       h += '<div class="mystery-interpretation">';
-      h += '<h5>Interpretation</h5>';
-      h += '<p class="mystery-int-text">' + esc(currentTest.interpretation) + '</p>';
+      h += '<h5>Your Interpretation</h5>';
+      h += '<p class="text-secondary" style="font-size:0.88rem;margin-bottom:0.4rem;">What does this observation tell you about the sample?</p>';
+      h += '<textarea class="mystery-textarea" id="mystery-interpret-' + currentTest.id + '" rows="2" placeholder="Write your interpretation here...">' + esc(state.interpretations[currentTest.id] || '') + '</textarea>';
       h += '</div>';
 
       /* Optional student note */
@@ -383,8 +386,9 @@ function renderMysteryInstructions(state) {
   h += '<span class="pba-inst-qnum">Investigation</span>';
   h += '<span class="pba-inst-marks">' + sample.marks + ' marks</span>';
   h += '</div>';
-  h += '<p>Click a test button to select it, then perform the test to see the observation and equipment.</p>';
-  h += '<p class="text-secondary" style="margin-top:var(--space-3);">After performing all tests, click "Identify the Substance".</p>';
+  h += '<p>Click a test button to select it, then perform the test to see the observation.</p>';
+  h += '<p>For each test, write your own interpretation of what the observation means.</p>';
+  h += '<p class="text-secondary" style="margin-top:var(--space-3);">After performing all tests, click "See Result" to compare your interpretations with the correct answers.</p>';
   h += '</div>';
   return h;
 }
@@ -417,6 +421,15 @@ function attachInvestigateListeners(state) {
     notes[n].addEventListener('input', function() {
       var testId = this.id.replace('mystery-note-', '');
       state.observations[testId] = this.value;
+    });
+  }
+
+  /* Save student interpretations */
+  var ints = document.querySelectorAll('[id^="mystery-interpret-"]');
+  for (var k = 0; k < ints.length; k++) {
+    ints[k].addEventListener('input', function() {
+      var testId = this.id.replace('mystery-interpret-', '');
+      state.interpretations[testId] = this.value;
     });
   }
 
@@ -553,16 +566,17 @@ function renderMysteryResultHTML(state) {
 
   h += '<div class="mystery-conclusion"><h4>Conclusion</h4><p>' + esc(sample.conclusion) + '</p></div>';
 
-  /* Evidence summary */
+/* Evidence summary */
   h += '<div class="mystery-result-breakdown"><h4>Evidence Summary</h4>';
-  h += '<table class="pba-breakdown-table"><thead><tr><th>Test</th><th>Observation</th><th>What It Tells Us</th></tr></thead><tbody>';
+  h += '<table class="pba-breakdown-table"><thead><tr><th>Test</th><th>Observation</th><th>Your Interpretation</th><th>Correct Interpretation</th></tr></thead><tbody>';
   for (var i = 0; i < sample.tests.length; i++) {
     var test = sample.tests[i];
     var performed = state.testsPerformed[test.id];
     h += '<tr class="' + (performed ? 'row-correct' : 'row-incorrect') + '">';
     h += '<td>' + test.icon + ' ' + esc(test.name) + '</td>';
     h += '<td>' + esc(performed ? test.observation : 'Not performed') + '</td>';
-    h += '<td>' + esc(performed ? test.interpretation : '—') + '</td>';
+    h += '<td>' + esc(performed ? (state.interpretations[test.id] || '\u2014') : '\u2014') + '</td>';
+    h += '<td>' + esc(performed ? test.interpretation : '\u2014') + '</td>';
     h += '</tr>';
   }
   h += '</tbody></table></div>';
