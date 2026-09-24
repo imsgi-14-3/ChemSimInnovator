@@ -15,7 +15,7 @@ var ChemSim = (function() {
     state: null,
     simulation: null,
     logState: { screen: 'menu', detailId: null },
-    demoState: { screen: 'intro', step: 0, practicalFinished: false }
+    demoState: { screen: 'intro', step: 0 }
   };
 
   var screens = {};
@@ -96,7 +96,7 @@ var ChemSim = (function() {
     appState.pbaState = null;
     appState.mysteryState = null;
     appState.logState = { screen: 'menu', detailId: null };
-    appState.demoState = { screen: 'intro', step: 0, practicalFinished: false };
+    appState.demoState = { screen: 'intro', step: 0 };
     renderCurrentScreen();
     updateSidebarActive();
   }
@@ -223,13 +223,7 @@ var ChemSim = (function() {
         console.error('Failed to create experiment log record:', e);
       }
     }
-    /* Demo mode: detect practical finish */
-    if (appState.demoState && appState.demoState.screen === 'practical' && !appState.demoState.practicalFinished) {
-      appState.demoState.practicalFinished = true;
-      appState.screen = 'demo';
-      renderCurrentScreen();
-      return;
-    }
+    /* Demo mode is fully animated — completing a practical does not alter demo state */
     goHome();
   }
 
