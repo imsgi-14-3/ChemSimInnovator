@@ -2725,6 +2725,18 @@ input.form-range[type="range"]::-moz-range-thumb {
   background: #e65100;
 }
 
+.demo-step-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.demo-step-actions .demo-continue-btn {
+  margin-top: 0;
+}
+
 .demo-mystery-btn {
   padding: 0.75rem 2rem;
   margin-top: 1rem;

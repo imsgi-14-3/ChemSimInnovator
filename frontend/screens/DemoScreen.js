@@ -93,19 +93,21 @@ var DemoEngine = (function() {
   }
 
   function renderStepPractical(demoState) {
-    var selId = demoState.practicalId || 'A1';
+    if (demoState.practicalView === 'play') {
+      return renderStepPracticalVideo(demoState);
+    }
     var h = '<div class="demo-panel">';
     h += '<div class="demo-instruction"><strong>Presenter:</strong> ' + STEPS[0].instruction + '</div>';
     h += '<div class="demo-step-content">';
     h += '<h3>Practical Lab \u2014 Animated Demos</h3>';
-    h += '<p class="text-secondary">All 13 prescribed practicals (5 major + 8 minor). Choose any practical to watch its animated demonstration. No student input required in demo mode.</p>';
+    h += '<p class="text-secondary">All 13 prescribed practicals (5 major + 8 minor). Click a practical to open its animated demonstration. No student input required in demo mode.</p>';
 
     h += '<div class="demo-section-label">Major Practicals</div>';
     h += '<div class="demo-cards">';
     for (var i = 0; i < PRACTICAL_DEMOS.length; i++) {
       var p = PRACTICAL_DEMOS[i];
       if (p.section !== 'major') continue;
-      h += renderDemoCard(p, selId);
+      h += renderDemoCard(p);
     }
     h += '</div>';
 
@@ -114,15 +116,10 @@ var DemoEngine = (function() {
     for (var j = 0; j < PRACTICAL_DEMOS.length; j++) {
       var q = PRACTICAL_DEMOS[j];
       if (q.section !== 'minor') continue;
-      h += renderDemoCard(q, selId);
+      h += renderDemoCard(q);
     }
     h += '</div>';
 
-    h += '<div class="demo-anim-wrap"><canvas id="demo-anim-canvas" width="560" height="360"></canvas></div>';
-    h += '<div class="demo-anim-controls">';
-    h += '<button class="btn btn-secondary" id="btn-demo-anim-stop">Pause</button>';
-    h += '<button class="btn btn-secondary" id="btn-demo-anim-replay">Replay Animation</button>';
-    h += '</div>';
     h += '<button class="btn btn-primary demo-continue-btn" id="btn-demo-next-step">Continue Demo &rarr;</button>';
     h += '</div>';
     h += '<div class="demo-footer"><button class="btn btn-secondary" id="btn-demo-exit">Exit Demo</button></div>';
@@ -130,8 +127,33 @@ var DemoEngine = (function() {
     return h;
   }
 
-  function renderDemoCard(p, selId) {
-    var h = '<button class="demo-card' + (p.id === selId ? ' selected' : '') + '" id="btn-demo-card-' + p.id + '" data-demo-id="' + p.id + '">';
+  function renderStepPracticalVideo(demoState) {
+    var p = PRACTICAL_DEMOS[0];
+    for (var i = 0; i < PRACTICAL_DEMOS.length; i++) {
+      if (PRACTICAL_DEMOS[i].id === demoState.practicalId) { p = PRACTICAL_DEMOS[i]; break; }
+    }
+    var h = '<div class="demo-panel">';
+    h += '<div class="demo-instruction"><strong>Presenter:</strong> ' + STEPS[0].instruction + '</div>';
+    h += '<div class="demo-step-content">';
+    h += '<h3>' + esc(p.code) + ' \u2014 ' + esc(p.title) + '</h3>';
+    h += '<p class="text-secondary">' + esc(p.short) + '</p>';
+    h += '<div class="demo-anim-wrap"><canvas id="demo-anim-canvas" width="560" height="360"></canvas></div>';
+    h += '<div class="demo-anim-controls">';
+    h += '<button class="btn btn-secondary" id="btn-demo-anim-stop">Pause</button>';
+    h += '<button class="btn btn-secondary" id="btn-demo-anim-replay">Replay Animation</button>';
+    h += '</div>';
+    h += '<div class="demo-step-actions">';
+    h += '<button class="btn btn-secondary demo-back-btn" id="btn-demo-back-list">&larr; Practical List</button>';
+    h += '<button class="btn btn-primary demo-continue-btn" id="btn-demo-next-step">Continue Demo &rarr;</button>';
+    h += '</div>';
+    h += '</div>';
+    h += '<div class="demo-footer"><button class="btn btn-secondary" id="btn-demo-exit">Exit Demo</button></div>';
+    h += '</div>';
+    return h;
+  }
+
+  function renderDemoCard(p) {
+    var h = '<button class="demo-card" id="btn-demo-card-' + p.id + '" data-demo-id="' + p.id + '">';
     h += '<span class="demo-card-tag demo-card-tag--' + p.section + '">' + esc(p.code) + '</span>';
     h += '<strong>' + esc(p.title) + '</strong>';
     h += '<small>' + esc(p.short) + '</small>';
@@ -1879,7 +1901,11 @@ var DemoEngine = (function() {
 
     if (screen === 'practical') {
       workspace.innerHTML = renderStepPractical(ds);
-      runPracticalAnimation(demoAnimKey(ds.practicalId || 'A1'));
+      if (ds.practicalView === 'play') {
+        runPracticalAnimation(demoAnimKey(ds.practicalId || 'A1'));
+      } else {
+        stopAnimation();
+      }
     } else if (screen === 'log') {
       stopAnimation();
       workspace.innerHTML = renderStepLog();
@@ -1918,12 +1944,13 @@ var DemoEngine = (function() {
       if (target.id === 'btn-demo-start') {
         ds.screen = 'practical';
         ds.step = 0;
+        ds.practicalView = 'list';
         renderInto(appState);
         return;
       }
       if (target.id === 'btn-demo-exit' || target.id === 'btn-demo-exit-complete') {
         stopAnimation();
-        appState.demoState = { screen: 'intro', step: 0, practicalId: 'A1' };
+        appState.demoState = { screen: 'intro', step: 0, practicalId: 'A1', practicalView: 'list' };
         appState.screen = 'home';
         ChemSim.goHome();
         return;
@@ -1954,6 +1981,13 @@ var DemoEngine = (function() {
       var cardEl = target.closest && target.closest('[data-demo-id]');
       if (cardEl && cardEl.getAttribute('data-demo-id')) {
         ds.practicalId = cardEl.getAttribute('data-demo-id');
+        ds.practicalView = 'play';
+        renderInto(appState);
+        return;
+      }
+      if (target.id === 'btn-demo-back-list') {
+        stopAnimation();
+        ds.practicalView = 'list';
         renderInto(appState);
         return;
       }
@@ -1992,7 +2026,7 @@ var DemoEngine = (function() {
 /* Register demo screen with ChemSim */
 ChemSim.registerScreen('demo', function(appState) {
   if (!appState.demoState) {
-    appState.demoState = { screen: 'intro', step: 0, practicalId: 'A1' };
+    appState.demoState = { screen: 'intro', step: 0, practicalId: 'A1', practicalView: 'list' };
   }
   DemoEngine.attachListeners(appState);
   return ''; /* content rendered by renderInto */
