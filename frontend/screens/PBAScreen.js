@@ -15,6 +15,8 @@ function pbaGetQuestionsBySection(section) {
 ChemSim.registerScreen('pba', function(appState) {
   var state = appState.pbaState || {
     phase: 'select',
+    mode: 'single',
+    session: null,
     currentQ: null,
     currentPart: 0,
     answers: {},
@@ -47,11 +49,17 @@ function renderSelectPhase(appState, state) {
   h += '<div class="module-header"><h2>PBA Practice</h2>';
   h += '<p>Practice practical assessment skills for the FBISE SSC Chemistry PBA.</p></div>';
 
+  h += '<div class="pba-session-cta">';
+  h += '<button class="btn btn-primary pba-session-btn" id="pba-start-session">Start Random Session — 4 to 5 questions</button>';
+  h += '<p class="text-secondary">A fresh shuffled set every turn: different questions, and MCQ options in a different order.</p>';
+  h += '</div>';
+
   h += '<div class="pba-overview">';
   h += '<div class="card"><div class="card-body">';
   h += '<h3>PBA Structure</h3>';
   h += '<p><strong>Section A:</strong> Major Practicals — 6 marks each</p>';
   h += '<p><strong>Section B:</strong> Minor Practicals — 4 marks each</p>';
+  h += '<p class="text-secondary">Or pick a single question below for targeted practice.</p>';
   h += '</div></div></div>';
 
   var secA = pbaGetQuestionsBySection('A');
@@ -90,6 +98,12 @@ function renderSelectPhase(appState, state) {
   h += '</div>';
 
   setTimeout(function() {
+    var startBtn = document.getElementById('pba-start-session');
+    if (startBtn) {
+      startBtn.addEventListener('click', function() {
+        startPbaSession();
+      });
+    }
     var cards = document.querySelectorAll('[data-pba-qid]');
     for (var k = 0; k < cards.length; k++) {
       cards[k].addEventListener('click', function() {
@@ -101,6 +115,141 @@ function renderSelectPhase(appState, state) {
   return h;
 }
 
+/* ============================================================
+   RANDOM SESSION — fresh shuffled set every turn
+   ============================================================ */
+
+function shuffleArray(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i];
+    a[i] = a[j];
+    a[j] = t;
+  }
+  return a;
+}
+
+function shuffleQuestionOptions(q) {
+  var clone = {
+    id: q.id,
+    experimentId: q.experimentId,
+    section: q.section,
+    title: q.title,
+    marks: q.marks,
+    parts: []
+  };
+  for (var i = 0; i < q.parts.length; i++) {
+    var p = q.parts[i];
+    var pc = {};
+    for (var key in p) {
+      if (Object.prototype.hasOwnProperty.call(p, key)) pc[key] = p[key];
+    }
+    if (p.type === 'mcq' && p.options && p.options.length > 1) {
+      var order = [];
+      for (var o = 0; o < p.options.length; o++) order.push(o);
+      order = shuffleArray(order);
+      var newOpts = [];
+      var newCorrect = 0;
+      for (var n = 0; n < order.length; n++) {
+        newOpts.push(p.options[order[n]]);
+        if (order[n] === p.correct) newCorrect = n;
+      }
+      pc.options = newOpts;
+      pc.correct = newCorrect;
+    }
+    if (p.type === 'match' && p.pairs) {
+      pc.pairs = shuffleArray(p.pairs);
+    }
+    clone.parts.push(pc);
+  }
+  return clone;
+}
+
+function drawSessionQuestions() {
+  var poolA = pbaGetQuestionsBySection('A');
+  var poolB = pbaGetQuestionsBySection('B');
+  var a = shuffleArray(poolA);
+  var b = shuffleArray(poolB);
+  var picked = [];
+  var takeA = Math.min(3, a.length);
+  var takeB = Math.min(2, b.length);
+  var i;
+  for (i = 0; i < takeA; i++) picked.push(a[i]);
+  for (i = 0; i < takeB; i++) picked.push(b[i]);
+  var rest = [];
+  for (i = takeA; i < a.length; i++) rest.push(a[i]);
+  for (i = takeB; i < b.length; i++) rest.push(b[i]);
+  rest = shuffleArray(rest);
+  for (i = 0; picked.length < 4 && i < rest.length; i++) picked.push(rest[i]);
+  picked = shuffleArray(picked);
+  if (picked.length > 5) picked = picked.slice(0, 5);
+  return picked;
+}
+
+function startPbaSession() {
+  var drawn = drawSessionQuestions();
+  if (!drawn.length) return;
+  var questions = [];
+  for (var i = 0; i < drawn.length; i++) {
+    questions.push(shuffleQuestionOptions(drawn[i]));
+  }
+  var appState = ChemSim.getState();
+  appState.pbaState = {
+    phase: 'practice',
+    mode: 'session',
+    session: { questions: questions, index: 0, results: [] },
+    currentQ: questions[0],
+    currentPart: 0,
+    answers: {},
+    score: 0,
+    totalMarks: 0,
+    selectedSection: null
+  };
+  renderPbaScreen();
+}
+
+function recordSessionResult(state) {
+  var s = state.session;
+  if (!s || !state.currentQ) return;
+  if (s.results.length !== s.index) return;
+  s.results.push({
+    id: state.currentQ.id,
+    title: state.currentQ.title,
+    section: state.currentQ.section,
+    score: state.score,
+    marks: state.totalMarks
+  });
+}
+
+function advanceSession(state) {
+  var s = state.session;
+  if (!s) {
+    state.phase = 'result';
+    renderPbaScreen();
+    return;
+  }
+  recordSessionResult(state);
+  if (s.index < s.questions.length - 1) {
+    s.index++;
+    state.currentQ = s.questions[s.index];
+    state.currentPart = 0;
+    state.answers = {};
+    state.score = 0;
+    state.totalMarks = 0;
+    state.phase = 'practice';
+  } else {
+    state.phase = 'result';
+  }
+  renderPbaScreen();
+}
+
+function endSession(state) {
+  recordSessionResult(state);
+  state.phase = 'result';
+  renderPbaScreen();
+}
+
 function startPbaQuestion(qid) {
   var appState = ChemSim.getState();
   var question = null;
@@ -110,6 +259,8 @@ function startPbaQuestion(qid) {
   if (!question) return;
   appState.pbaState = {
     phase: 'practice',
+    mode: 'single',
+    session: null,
     currentQ: question,
     currentPart: 0,
     answers: {},
@@ -148,7 +299,7 @@ function renderPbaScreen() {
     btnActionNext.style.display = 'none';
     btnActionReset.style.display = 'none';
     actionCenter.innerHTML = '';
-    instructionPanel.innerHTML = '<div class="instruction-placeholder"><p>Select a question to begin practice.</p></div>';
+    instructionPanel.innerHTML = '<div class="instruction-placeholder"><p>Start a random session for a fresh shuffled set, or select a single question to begin practice.</p></div>';
     workspace.innerHTML = '<div class="pba-screen">' + renderSelectPhase(appState, state) + '</div>';
     return;
   }
@@ -156,7 +307,11 @@ function renderPbaScreen() {
   if (state.phase === 'practice') {
     workspace.innerHTML = renderPracticePhase(appState, state);
     instructionPanel.innerHTML = renderPbaInstructions(state);
-    headerCenter.innerHTML = '<span class="header-experiment-title">PBA Practice</span>';
+    var hdrTitle = 'PBA Practice';
+    if (state.mode === 'session' && state.session) {
+      hdrTitle = 'PBA Practice — Q' + (state.session.index + 1) + '/' + state.session.questions.length;
+    }
+    headerCenter.innerHTML = '<span class="header-experiment-title">' + hdrTitle + '</span>';
     headerCenter.style.display = '';
     headerProgress.style.display = 'none';
     btnBack.style.display = '';
@@ -193,6 +348,9 @@ function renderPbaInstructions(state) {
   h += '<span class="pba-inst-qnum">Part ' + (partIdx + 1) + ' of ' + q.parts.length + '</span>';
   h += '<span class="pba-inst-marks">' + (part.marks || 1) + ' mark' + ((part.marks || 1) > 1 ? 's' : '') + '</span>';
   h += '</div>';
+  if (state.mode === 'session' && state.session) {
+    h += '<p class="pba-inst-type">Session: question ' + (state.session.index + 1) + ' of ' + state.session.questions.length + '</p>';
+  }
   h += '<p class="pba-inst-type">Type: ' + part.type.toUpperCase() + '</p>';
   if (part.hint) {
     h += '<div class="pba-inst-hint" id="pba-hint-box" style="display:none;"><p><strong>Hint:</strong> ' + ChemSim.escapeHtml(part.hint) + '</p></div>';
@@ -219,6 +377,9 @@ function renderPracticePhase(appState, state) {
   h += '<div class="pba-q-title">';
   h += '<h3>' + ChemSim.escapeHtml(q.title) + '</h3>';
   h += '<span class="pba-q-exp-tag">' + ChemSim.escapeHtml(q.experimentId) + ' — Section ' + q.section + '</span>';
+  if (state.mode === 'session' && state.session) {
+    h += '<span class="pba-q-exp-tag pba-session-progress">Question ' + (state.session.index + 1) + ' of ' + state.session.questions.length + '</span>';
+  }
   h += '</div>';
 
   h += '<div class="pba-progress-bar">';
@@ -256,7 +417,13 @@ function renderPracticePhase(appState, state) {
   } else if (partIdx < parts.length - 1) {
     h += '<button class="btn btn-primary" id="pba-next-part">Next Part</button>';
   } else {
-    h += '<button class="btn btn-primary" id="pba-finish">Finish &amp; See Result</button>';
+    var finishLabel = 'Finish &amp; See Result';
+    if (state.mode === 'session' && state.session) {
+      finishLabel = (state.session.index < state.session.questions.length - 1)
+        ? 'Next Question &rarr;'
+        : 'Finish Session &rarr;';
+    }
+    h += '<button class="btn btn-primary" id="pba-finish">' + finishLabel + '</button>';
   }
   h += '</div>';
 
@@ -400,7 +567,9 @@ function renderFinalResult(state) {
 
   var h = '';
   h += '<div class="pba-final-result">';
-  h += '<h3>Question Complete</h3>';
+  h += '<h3>' + ((state.mode === 'session' && state.session)
+    ? 'Question ' + (state.session.index + 1) + ' of ' + state.session.questions.length + ' Complete'
+    : 'Question Complete') + '</h3>';
 
   h += '<div class="pba-result-score">';
   h += '<div class="pba-score-circle" style="border-color:' + gradeColor + '">';
@@ -431,7 +600,11 @@ function renderFinalResult(state) {
   h += '</tbody></table></div>';
 
   h += '<div class="pba-nav">';
-  h += '<button class="btn btn-primary" id="pba-back-to-list">Back to PBA List</button>';
+  if (state.mode === 'session' && state.session) {
+    h += '<button class="btn btn-secondary" id="pba-session-end">End Session &amp; See Score</button>';
+  } else {
+    h += '<button class="btn btn-primary" id="pba-back-to-list">Back to PBA List</button>';
+  }
   h += '</div>';
   h += '</div>';
   return h;
@@ -528,12 +701,24 @@ function attachPbaListeners(state) {
     });
   }
 
-  /* Finish — go to result phase */
+  /* Finish — result phase (single) or advance session (session mode) */
   var finishBtn = document.getElementById('pba-finish');
   if (finishBtn) {
     finishBtn.addEventListener('click', function() {
-      state.phase = 'result';
-      renderPbaScreen();
+      if (state.mode === 'session' && state.session) {
+        advanceSession(state);
+      } else {
+        state.phase = 'result';
+        renderPbaScreen();
+      }
+    });
+  }
+
+  /* End Session early — record current question and show session score */
+  var endBtn = document.getElementById('pba-session-end');
+  if (endBtn) {
+    endBtn.addEventListener('click', function() {
+      endSession(state);
     });
   }
 
@@ -544,6 +729,8 @@ function attachPbaListeners(state) {
       var appState = ChemSim.getState();
       appState.pbaState = {
         phase: 'select',
+        mode: 'single',
+        session: null,
         currentQ: null,
         currentPart: 0,
         answers: {},
@@ -633,22 +820,42 @@ function isAllPartsScored(state) {
    ============================================================ */
 
 function renderResultPhase(appState, state) {
+  var isSession = state.mode === 'session' && state.session && state.session.results.length > 0;
   var q = state.currentQ;
-  var pct = state.totalMarks > 0 ? Math.round((state.score / state.totalMarks) * 100) : 0;
+  var score = state.score;
+  var totalMarks = state.totalMarks;
+  var sessionRows = null;
+  var headerSub;
+
+  if (isSession) {
+    score = 0;
+    totalMarks = 0;
+    sessionRows = state.session.results;
+    for (var r = 0; r < sessionRows.length; r++) {
+      score += sessionRows[r].score;
+      totalMarks += sessionRows[r].marks;
+    }
+    headerSub = sessionRows.length + ' question' + (sessionRows.length > 1 ? 's' : '') +
+      ' attempted (session average)';
+  } else {
+    headerSub = q ? q.title : '';
+  }
+
+  var pct = totalMarks > 0 ? Math.round((score / totalMarks) * 100) : 0;
   var grade = pct >= 80 ? 'A' : pct >= 60 ? 'B' : pct >= 40 ? 'C' : 'D';
   var gradeColor = pct >= 80 ? 'var(--color-success)' : pct >= 60 ? 'var(--color-primary)' : pct >= 40 ? 'var(--color-warning)' : 'var(--color-danger)';
 
   var h = '';
   h += '<div class="pba-result">';
   h += '<div class="pba-result-header">';
-  h += '<h3>PBA Practice Results</h3>';
-  h += '<p>' + ChemSim.escapeHtml(q.title) + '</p>';
+  h += '<h3>' + (isSession ? 'PBA Practice Session Results' : 'PBA Practice Results') + '</h3>';
+  h += '<p>' + ChemSim.escapeHtml(headerSub) + '</p>';
   h += '</div>';
 
   h += '<div class="pba-result-score">';
   h += '<div class="pba-score-circle" style="border-color:' + gradeColor + '">';
-  h += '<span class="pba-score-num">' + state.score + '</span>';
-  h += '<span class="pba-score-total">/ ' + state.totalMarks + '</span>';
+  h += '<span class="pba-score-num">' + score + '</span>';
+  h += '<span class="pba-score-total">/ ' + totalMarks + '</span>';
   h += '</div>';
   h += '<div class="pba-score-detail">';
   h += '<p class="pba-grade" style="color:' + gradeColor + '">Grade: ' + grade + '</p>';
@@ -656,22 +863,41 @@ function renderResultPhase(appState, state) {
   h += '</div></div>';
 
   h += '<div class="pba-result-breakdown">';
-  h += '<h4>Score Breakdown</h4>';
-  h += '<table class="pba-breakdown-table">';
-  h += '<thead><tr><th>Part</th><th>Type</th><th>Marks</th><th>Earned</th></tr></thead>';
-  h += '<tbody>';
-  for (var i = 0; i < q.parts.length; i++) {
-    var part = q.parts[i];
-    var earned = state.answers['part_' + i + '_score'] || 0;
-    var marks = part.marks || 1;
-    h += '<tr class="' + (earned === marks ? 'row-correct' : 'row-incorrect') + '">';
-    h += '<td>' + (i + 1) + '</td>';
-    h += '<td>' + part.type.toUpperCase() + '</td>';
-    h += '<td>' + marks + '</td>';
-    h += '<td>' + earned + '</td>';
-    h += '</tr>';
+  if (isSession) {
+    h += '<h4>Question Breakdown</h4>';
+    h += '<table class="pba-breakdown-table">';
+    h += '<thead><tr><th>#</th><th>Question</th><th>Section</th><th>Marks</th><th>Earned</th></tr></thead>';
+    h += '<tbody>';
+    for (var i = 0; i < sessionRows.length; i++) {
+      var row = sessionRows[i];
+      h += '<tr class="' + (row.marks > 0 && row.score === row.marks ? 'row-correct' : 'row-incorrect') + '">';
+      h += '<td>' + (i + 1) + '</td>';
+      h += '<td>' + ChemSim.escapeHtml(row.title) + '</td>';
+      h += '<td>' + row.section + '</td>';
+      h += '<td>' + row.marks + '</td>';
+      h += '<td>' + row.score + '</td>';
+      h += '</tr>';
+    }
+    h += '</tbody></table>';
+  } else {
+    h += '<h4>Score Breakdown</h4>';
+    h += '<table class="pba-breakdown-table">';
+    h += '<thead><tr><th>Part</th><th>Type</th><th>Marks</th><th>Earned</th></tr></thead>';
+    h += '<tbody>';
+    for (var j = 0; j < q.parts.length; j++) {
+      var part = q.parts[j];
+      var earned = state.answers['part_' + j + '_score'] || 0;
+      var marks = part.marks || 1;
+      h += '<tr class="' + (earned === marks ? 'row-correct' : 'row-incorrect') + '">';
+      h += '<td>' + (j + 1) + '</td>';
+      h += '<td>' + part.type.toUpperCase() + '</td>';
+      h += '<td>' + marks + '</td>';
+      h += '<td>' + earned + '</td>';
+      h += '</tr>';
+    }
+    h += '</tbody></table>';
   }
-  h += '</tbody></table></div>';
+  h += '</div>';
 
   h += '<div class="pba-nav">';
   h += '<button class="btn btn-primary" id="pba-result-home">Back to PBA List</button>';
@@ -687,6 +913,8 @@ function attachPbaResultListeners(state) {
       var appState = ChemSim.getState();
       appState.pbaState = {
         phase: 'select',
+        mode: 'single',
+        session: null,
         currentQ: null,
         currentPart: 0,
         answers: {},

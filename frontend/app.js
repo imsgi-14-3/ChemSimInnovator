@@ -117,10 +117,14 @@ var ChemSim = (function() {
         renderPbaScreen();
       } else if (pba.phase === 'result') {
         pba.phase = 'select';
+        pba.mode = 'single';
+        pba.session = null;
         pba.currentQ = null;
         renderPbaScreen();
       } else {
         pba.phase = 'select';
+        pba.mode = 'single';
+        pba.session = null;
         pba.currentQ = null;
         renderCurrentScreen();
       }
