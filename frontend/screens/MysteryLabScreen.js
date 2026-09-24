@@ -51,6 +51,8 @@ function renderMysteryScreen() {
     appState.mysteryState = state;
   }
 
+  if (typeof MysteryToolRenderer !== 'undefined') MysteryToolRenderer.stop();
+
   /* Full workspace render */
   var instructionPanel = document.getElementById('instruction-content');
   var headerCenter = document.getElementById('header-center');
@@ -338,8 +340,8 @@ function renderMysteryInvestigateHTML(state) {
     if (hintUsed) h += '<span class="mystery-hint-used">💡 Hint used (−' + (sample.hintCost || 1) + ' mark)</span>';
     h += '</div>';
 
-    /* Tool Visual — shows the equipment/procedure */
-    h += renderToolVisual(currentTest, isPerformed);
+    /* Tool Visual — interactive wide canvas apparatus */
+    h += renderToolVisual(currentTest, isPerformed, isLocked);
 
     h += '<div class="mystery-test-steps">';
     h += '<p><strong>Procedure:</strong> ' + esc(currentTest.description) + '</p>';
@@ -354,7 +356,7 @@ function renderMysteryInvestigateHTML(state) {
     if (isLocked) {
       h += '<p class="mystery-budget-note">🔒 Your test budget is used up. Reveal a performed test, or proceed to identification.</p>';
     } else if (!isPerformed) {
-      h += '<button class="btn btn-primary mystery-perform-btn" id="mystery-perform-test">Perform Test (−1 test)</button>';
+      h += '<button class="btn btn-secondary mystery-perform-btn" id="mystery-perform-test">Perform Test (skip apparatus)</button>';
     } else {
       /* Observation */
       h += '<div class="mystery-observation">';
@@ -396,127 +398,24 @@ function renderMysteryInvestigateHTML(state) {
    TOOL VISUAL — Equipment Graphics for Each Test
    ============================================================ */
 
-function renderToolVisual(test, performed) {
+function renderToolVisual(test, performed, locked) {
   var h = '<div class="mystery-tool-visual">';
-  h += '<div class="tool-visual-inner">';
-
-  var toolType = getToolType(test.id);
-
-  if (toolType === 'flame') {
-    h += '<div class="tool-equipment">';
-    h += '<div class="tool-bunsen">';
-    h += '<div class="bunsen-base"></div>';
-    h += '<div class="bunsen-tube"></div>';
-    if (performed) {
-      h += '<div class="bunsen-flame active">';
-      h += '<div class="flame-inner"></div>';
-      h += '<div class="flame-outer"></div>';
-      h += '</div>';
-    } else {
-      h += '<div class="bunsen-flame"></div>';
-    }
-    h += '</div>';
-    if (performed) {
-      h += '<div class="tool-wire">';
-        h += '<div class="wire-handle"></div>';
-        h += '<div class="wire-rod"></div>';
-        h += '<div class="wire-sample"></div>';
-      h += '</div>';
-    }
-    h += '<p class="tool-label">Bunsen Burner + Platinum Wire</p>';
-    h += '</div>';
-  } else if (toolType === 'testtube') {
-    h += '<div class="tool-equipment">';
-    h += '<div class="tool-rack">';
-    h += '<div class="rack-base"></div>';
-    for (var t = 0; t < 3; t++) {
-      var filled = performed && t === 1;
-      h += '<div class="rack-tube' + (filled ? ' filled' : '') + '">';
-      h += '<div class="tube-body"></div>';
-      if (filled) h += '<div class="tube-liquid"></div>';
-      h += '</div>';
-    }
-    h += '</div>';
-    h += '<p class="tool-label">Test Tubes + Rack</p>';
-    h += '</div>';
-  } else if (toolType === 'beaker') {
-    h += '<div class="tool-equipment">';
-    h += '<div class="tool-beaker">';
-    h += '<div class="beaker-body">';
-    if (performed) h += '<div class="beaker-liquid"></div>';
-    h += '<div class="beaker-markings"></div>';
-    h += '</div>';
-    h += '<div class="beaker-spout"></div>';
-    h += '</div>';
-    if (performed) {
-      h += '<div class="tool-dropper">';
-      h += '<div class="dropper-bulb"></div>';
-      h += '<div class="dropper-tube"></div>';
-      h += '<div class="dropper-drop"></div>';
-      h += '</div>';
-    }
-    h += '<p class="tool-label">Beaker + Dropper</p>';
-    h += '</div>';
-  } else if (toolType === 'bottle') {
-    h += '<div class="tool-equipment">';
-    h += '<div class="tool-reagent-bottle">';
-    h += '<div class="bottle-cap"></div>';
-    h += '<div class="bottle-neck"></div>';
-    h += '<div class="bottle-body">';
-    if (performed) h += '<div class="bottle-liquid"></div>';
-    h += '</div>';
-    h += '<div class="bottle-label">Reagent</div>';
-    h += '</div>';
-    h += '<p class="tool-label">Reagent Bottle</p>';
-    h += '</div>';
-  } else if (toolType === 'litmus') {
-    h += '<div class="tool-equipment">';
-    h += '<div class="tool-litmus">';
-    h += '<div class="litmus-paper red">';
-    if (performed) h += '<div class="litmus-change"></div>';
-    h += '<span>Red</span>';
-    h += '</div>';
-    h += '<div class="litmus-paper blue">';
-    if (performed) h += '<div class="litmus-change blue-change"></div>';
-    h += '<span>Blue</span>';
-    h += '</div>';
-    h += '</div>';
-    h += '<p class="tool-label">Litmus Paper</p>';
-    h += '</div>';
-  } else if (toolType === 'funnel') {
-    h += '<div class="tool-equipment">';
-    h += '<div class="tool-funnel-set">';
-    h += '<div class="funnel-dish">';
-    if (performed) h += '<div class="dish-steam"></div>';
-    h += '</div>';
-    h += '<div class="funnel-body">';
-    h += '<div class="funnel-cone"></div>';
-    h += '<div class="funnel-stem"></div>';
-    if (performed) h += '<div class="funnel-collect"></div>';
-    h += '</div>';
-    h += '</div>';
-    h += '<p class="tool-label">Evaporating Dish + Funnel</p>';
-    h += '</div>';
-  } else {
-    h += '<div class="tool-equipment">';
-    h += '<div class="tool-generic">';
-    h += '<div class="generic-icon">' + test.icon + '</div>';
-    h += '</div>';
-    h += '<p class="tool-label">' + esc(test.name) + '</p>';
-    h += '</div>';
-  }
-
+  h += '<canvas id="mystery-tool-canvas" width="720" height="330"></canvas>';
+  h += '<div class="tool-prompt" id="tool-prompt">Preparing apparatus…</div>';
+  h += '<p class="tool-label">' + esc(test.name) + ' — interactive apparatus</p>';
   if (performed) {
     h += '<div class="tool-status performed">&#10003; Test Performed</div>';
+  } else if (locked) {
+    h += '<div class="tool-status pending">🔒 Test budget used up</div>';
   } else {
-    h += '<div class="tool-status pending">Click "Perform Test" to begin</div>';
+    h += '<div class="tool-status pending">Follow the prompt — finishing the interaction performs the test</div>';
   }
-
-  h += '</div></div>';
+  h += '</div>';
   return h;
 }
 
 function getToolType(testId) {
+  if (testId.indexOf('burning') !== -1) return 'splint';
   if (testId.indexOf('flame') !== -1) return 'flame';
   if (testId.indexOf('litmus') !== -1) return 'litmus';
   if (testId.indexOf('naoh') !== -1 || testId.indexOf('nh3') !== -1 || testId.indexOf('silver') !== -1) return 'testtube';
@@ -525,8 +424,20 @@ function getToolType(testId) {
   if (testId.indexOf('sublim') !== -1 || testId.indexOf('residue') !== -1) return 'funnel';
   if (testId.indexOf('displace') !== -1) return 'testtube';
   if (testId.indexOf('appearance') !== -1 || testId.indexOf('smell') !== -1) return 'beaker';
-  if (testId.indexOf('burning') !== -1) return 'flame';
   return 'beaker';
+}
+
+function deriveSampleColour(sample) {
+  if (!sample || !sample.tests) return null;
+  for (var i = 0; i < sample.tests.length; i++) {
+    var t = sample.tests[i];
+    if (t.id === 'appearance') {
+      var o = (t.observation || '').toLowerCase();
+      if (o.indexOf('blue-green') !== -1 || o.indexOf('blue green') !== -1) return '#1f8fbf';
+      if (o.indexOf('blue') !== -1) return '#2b9ad6';
+    }
+  }
+  return null;
 }
 
 function renderMysteryInstructions(state) {
@@ -539,6 +450,7 @@ function renderMysteryInstructions(state) {
   h += '</div>';
   if (state.phase === 'investigate') {
     h += '<p>You may perform only <strong>' + state.testBudget + ' tests</strong> out of ' + sample.tests.length + '. Choose them wisely.</p>';
+    h += '<p>Interact with the apparatus on the bench: follow the numbered prompt under the canvas to run each test.</p>';
     h += '<p>For each test, write your own interpretation of what the observation means.</p>';
     h += '<p>Hints cost ' + (sample.hintCost || 1) + ' mark each. The clock is running — finish early for a time bonus.</p>';
   } else {
@@ -550,6 +462,29 @@ function renderMysteryInstructions(state) {
 }
 
 function attachInvestigateListeners(state) {
+  /* Interactive apparatus canvas */
+  var canvasEl = document.getElementById('mystery-tool-canvas');
+  if (canvasEl && typeof MysteryToolRenderer !== 'undefined') {
+    var cur = state.currentSample && state.currentSample.tests[state.currentTestIdx];
+    if (cur) {
+      var locked = !state.testsPerformed[cur.id] && countPerformed(state) >= state.testBudget;
+      MysteryToolRenderer.mount(canvasEl, cur, {
+        type: getToolType(cur.id),
+        performed: !!state.testsPerformed[cur.id],
+        locked: locked,
+        solid: state.currentSample.id === 'M5',
+        sampleColour: deriveSampleColour(state.currentSample),
+        onComplete: function() {
+          if (state.testsPerformed[cur.id]) return;
+          if (countPerformed(state) >= state.testBudget) return;
+          state.testsPerformed[cur.id] = true;
+          MysteryToolRenderer.stop();
+          renderMysteryScreen();
+        }
+      });
+    }
+  }
+
   /* Test selection — locked buttons do nothing */
   var testBtns = document.querySelectorAll('[data-test-idx]');
   for (var i = 0; i < testBtns.length; i++) {
@@ -560,7 +495,7 @@ function attachInvestigateListeners(state) {
     });
   }
 
-  /* Perform test — consumes one budget slot */
+  /* Perform test — consumes one budget slot (skip shortcut) */
   var performBtn = document.getElementById('mystery-perform-test');
   if (performBtn) {
     performBtn.addEventListener('click', function() {
@@ -568,6 +503,7 @@ function attachInvestigateListeners(state) {
       if (!test) return;
       if (state.testsPerformed[test.id]) return;
       if (countPerformed(state) >= state.testBudget) return;
+      if (typeof MysteryToolRenderer !== 'undefined') MysteryToolRenderer.stop();
       state.testsPerformed[test.id] = true;
       renderMysteryScreen();
     });
