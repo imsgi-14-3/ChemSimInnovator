@@ -13,7 +13,7 @@ ChemSim — Interactive Virtual Chemistry Laboratory for Grade 9/10 FBISE PBA ex
 - Repo: `https://github.com/imsgi-14-3/ChemSimInnovator.git`
 - Branch: `main`
 - Author: `imsgi-14-3 <imsgi14.3cb2@gmail.com>`
-- Last commit: `f35cfb2`
+- Last commit: (see `git log --oneline -1`)
 
 ## How to Run
 1. Open `index.html` in browser
@@ -40,7 +40,7 @@ ChemSimInnovator/
 │   ├── renderers/
 │   │   ├── DistillationRenderer.js     ← A1 canvas (complete)
 │   │   ├── ChromatographyRenderer.js   ← A2/A3 canvas (complete)
-│   │   ├── TitrationRenderer.js        ← A4 canvas (complete)
+│   │   ├── TitrationRenderer.js        ← A4 canvas (complete, + HCl beaker)
 │   │   ├── GasRenderer.js              ← A5 canvas (complete)
 │   │   └── MinorExperimentRenderer.js  ← M7.1-M7.8 canvas (complete)
 │   ├── components/
@@ -54,7 +54,7 @@ ChemSimInnovator/
 │   │   ├── MysteryLabScreen.js         ← Mystery Lab select/investigate/result
 │   │   ├── PBAScreen.js                ← PBA Practice with inline feedback
 │   │   ├── LogScreen.js                ← Experiment Log (ExpLog module)
-│   │   ├── DemoScreen.js               ← Demo Mode (DemoEngine module)
+│   │   ├── DemoScreen.js               ← Demo Mode (DemoEngine module, 13 anims)
 │   │   └── PBAController.js
 │   └── styles/
 │       ├── layout.css
@@ -77,25 +77,41 @@ ChemSimInnovator/
 ## Demo Mode — Current State
 
 ### What's Done
-- Full `DemoEngine` module in `DemoScreen.js`
+- Full `DemoEngine` module in `DemoScreen.js` (~3517 lines)
+- Two-column lab stage: bezel canvas (560×360) + timeline + Pause/Replay + lab notebook aside
+- All 13 practical animations with live readings (`setDemoReadings`), captions (`drawCaption`), progress ring (`drawProgressRing`)
+- Navy callout labels, realistic apparatus per reference photos
+- CSS: `.demo-lab-stage`, `.demo-notebook`, `.demo-reading`, `.demo-briefing`, `.demo-sim-badge`, `.demo-live-dot`, responsive `@media (max-width: 860px)`
 - 5-step guided presentation: Practical Lab → Experiment Log → Learning & Revision → Mystery Lab → PBA Practice
-- Intro screen with feature list, Start/Exit buttons
-- Progress dots showing completed/active/upcoming steps
-- Each step has presenter instruction text + feature description + action button
-- Practical step detects finish via `finishExperiment()` and shows completion badge
-- Launch buttons navigate to real modules (A2 practical, Mystery Lab, PBA Practice, Revision Hub)
-- Continue Demo button advances to next step
-- Complete screen with summary + Restart/Return buttons
-- Demo state resets on exit
 
 ### Demo Mode Flow
 1. **Intro** — Title, feature list, "Start Demo" button
-2. **Practical Lab** — Launch A2 Paper Chromatography → finish → completion badge → Continue
-3. **Experiment Log** — Shows log records from completed practical
+2. **Practical Lab** — Auto-playing animation of selected practical (13 options)
+3. **Experiment Log** — Shows log records
 4. **Learning & Revision** — Feature description + Open Revision Hub button
 5. **Mystery Lab** — Feature description + Open Mystery Lab button
 6. **PBA Practice** — Feature description + Open PBA Practice button
 7. **Complete** — Summary + Restart/Return to Main Menu
+
+### A4 Titration Demo — Rebuilt This Session
+- **From-scratch rewrite** of `animTitration` (DemoScreen.js L1560–2316)
+- Backdrop: window, "Titration Determines Concentration" poster, glassware shelves, blue cabinets, steel bench with reflections
+- **Real glass beaker (250 mL, HCl)** added: pour spout, rim, 50–250 graduations, HCl liquid fill, white label, glass highlights, base thickness
+- Reagent bottles: ribbed screw caps, clear liquid fill with meniscus, shoulder/neck, white labels
+- Conical flask: glass gradient, 50–250 marks, magenta phenolphthalein fading to colourless, swirl, glass shine
+- Retort stand: black base, chrome rod, blue clamp with knobs
+- Burette: 0–50 graduations, blue HCl meniscus drops with `pour`, stopcock + blue handle, falling drop
+- Titration Record sheet (live titre cell), white tile, phenolphthalein bottle, pipette
+- 8 navy callout labels — all boxes end above y=318 (caption bar owns y≥324)
+- Tail contract preserved: `setDemoReadings` (Burette/Indicator/Endpoint) → `drawCaption` → `drawProgressRing`
+- Apparatus list updated: `'Beaker (250 mL, HCl)'` added to `PRACTICAL_APPARATUS.A4`
+- Cache-busted: `index.html` → `DemoScreen.js?v=a4beaker1`
+
+### A4 Interactive Canvas — Updated This Session
+- `simulationConfig.js` A4: added `hclBeaker: { cx: 250, cy: 555, w: 72, h: 85, liquidLevel: 0.55, label: 'Beaker (250 mL)\n(with HCl)' }`
+- `TitrationRenderer.js`: new `drawBeaker()` (glass body, pour spout, rim, graduations, HCl liquid, label, highlights); called in `draw()` between flask and burette
+- `drawReagentBottle()`: ribbed screw cap + clear liquid fill with meniscus
+- `drawLabels()`: beaker label "Beaker (250 mL) / (with HCl)"
 
 ### Demo State Structure
 ```javascript
@@ -110,39 +126,22 @@ appState.demoState = {
 - `app.js:renderCurrentScreen()` — Routes `screen === 'demo'` to `DemoEngine.renderInto()`
 - `app.js:goBack()` — Handles demo back → goHome
 - `app.js:goHome()` — Resets demoState
-- `app.js:finishExperiment()` — Detects practical finish in demo mode, sets `practicalFinished = true`, returns to demo screen
+- `app.js:finishExperiment()` — Detects practical finish in demo mode
 - Sidebar button `data-screen="demo"` navigates to demo
 - HomeScreen.js module card navigates to demo
 
-### Demo CSS Classes
-- `.demo-panel` — Container (max-width 600px, centered)
-- `.demo-instruction` — Orange left-border presenter instruction box
-- `.demo-step-content` — Centered step content area
-- `.demo-feature-list` / `.demo-feature-box` — Feature description boxes
-- `.demo-completed-badge` — Green completion notification
-- `.demo-progress` — Progress dots container
-- `.demo-progress-dot` — Gray dot (`.active` = orange, `.completed` = green)
-- `.demo-start-btn` / `.demo-continue-btn` — Orange action buttons
-- `.demo-mystery-btn` — Purple Mystery Lab button
-
 ## Experiment Log — Current State
-
-### What's Done
 - Full `ExpLog` module in `LogScreen.js` with localStorage CRUD
 - Three views: Menu → List → Detail
 - Auto-creates records on experiment/mystery finish
 - CRUD: View, Delete individual, Clear All
 
 ## Mystery Lab — Current State
-
-### What's Done
 - 6 mystery samples with tool visual graphics
 - Auto-revealed answers, optional notes
 - Score based on tests performed
 
 ## PBA Practice — Current State
-
-### What's Done
 - 11 questions, inline feedback per part, total score at end
 
 ## Rendering Flow (app.js)
@@ -156,27 +155,37 @@ appState.demoState = {
 
 ### Key Navigation
 - `goBack()` — handles PBA, Mystery, Log, Demo, experiment stages, then home
-- `goHome()` — resets all state (experiment, pbaState, mysteryState, logState, demoState)
+- `goHome()` — resets all state
 - `finishExperiment()` — creates log record + detects demo practical finish
+
+## Verification Method (No Browser)
+Node/Python/browser unavailable in this environment. Tests used:
+- Comment-aware brace/paren counter (all edited files: diff=0)
+- Single-definition greps (`animTitration`, `drawBeaker`)
+- Label y-coordinate sanity (callout bottoms ≤ 318, caption bar y≥324)
+- `ctx.save()`/`ctx.restore()` balance within functions
+- Tail contract grep (`setDemoReadings`, `drawCaption`, `drawProgressRing` present in `animTitration`)
+- **Browser test NOT performed** — must be verified by user
 
 ## Known Issues
 1. No automated tests
 2. Canvas renderers need browser testing verification
 3. `logService.js` is legacy stub — replaced by `ExpLog` module
+4. DEVELOPMENT_LOG.md not updated this session (milestone log stale)
 
-## Non-Negotiables
+## Non-Negotiables (AGENTS.md)
 - ALL 13 experiment logic, chemistry, validation, calculations preserved exactly
 - GitHub Pages compatible (static/offline)
 - No frameworks — vanilla JS only
 - Paper Chromatography (A2/A3) is the visual quality bar
-- Canvas size: 550×640
+- Canvas sizes: Demo 550×640 (interactive), 560×360 (demo anim)
 - `var` declarations for global scope
+- M14 release freeze noted; demo visual work is user-directed
 
 ## Next Steps When You Resume
-1. Open `index.html` in browser and test Demo Mode end-to-end
-2. Click "Start Demo" → verify step progression
-3. Launch A2 practical from demo → finish → verify return to demo with completion badge
-4. Verify Experiment Log step shows records
-5. Test Mystery Lab and PBA Practice launch buttons
-6. Test Restart and Return to Main Menu
-7. Run `git status` before starting any work
+1. Open `index.html` in browser → Demo Mode → A4 Titration: verify new from-scratch scene renders correctly
+2. Verify beaker, bottles, flask, callouts all appear above caption bar
+3. Test interactive A4: Practical Lab → Titration → verify HCl beaker on bench at (250, 555)
+4. Check other 12 demo animations still run (splice shifted line numbers — all funcs intact)
+5. Run `git status` before starting any work
+6. Update DEVELOPMENT_LOG.md when milestone approved

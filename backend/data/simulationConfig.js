@@ -106,7 +106,8 @@ var SIMULATION_CONFIG = {
     naohBottle: { cx: 85, cy: 430, w: 55, h: 100, capColor: '#2255cc', label: 'NaOH\n(unknown molarity)' },
     hclBottle: { cx: 175, cy: 430, w: 55, h: 100, capColor: '#cc2222', label: 'HCl\n(0.100 M)' },
     indicatorBottle: { cx: 475, cy: 460, w: 38, h: 65, capColor: '#eee', liquidColor: 'rgba(220,80,160,0.5)', label: 'Phenolphthalein\nindicator' },
-    pipette: { x1: 415, y1: 580, x2: 510, y2: 593 }
+    pipette: { x1: 415, y1: 580, x2: 510, y2: 593 },
+    hclBeaker: { cx: 250, cy: 555, w: 72, h: 85, liquidLevel: 0.55, label: 'Beaker (250 mL)\n(with HCl)' }
   },
   "A5": {
     label: "SIMULATED EDUCATIONAL VALUES — not real laboratory measurements",
