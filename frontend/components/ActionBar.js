@@ -52,8 +52,9 @@ var ActionBar = {
       html += '<button class="btn btn-primary" data-action="fill-burette">Fill Burette</button>';
     } else if (stage === 'measureSample' && !state.titrationSampleMeasured) {
       html += '<button class="btn btn-primary" data-action="measure-sample">Measure Sample</button>';
-    } else if (stage === 'titrate' && (state.titrationEndpointReached || state.titrationEndpointPassed)) {
-      html += '<button class="btn btn-accent" data-action="record-titre">Record Titre</button>';
+    } else if (stage === 'titrate') {
+      var showRec = state.titrationEndpointReached || state.titrationEndpointPassed;
+      html += '<button class="btn btn-accent" data-action="record-titre" id="action-record-titre" style="' + (showRec ? '' : 'display:none') + '">Record Titre</button>';
     } else if (stage === 'calculate') {
       html += '<button class="btn btn-accent" data-action="check-calc">Check Calculation</button>';
     }

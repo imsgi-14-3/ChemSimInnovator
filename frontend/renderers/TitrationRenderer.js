@@ -92,16 +92,24 @@ var TitrationRenderer = {
     html += '<p class="detail-label">Current burette reading</p>';
     html += '<p class="temp-display">' + state.titrationVolume.toFixed(2) + ' mL</p>';
     html += '<div class="form-group"><label class="form-label">Stopcock Control</label>';
-    html += '<div class="form-range"><input type="range" id="stopcock-slider" min="0" max="100" value="0"></div>';
+    var sliderVal = Math.round(((state.titrationVolume || 0) / sim.burette.maxML) * 100);
+    html += '<div class="form-range"><input type="range" id="stopcock-slider" min="0" max="100" value="' + sliderVal + '"></div>';
     html += '<p class="text-sm text-secondary">Slide to open the stopcock. Move toward endpoint carefully.</p></div>';
+    var fbCls = 'feedback';
+    var fbStyle = 'display:none';
+    var fbTxt = '';
     if (state.titrationEndpointReached && !state.titrationEndpointPassed) {
-      html += '<div class="feedback feedback-correct">Endpoint reached! The pink colour has just disappeared. Stop adding HCl.</div>';
+      fbCls = 'feedback feedback-correct';
+      fbStyle = '';
+      fbTxt = 'Endpoint reached! The pink colour has just disappeared. Stop adding HCl.';
     } else if (state.titrationEndpointPassed) {
-      html += '<div class="feedback feedback-incorrect">Endpoint passed! Too much HCl was added. The solution is now acidic.</div>';
+      fbCls = 'feedback feedback-incorrect';
+      fbStyle = '';
+      fbTxt = 'Endpoint passed! Too much HCl was added. The solution is now acidic.';
     }
-    if (state.titrationEndpointReached || state.titrationEndpointPassed) {
-      html += '<div data-action="record-titre" class="btn btn-accent">Record Titre</div>';
-    }
+    html += '<div id="titrate-feedback" class="' + fbCls + '" style="' + fbStyle + '">' + fbTxt + '</div>';
+    var recStyle = (state.titrationEndpointReached || state.titrationEndpointPassed) ? '' : 'display:none';
+    html += '<div id="titrate-record-btn" data-action="record-titre" class="btn btn-accent" style="' + recStyle + '">Record Titre</div>';
     html += '<div class="sim-note">\u26a0 This is a simulated titration. Volume values are simulated educational values.</div>';
     html += '</div>';
     return html;
@@ -219,6 +227,15 @@ var TitrationRenderer = {
   },
 
   /* Canvas Drawing */
+  animActive: function(state, stage) {
+    if (!state) return false;
+    var now = Date.now();
+    if (stage === 'fillBurette' && state.titrationBuretteFilled && state.titrationFillStart && (now - state.titrationFillStart) < 1700) return true;
+    if (stage === 'measureSample' && state.titrationSampleMeasured && state.titrationSampleStart && (now - state.titrationSampleStart) < 1500) return true;
+    if (stage === 'titrate' && state.titrationBuretteFilled) return true;
+    return false;
+  },
+
   draw: function(canvas, ctx, state, exp) {
     var sim = SIMULATION_CONFIG['A4'];
     if (!sim) return;
@@ -447,6 +464,10 @@ var TitrationRenderer = {
     var mlToPixel = b.h / b.maxML;
     var vol = state.titrationVolume || 0;
     var liquidTop = by + vol * mlToPixel;
+    if (state.currentStage === 'fillBurette' && state.titrationBuretteFilled && state.titrationFillStart) {
+      var fillProg = Math.min(1, (Date.now() - state.titrationFillStart) / 1600);
+      liquidTop = by + b.h * (1 - fillProg);
+    }
     var liquidGrad = ctx.createLinearGradient(bx, liquidTop, bx, by + b.h);
     liquidGrad.addColorStop(0, 'rgba(80,155,220,0.3)');
     liquidGrad.addColorStop(0.5, 'rgba(65,140,210,0.4)');
@@ -481,11 +502,25 @@ var TitrationRenderer = {
     ctx.lineWidth = 1.5;
     ctx.fillRect(bx + b.w / 2 - tipW / 2, by + b.h, tipW, tipH);
     ctx.strokeRect(bx + b.w / 2 - tipW / 2, by + b.h, tipW, tipH);
-    if (state.titrationVolume > 0 && vol < b.maxML) {
-      var dropY = by + b.h + tipH + 3;
+    if (state.currentStage === 'titrate' && state.titrationBuretteFilled) {
+      var dripProg = (Date.now() % 750) / 750;
+      var dropStartY = by + b.h + tipH + 8;
+      var dropEndY = 492;
+      ctx.fillStyle = 'rgba(60,145,215,0.6)';
+      ctx.beginPath();
+      ctx.ellipse(bx + b.w / 2, dropStartY + dripProg * (dropEndY - dropStartY), 2.2, 3.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      if (dripProg > 0.9) {
+        ctx.fillStyle = 'rgba(60,145,215,0.35)';
+        ctx.beginPath();
+        ctx.ellipse(bx + b.w / 2, dropEndY + 3, 4.5, 1.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (state.titrationVolume > 0 && vol < b.maxML) {
+      var restDropY = by + b.h + tipH + 3;
       ctx.fillStyle = 'rgba(60,145,215,0.5)';
       ctx.beginPath();
-      ctx.ellipse(bx + b.w / 2, dropY, 2, 3, 0, 0, Math.PI * 2);
+      ctx.ellipse(bx + b.w / 2, restDropY, 2, 3, 0, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
@@ -549,6 +584,9 @@ var TitrationRenderer = {
     var fShoulder = f.cy - f.bodyH / 2;
     var neckTop = fShoulder - f.neckH;
     ctx.save();
+    if (state.currentStage === 'titrate') {
+      ctx.translate(Math.sin(Date.now() / 300) * 2.5, 0);
+    }
     var flaskGrad = ctx.createLinearGradient(fLeft, f.cy, fRight, f.cy);
     flaskGrad.addColorStop(0, 'rgba(145,185,215,0.35)');
     flaskGrad.addColorStop(0.08, 'rgba(185,215,240,0.2)');
@@ -607,6 +645,11 @@ var TitrationRenderer = {
     else { r = 255; g = 255; b2 = 255; }
     var liquidY = fBottom - 18;
     if (hasSample) {
+      var sampProg = 1;
+      if (state.currentStage === 'measureSample' && state.titrationSampleStart) {
+        sampProg = Math.min(1, (Date.now() - state.titrationSampleStart) / 1400);
+      }
+      var liqTop = (liquidY - 50) + (fBottom - (liquidY - 50)) * (1 - sampProg);
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(fLeft + 14, fShoulder);
@@ -619,15 +662,15 @@ var TitrationRenderer = {
       ctx.quadraticCurveTo(fRight, fShoulder, fRight - 14, fShoulder);
       ctx.closePath();
       ctx.clip();
-      var liqGrad = ctx.createLinearGradient(fLeft, liquidY - 50, fLeft, fBottom);
-      liqGrad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b2 + ',0.28)');
-      liqGrad.addColorStop(0.5, 'rgba(' + r + ',' + g + ',' + b2 + ',0.42)');
-      liqGrad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b2 + ',0.55)');
+      var liqGrad = ctx.createLinearGradient(fLeft, liqTop, fLeft, fBottom);
+      liqGrad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b2 + ',' + (0.28 * sampProg) + ')');
+      liqGrad.addColorStop(0.5, 'rgba(' + r + ',' + g + ',' + b2 + ',' + (0.42 * sampProg) + ')');
+      liqGrad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b2 + ',' + (0.55 * sampProg) + ')');
       ctx.fillStyle = liqGrad;
-      ctx.fillRect(fLeft, liquidY - 50, f.bodyW, fBottom - liquidY + 50);
-      ctx.fillStyle = 'rgba(' + Math.min(r + 40, 255) + ',' + Math.min(g + 40, 255) + ',' + Math.min(b2 + 40, 255) + ',0.2)';
+      ctx.fillRect(fLeft, liqTop, f.bodyW, fBottom - liqTop);
+      ctx.fillStyle = 'rgba(' + Math.min(r + 40, 255) + ',' + Math.min(g + 40, 255) + ',' + Math.min(b2 + 40, 255) + ',' + (0.2 * sampProg) + ')';
       ctx.beginPath();
-      ctx.ellipse(f.cx, liquidY - 50, f.bodyW / 2 - 8, 3, 0, 0, Math.PI * 2);
+      ctx.ellipse(f.cx, liqTop, f.bodyW / 2 - 8, 3, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
@@ -916,6 +959,7 @@ var TitrationRenderer = {
         my >= sim.burette.topY - 10 && my <= sim.burette.topY + sim.burette.h + 30;
       if (nearBurette) {
         state.titrationBuretteFilled = true;
+        state.titrationFillStart = Date.now();
       }
     }
     if (stage === 'measureSample' && !state.titrationSampleMeasured) {
@@ -924,6 +968,7 @@ var TitrationRenderer = {
         my >= f.cy - f.bodyH / 2 - 20 && my <= f.cy + f.bodyH / 2 + 20;
       if (nearFlask) {
         state.titrationSampleMeasured = true;
+        state.titrationSampleStart = Date.now();
       }
     }
   }

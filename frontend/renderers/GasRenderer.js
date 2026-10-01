@@ -231,72 +231,185 @@ var GasRenderer = {
   },
 
   /* Canvas Drawing */
+  animActive: function(state, stage) {
+    if (stage !== 'performTest') return false;
+    if (!state || !state.simulation || state.simulation.done) return false;
+    return true;
+  },
+
+  lerpHex: function(c1, c2, t) {
+    var a = parseInt(c1.substring(1), 16);
+    var b = parseInt(c2.substring(1), 16);
+    var r = Math.round(((a >> 16) & 255) + ((((b >> 16) & 255) - ((a >> 16) & 255)) * t));
+    var g = Math.round(((a >> 8) & 255) + ((((b >> 8) & 255) - ((a >> 8) & 255)) * t));
+    var bl = Math.round((a & 255) + (((b & 255) - (a & 255)) * t));
+    return 'rgb(' + r + ',' + g + ',' + bl + ')';
+  },
+
   draw: function(canvas, ctx, state, exp) {
     if (state.currentStage !== 'performTest') return;
     var gas = this.getGasByIndex(state.gasCurrentIndex);
     if (!gas) return;
-    var cw = canvas.width, ch = canvas.height;
-    var cx = cw / 2;
     var sim = SIMULATION_CONFIG['A5'];
     var gasConfig = null;
     for (var i = 0; i < sim.gases.length; i++) {
       if (sim.gases[i].id === gas.id) { gasConfig = sim.gases[i]; break; }
     }
     if (!gasConfig) return;
+    var cw = canvas.width, ch = canvas.height;
+    var cx = cw / 2;
+
+    var now = Date.now();
+    var prog = 0;
+    if (state.simulation) {
+      prog = state.simulation.done ? 1 : Math.max(0, Math.min(1, (now - state.simulation.startTime) / 2500));
+    }
+    var results = (state.gasResults && state.gasResults[gas.id]) ? state.gasResults[gas.id] : null;
+    var testId = gas.correctTest;
+    if (results && results.selectedTest) testId = results.selectedTest;
+    if (state.simulation && state.simulation.testId) testId = state.simulation.testId;
+    var testLabel = gas.correctTestLabel;
+    for (var t = 0; t < gas.testOptions.length; t++) {
+      if (gas.testOptions[t].id === testId) testLabel = gas.testOptions[t].label;
+    }
+    var isLime = testId === 'limewater';
+    var flowProg = Math.max(0, Math.min(1, (prog - 0.05) / 0.85));
+    var colourT = Math.max(0, Math.min(1, (prog - 0.55) / 0.35));
 
     ctx.clearRect(0, 0, cw, ch);
     ctx.fillStyle = '#e8edf2';
     ctx.fillRect(0, 0, cw, ch);
+    ctx.fillStyle = '#dde5ec';
+    ctx.fillRect(0, 0, cw, 500);
+    ctx.fillStyle = '#c9b79a';
+    ctx.fillRect(0, 500, cw, 34);
+    ctx.fillStyle = '#b3a184';
+    ctx.fillRect(0, 534, cw, ch - 534);
 
     ctx.fillStyle = '#333';
     ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Test: ' + gas.correctTestLabel, cx, 30);
+    ctx.fillText(gas.name + ' \u2014 ' + testLabel, cx, 30);
 
-    var tubeX = cx - 25;
-    var tubeY = 60;
-    var tubeW = 50;
-    var tubeH = 160;
+    var gx = 95, gBase = 500, gW = 104, gH = 86, gNeckW = 28, gNeckH = 46;
+    var gLeft = gx - gW / 2;
+    var gRight = gx + gW / 2;
+    var gBodyTop = gBase - gH;
+    var gNeckTop = gBodyTop - gNeckH;
 
-    ctx.strokeStyle = '#666';
-    ctx.lineWidth = 3;
+    ctx.save();
+    var gGrad = ctx.createLinearGradient(gLeft, 0, gRight, 0);
+    gGrad.addColorStop(0, 'rgba(150,188,220,0.4)');
+    gGrad.addColorStop(0.2, 'rgba(255,255,255,0.15)');
+    gGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+    gGrad.addColorStop(0.8, 'rgba(255,255,255,0.12)');
+    gGrad.addColorStop(1, 'rgba(150,188,220,0.38)');
+    ctx.fillStyle = gGrad;
+    ctx.strokeStyle = 'rgba(70,110,150,0.6)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(tubeX, tubeY);
-    ctx.lineTo(tubeX, tubeY + tubeH);
-    ctx.arcTo(tubeX, tubeY + tubeH + 20, tubeX + tubeW / 2, tubeY + tubeH + 20, 25);
-    ctx.arcTo(tubeX + tubeW, tubeY + tubeH + 20, tubeX + tubeW, tubeY + tubeH, 25);
-    ctx.lineTo(tubeX + tubeW, tubeY);
+    ctx.moveTo(gx - gNeckW / 2, gNeckTop);
+    ctx.lineTo(gx - gNeckW / 2, gBodyTop);
+    ctx.lineTo(gLeft + 12, gBodyTop);
+    ctx.quadraticCurveTo(gLeft, gBodyTop, gLeft, gBodyTop + 12);
+    ctx.lineTo(gLeft, gBase - 8);
+    ctx.quadraticCurveTo(gLeft, gBase, gLeft + 10, gBase);
+    ctx.lineTo(gRight - 10, gBase);
+    ctx.quadraticCurveTo(gRight, gBase, gRight, gBase - 8);
+    ctx.lineTo(gRight, gBodyTop + 12);
+    ctx.quadraticCurveTo(gRight, gBodyTop, gRight - 12, gBodyTop);
+    ctx.lineTo(gx + gNeckW / 2, gBodyTop);
+    ctx.lineTo(gx + gNeckW / 2, gNeckTop);
+    ctx.closePath();
+    ctx.fill();
     ctx.stroke();
+    ctx.save();
+    ctx.clip();
+    var genLiqTop = gBodyTop + 34;
+    ctx.fillStyle = 'rgba(90,150,205,0.4)';
+    ctx.fillRect(gLeft, genLiqTop, gW, gBase - genLiqTop);
+    ctx.fillStyle = 'rgba(120,175,225,0.5)';
+    ctx.beginPath();
+    ctx.ellipse(gx, genLiqTop, gW / 2 - 4, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (prog > 0.03 && prog < 0.98) {
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      for (var bi = 0; bi < 4; bi++) {
+        var bp = ((now / 700) + bi * 0.25) % 1;
+        var bxx = gx - 22 + bi * 14 + Math.sin(now / 300 + bi) * 3;
+        var byy = gBase - 8 - bp * (gBase - 8 - genLiqTop - 6);
+        ctx.beginPath();
+        ctx.arc(bxx, byy, 2 + (bi % 2), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+    ctx.fillStyle = '#a8804f';
+    ctx.strokeStyle = '#7d5f39';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(gx - gNeckW / 2 - 3, gNeckTop - 12);
+    ctx.lineTo(gx + gNeckW / 2 + 3, gNeckTop - 12);
+    ctx.lineTo(gx + gNeckW / 2, gNeckTop + 2);
+    ctx.lineTo(gx - gNeckW / 2, gNeckTop + 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
 
-    if (gas.id === 'CO2') {
-      var limeCol = (state.gasTestPerformed && state.simulation && state.simulation.done)
-        ? gasConfig.limeColourAfter : '#e8e8e0';
-      ctx.fillStyle = limeCol;
-      ctx.fillRect(tubeX + 4, tubeY + tubeH - 60, tubeW - 8, 60);
-      ctx.fillStyle = '#555';
-      ctx.font = '10px sans-serif';
-      ctx.fillText('limewater', cx, tubeY + tubeH - 25);
+    if (isLime) {
+      this.drawRack(ctx, 420, 500);
+      this.drawLimeTube(ctx, 420, 300, 470, gasConfig, colourT, prog, now);
+    } else {
+      this.drawLitmusJar(ctx, 418, gasConfig, colourT, flowProg, now);
     }
 
-    if (state.gasTestPerformed && state.simulation && state.simulation.done) {
-      var litmusY = tubeY + 10;
-      if (gas.id === 'NH3') {
-        ctx.fillStyle = gasConfig.litmusColourAfter;
-        ctx.fillRect(cx - 15, litmusY, 30, 15);
-        ctx.fillStyle = '#333';
-        ctx.font = '10px sans-serif';
-        ctx.fillText('red \u2192 blue', cx, litmusY + 30);
-      } else if (gas.id === 'Cl2') {
-        ctx.fillStyle = gasConfig.litmusColourAfter;
-        ctx.fillRect(cx - 15, litmusY, 30, 15);
-        ctx.fillStyle = '#333';
-        ctx.font = '10px sans-serif';
-        ctx.fillText('bleached white', cx, litmusY + 30);
-      } else if (gas.id === 'CO2') {
-        ctx.fillStyle = 'rgba(220,53,69,0.5)';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText('Limewater turned milky!', cx, tubeY + 10);
-      }
+    ctx.save();
+    ctx.strokeStyle = 'rgba(125,145,165,0.9)';
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(gx, gNeckTop - 8);
+    if (isLime) {
+      ctx.bezierCurveTo(200, 250, 330, 275, 420, 302);
+      ctx.lineTo(420, 448);
+    } else {
+      ctx.bezierCurveTo(210, 240, 330, 258, 390, 272);
+      ctx.lineTo(390, 452);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.textAlign = 'center';
+    if (!state.simulation) {
+      ctx.fillStyle = '#556';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('Click "Start Test" to begin the simulation', cx, 580);
+    } else if (!state.simulation.done) {
+      ctx.fillStyle = '#345';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('Simulating\u2026 ' + Math.round(prog * 100) + '%', cx, 580);
+    } else {
+      var bw = 400, bh = 44;
+      var bx2 = cx - bw / 2, by2 = 556;
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#2f7d4f';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(bx2 + 8, by2);
+      ctx.arcTo(bx2 + bw, by2, bx2 + bw, by2 + bh, 8);
+      ctx.arcTo(bx2 + bw, by2 + bh, bx2, by2 + bh, 8);
+      ctx.arcTo(bx2, by2 + bh, bx2, by2, 8);
+      ctx.arcTo(bx2, by2, bx2 + bw, by2, 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#1d5e38';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('Observed: ' + gas.observedChange, cx, by2 + 27);
     }
 
     ctx.fillStyle = '#888';
@@ -304,6 +417,142 @@ var GasRenderer = {
     ctx.textAlign = 'left';
     ctx.fillText('(simulated)', 10, ch - 10);
     ctx.textAlign = 'center';
+  },
+
+  drawRack: function(ctx, cx, benchY) {
+    ctx.save();
+    ctx.fillStyle = '#8a6b45';
+    ctx.strokeStyle = '#6f5435';
+    ctx.lineWidth = 1;
+    ctx.fillRect(cx - 55, benchY - 30, 110, 30);
+    ctx.strokeRect(cx - 55, benchY - 30, 110, 30);
+    ctx.fillStyle = '#94734c';
+    ctx.fillRect(cx - 50, 330, 100, 140);
+    ctx.strokeRect(cx - 50, 330, 100, 140);
+    ctx.fillStyle = '#8a6b45';
+    ctx.fillRect(cx - 52, 336, 104, 16);
+    ctx.strokeRect(cx - 52, 336, 104, 16);
+    ctx.restore();
+  },
+
+  drawLimeTube: function(ctx, cx, top, bot, gasConfig, colourT, prog, now) {
+    var w = 40, l = cx - w / 2, r = cx + w / 2;
+    var liqTop = 400;
+    ctx.save();
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(l, top);
+    ctx.lineTo(l, bot - 14);
+    ctx.quadraticCurveTo(l, bot, cx, bot);
+    ctx.quadraticCurveTo(r, bot, r, bot - 14);
+    ctx.lineTo(r, top);
+    ctx.closePath();
+    ctx.clip();
+    var limeCol = this.lerpHex('#c8dae2', gasConfig.limeColourAfter || '#dfe8ea', colourT);
+    ctx.globalAlpha = 0.55 + colourT * 0.4;
+    ctx.fillStyle = limeCol;
+    ctx.fillRect(l, liqTop, w, bot - 4 - liqTop);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(cx, liqTop, w / 2 - 3, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (prog > 0.1 && prog < 0.92) {
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      for (var i = 0; i < 4; i++) {
+        var bp = ((now / 600) + i * 0.25) % 1;
+        var yy = bot - 12 - bp * (bot - 12 - liqTop - 4);
+        ctx.beginPath();
+        ctx.arc(cx - 10 + i * 7, yy, 2 + (i % 2) * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(l, top);
+    ctx.lineTo(l, bot - 14);
+    ctx.quadraticCurveTo(l, bot, cx, bot);
+    ctx.quadraticCurveTo(r, bot, r, bot - 14);
+    ctx.lineTo(r, top);
+    ctx.strokeStyle = 'rgba(70,110,150,0.65)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(l + 5, top + 12);
+    ctx.lineTo(l + 5, bot - 20);
+    ctx.stroke();
+    ctx.fillStyle = '#f5ead8';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('limewater', cx, bot + 16);
+    ctx.restore();
+  },
+
+  drawLitmusJar: function(ctx, cx, gasConfig, colourT, flowProg, now) {
+    var jw = 102, jl = cx - jw / 2, jr = cx + jw / 2;
+    var jTop = 288, jBot = 470;
+    ctx.save();
+    ctx.fillStyle = '#8a6b45';
+    ctx.strokeStyle = '#6f5435';
+    ctx.lineWidth = 1;
+    ctx.fillRect(jl - 8, jBot, jw + 16, 30);
+    ctx.strokeRect(jl - 8, jBot, jw + 16, 30);
+    ctx.beginPath();
+    ctx.moveTo(jl, jTop);
+    ctx.lineTo(jl, jBot - 10);
+    ctx.quadraticCurveTo(jl, jBot, jl + 10, jBot);
+    ctx.lineTo(jr - 10, jBot);
+    ctx.quadraticCurveTo(jr, jBot, jr, jBot - 10);
+    ctx.lineTo(jr, jTop);
+    ctx.strokeStyle = 'rgba(70,110,150,0.6)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(jl + 2, jTop, jw - 4, jBot - jTop - 2);
+    ctx.clip();
+    if (flowProg > 0) {
+      var gasLevel = jBot - 2 - flowProg * (jBot - jTop - 10);
+      ctx.globalAlpha = 0.06 + 0.2 * flowProg;
+      ctx.fillStyle = gasConfig.colour || '#999999';
+      ctx.fillRect(jl, gasLevel, jw, jBot - gasLevel);
+      ctx.globalAlpha = 1;
+    }
+    if (flowProg > 0 && flowProg < 1) {
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      for (var i = 0; i < 3; i++) {
+        var bp = ((now / 650) + i * 0.33) % 1;
+        var yy = jBot - 14 - bp * 90;
+        ctx.beginPath();
+        ctx.arc(jl + 24 + i * 12, yy, 2 + (i % 2) * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+    var stripC = cx + 24;
+    var stripL = cx + 6, stripR = cx + 42;
+    var stripT = 322, stripB = 340;
+    ctx.strokeStyle = '#777';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(jr - 8, jTop);
+    ctx.lineTo(stripC, stripT);
+    ctx.stroke();
+    var stripAfter = gasConfig.litmusColourAfter || '#d8564e';
+    ctx.fillStyle = this.lerpHex('#d8564e', stripAfter, colourT);
+    ctx.strokeStyle = 'rgba(90,60,50,0.6)';
+    ctx.lineWidth = 1;
+    ctx.fillRect(stripL, stripT, stripR - stripL, stripB - stripT);
+    ctx.strokeRect(stripL, stripT, stripR - stripL, stripB - stripT);
+    ctx.fillStyle = 'rgba(40,60,90,0.85)';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('damp litmus', stripC, stripB + 14);
+    ctx.fillStyle = '#f5ead8';
+    ctx.fillText('gas jar', cx, jBot + 20);
+    ctx.restore();
   },
 
   /* Canvas Click Handling */

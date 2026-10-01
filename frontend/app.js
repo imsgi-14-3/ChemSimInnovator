@@ -376,18 +376,30 @@ var ChemSim = (function() {
     }
   }
 
-  function renderCanvasForStage(exp, stage) {
-    var canvas = document.getElementById('lab-canvas');
-    if (!canvas) return;
-    var simStages = getSimStagesForExp(exp.id);
-    if (simStages.indexOf(stage) === -1) {
-      var canvasWrap = canvas.parentElement;
-      if (canvasWrap) canvasWrap.style.display = 'none';
-      return;
+  var labRafId = null;
+
+  function stopLabAnimation() {
+    if (labRafId !== null) {
+      cancelAnimationFrame(labRafId);
+      labRafId = null;
     }
-    var canvasWrap = canvas.parentElement;
-    if (canvasWrap) canvasWrap.style.display = '';
-    var ctx = canvas.getContext('2d');
+  }
+
+  function labAnimActive(exp, stage) {
+    if (!exp) return false;
+    if (exp.id === 'A4' && typeof TitrationRenderer !== 'undefined' && TitrationRenderer.animActive) {
+      return !!TitrationRenderer.animActive(appState.state, stage);
+    }
+    if (exp.id === 'A5' && typeof GasRenderer !== 'undefined' && GasRenderer.animActive) {
+      return !!GasRenderer.animActive(appState.state, stage);
+    }
+    return false;
+  }
+
+  function paintLabFrame(canvas, ctx, exp, stage) {
+    if (exp.id === 'A4' || exp.id === 'A5') {
+      appState.state.currentStage = stage;
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     var id = exp.id;
     if (id === 'A2' || id === 'A3') {
@@ -400,6 +412,43 @@ var ChemSim = (function() {
       GasRenderer.draw(canvas, ctx, appState.state, exp);
     } else {
       MinorExperimentRenderer.draw(canvas, ctx, appState.state, exp);
+    }
+  }
+
+  function startLabLoop(tracked, exp, stage) {
+    var step = function() {
+      if (labRafId === null) return;
+      if (document.getElementById('lab-canvas') !== tracked || !document.body.contains(tracked)) {
+        labRafId = null;
+        return;
+      }
+      if (!labAnimActive(exp, stage)) {
+        paintLabFrame(tracked, tracked.getContext('2d'), exp, stage);
+        labRafId = null;
+        return;
+      }
+      paintLabFrame(tracked, tracked.getContext('2d'), exp, stage);
+      labRafId = requestAnimationFrame(step);
+    };
+    labRafId = requestAnimationFrame(step);
+  }
+
+  function renderCanvasForStage(exp, stage) {
+    stopLabAnimation();
+    var canvas = document.getElementById('lab-canvas');
+    if (!canvas) return;
+    var simStages = getSimStagesForExp(exp.id);
+    if (simStages.indexOf(stage) === -1) {
+      var canvasWrap = canvas.parentElement;
+      if (canvasWrap) canvasWrap.style.display = 'none';
+      return;
+    }
+    var canvasWrap = canvas.parentElement;
+    if (canvasWrap) canvasWrap.style.display = '';
+    var ctx = canvas.getContext('2d');
+    paintLabFrame(canvas, ctx, exp, stage);
+    if (labAnimActive(exp, stage)) {
+      startLabLoop(canvas, exp, stage);
     }
   }
 
@@ -538,10 +587,12 @@ var ChemSim = (function() {
         break;
       case 'fill-burette':
         st.titrationBuretteFilled = true;
+        st.titrationFillStart = Date.now();
         renderExperimentStage();
         break;
       case 'measure-sample':
         st.titrationSampleMeasured = true;
+        st.titrationSampleStart = Date.now();
         renderExperimentStage();
         break;
       case 'record-titre':
@@ -615,6 +666,7 @@ var ChemSim = (function() {
         appState.state.gasCurrentIndex = i;
         appState.state.gasTestPerformed = false;
         appState.state.gasTestObserved = false;
+        appState.state.simulation = null;
         appState.currentStage = 'selectTest';
         appState.stageIndex = appState.stages.indexOf('selectTest');
         renderExperimentStage();
@@ -636,7 +688,12 @@ var ChemSim = (function() {
 
   function handleGasPerformTest() {
     var st = appState.state;
-    st.simulation = { startTime: Date.now(), done: false };
+    var gasNow = getGasByIndex(st.gasCurrentIndex);
+    var pickTest = gasNow ? gasNow.correctTest : '';
+    if (gasNow && st.gasResults[gasNow.id] && st.gasResults[gasNow.id].selectedTest) {
+      pickTest = st.gasResults[gasNow.id].selectedTest;
+    }
+    st.simulation = { startTime: Date.now(), done: false, testId: pickTest };
     st.gasTestPerformed = false;
     renderExperimentStage();
     setTimeout(function() {
@@ -933,8 +990,42 @@ var ChemSim = (function() {
           st.titrationEndpointReached = false;
           st.titrationEndpointPassed = false;
         }
-        renderExperimentStage();
+        updateTitratePanel(st);
+        renderCanvasForStage(appState.experiment, appState.currentStage);
       }
+    }
+  }
+
+  function updateTitratePanel(st) {
+    var readEl = document.querySelector('#workspace-content .temp-display');
+    if (readEl) readEl.textContent = st.titrationVolume.toFixed(2) + ' mL';
+    var fbEl = document.getElementById('titrate-feedback');
+    var recEl = document.getElementById('titrate-record-btn');
+    if (fbEl) {
+      if (st.titrationEndpointReached && !st.titrationEndpointPassed) {
+        fbEl.className = 'feedback feedback-correct';
+        fbEl.style.display = '';
+        fbEl.textContent = 'Endpoint reached! The pink colour has just disappeared. Stop adding HCl.';
+      } else if (st.titrationEndpointPassed) {
+        fbEl.className = 'feedback feedback-incorrect';
+        fbEl.style.display = '';
+        fbEl.textContent = 'Endpoint passed! Too much HCl was added. The solution is now acidic.';
+      } else {
+        fbEl.className = 'feedback';
+        fbEl.style.display = 'none';
+        fbEl.textContent = '';
+      }
+    }
+    if (recEl) {
+      recEl.style.display = (st.titrationEndpointReached || st.titrationEndpointPassed) ? '' : 'none';
+    }
+    var nextBtn = document.getElementById('stage-next-btn');
+    if (nextBtn) {
+      nextBtn.disabled = !(st.titrationEndpointReached || st.titrationEndpointPassed);
+    }
+    var actionRec = document.getElementById('action-record-titre');
+    if (actionRec) {
+      actionRec.style.display = (st.titrationEndpointReached || st.titrationEndpointPassed) ? '' : 'none';
     }
   }
 
