@@ -1080,90 +1080,415 @@ var MinorExperimentRenderer = {
 
   /* ── M7.1 Sublimation of Naphthalene — WIDE ── */
   drawM7_1: function(ctx, cw, ch, state) {
-    var cx = cw / 2;
+    var cx = cw / 2 + 20;
     var benchY = 540;
     var done = state.m7ActionDone && state.simulation && state.m7ObservationDone;
     var heating = state.m7ActionDone && state.simulation && !state.simulation.done;
 
-    /* Tripod + gauze + dish + Bunsen — LEFT SIDE */
-    this.drawTripod(ctx, cx - 80, benchY, 130);
-    this.drawWireGauze(ctx, cx - 80, benchY - 95, 130);
-    this.drawEvaporatingDish(ctx, cx - 80, benchY - 110, 95, 32, done ? '#c8c0b8' : '#e8dcc8');
-    this.drawBunsen(ctx, cx - 80, benchY, heating || done, '#4488ff', heating ? 75 : 40);
-
-    /* Inverted funnel over dish — CENTERED on dish */
-    this.drawFunnel(ctx, cx - 80, benchY - 175, 110, 80, true);
-
-    /* Filter paper in funnel */
+    /* ── Left: labelled mixture jar ── */
     ctx.save();
-    ctx.fillStyle = 'rgba(255,255,255,0.75)';
-    ctx.strokeStyle = 'rgba(170,170,170,0.55)';
-    ctx.lineWidth = 1;
+    var jx = 55, jy = benchY - 55;
+    /* jar body */
+    var jarGrad = ctx.createLinearGradient(jx - 22, 0, jx + 22, 0);
+    jarGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    jarGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
+    jarGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
+    jarGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = jarGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(cx - 80 - 42, benchY - 175);
-    ctx.lineTo(cx - 80 + 42, benchY - 175);
-    ctx.lineTo(cx - 80 + 4, benchY - 145);
-    ctx.lineTo(cx - 80 - 4, benchY - 145);
+    ctx.moveTo(jx - 22, jy - 40);
+    ctx.lineTo(jx - 22, jy + 40);
+    ctx.quadraticCurveTo(jx - 22, jy + 48, jx - 14, jy + 48);
+    ctx.lineTo(jx + 14, jy + 48);
+    ctx.quadraticCurveTo(jx + 22, jy + 48, jx + 22, jy + 40);
+    ctx.lineTo(jx + 22, jy - 40);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
+    /* mixture inside */
+    ctx.fillStyle = '#c8b898';
+    ctx.globalAlpha = 0.6;
+    ctx.fillRect(jx - 18, jy - 5, 36, 45);
+    ctx.globalAlpha = 1;
+    /* grains */
+    ctx.fillStyle = '#a09070';
+    for (var g = 0; g < 8; g++) {
+      ctx.beginPath();
+      ctx.arc(jx - 12 + (g % 4) * 8, jy + 5 + Math.floor(g / 4) * 12, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    /* white label */
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(jx - 18, jy - 35, 36, 28);
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(jx - 18, jy - 35, 36, 28);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 6px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Naphthalene', jx, jy - 26);
+    ctx.fillText('+ Sand', jx, jy - 18);
+    ctx.fillText('+ Salt', jx, jy - 10);
+    /* lid */
+    ctx.fillStyle = '#888';
+    ctx.fillRect(jx - 16, jy - 48, 32, 10);
+    ctx.strokeStyle = '#666';
+    ctx.strokeRect(jx - 16, jy - 48, 32, 10);
+    ctx.textAlign = 'left';
     ctx.restore();
 
-    /* Naphthalene vapour rising */
+    /* ── Tripod stand (black metal) ── */
+    ctx.save();
+    var tx = cx, ty = benchY;
+    var thw = 70;
+    ctx.strokeStyle = '#2a2a2a';
+    ctx.lineWidth = 5;
+    /* left leg */
+    ctx.beginPath();
+    ctx.moveTo(tx - thw, ty);
+    ctx.quadraticCurveTo(tx - thw + 8, ty - 50, tx - thw + 14, ty - 110);
+    ctx.stroke();
+    /* right leg */
+    ctx.beginPath();
+    ctx.moveTo(tx + thw, ty);
+    ctx.quadraticCurveTo(tx + thw - 8, ty - 50, tx + thw - 14, ty - 110);
+    ctx.stroke();
+    /* center leg */
+    ctx.beginPath();
+    ctx.moveTo(tx, ty + 4);
+    ctx.lineTo(tx, ty - 105);
+    ctx.stroke();
+    /* rubber feet */
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.ellipse(tx - thw, ty, 6, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(tx + thw, ty, 6, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    /* top ring */
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.ellipse(tx, ty - 110, thw - 8, 8, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    /* ── Wire gauze (black mesh) ── */
+    ctx.save();
+    var gx = cx, gy = benchY - 112;
+    var ghw = 68;
+    /* ceramic centre */
+    ctx.fillStyle = '#c8c0b4';
+    ctx.strokeStyle = '#a09890';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(gx, gy, 14, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    /* black mesh */
+    ctx.fillStyle = '#3a3a3a';
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.ellipse(gx, gy, ghw, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    /* mesh grid */
+    ctx.strokeStyle = 'rgba(80,80,80,0.5)';
+    ctx.lineWidth = 0.7;
+    for (var mi = -5; mi <= 5; mi++) {
+      ctx.beginPath();
+      ctx.moveTo(gx + mi * 12, gy - 6);
+      ctx.lineTo(gx + mi * 12, gy + 6);
+      ctx.stroke();
+    }
+    for (var mj = -2; mj <= 2; mj++) {
+      ctx.beginPath();
+      ctx.moveTo(gx - ghw, gy + mj * 2.5);
+      ctx.lineTo(gx + ghw, gy + mj * 2.5);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    /* ── China dish (white porcelain) ── */
+    ctx.save();
+    var dx = cx, dy = benchY - 125;
+    var dw = 85, dh = 28;
+    var dbx = dx - dw / 2, dby = dy - dh / 2;
+    /* dish body */
+    var dishGrad = ctx.createLinearGradient(dbx, dby, dbx + dw, dby);
+    dishGrad.addColorStop(0, '#e8e4e0');
+    dishGrad.addColorStop(0.2, '#f8f6f4');
+    dishGrad.addColorStop(0.5, '#ffffff');
+    dishGrad.addColorStop(0.8, '#f4f2f0');
+    dishGrad.addColorStop(1, '#ddd8d2');
+    ctx.fillStyle = dishGrad;
+    ctx.strokeStyle = '#b0a8a0';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(dbx + 5, dby + 2);
+    ctx.lineTo(dbx + dw - 5, dby + 2);
+    ctx.quadraticCurveTo(dbx + dw, dby + 2, dbx + dw, dby + 8);
+    ctx.lineTo(dbx + dw - 8, dby + dh - 4);
+    ctx.quadraticCurveTo(dbx + dw - 10, dby + dh, dx, dby + dh);
+    ctx.quadraticCurveTo(dbx + 10, dby + dh, dbx + 8, dby + dh - 4);
+    ctx.lineTo(dbx, dby + 8);
+    ctx.quadraticCurveTo(dbx, dby + 2, dbx + 5, dby + 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* mixture inside (sand + salt + naphthalene) */
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(dbx + 7, dby + 5);
+    ctx.lineTo(dbx + dw - 7, dby + 5);
+    ctx.lineTo(dbx + dw - 10, dby + dh - 6);
+    ctx.quadraticCurveTo(dbx + dw - 12, dby + dh - 2, dx, dby + dh - 2);
+    ctx.quadraticCurveTo(dbx + 12, dby + dh - 2, dbx + 10, dby + dh - 6);
+    ctx.closePath();
+    ctx.clip();
+    /* base colour */
+    ctx.fillStyle = '#d4c8a8';
+    ctx.globalAlpha = 0.7;
+    ctx.fillRect(dbx, dby + 5, dw, dh - 8);
+    /* grains */
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#b8a880';
+    for (var mg = 0; mg < 12; mg++) {
+      var mgx = dbx + 10 + (mg % 6) * 11;
+      var mgy = dby + 8 + Math.floor(mg / 6) * 8;
+      ctx.beginPath();
+      ctx.arc(mgx, mgy, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    /* white salt grains */
+    ctx.fillStyle = '#f0f0f0';
+    for (var sg = 0; sg < 6; sg++) {
+      var sgx = dbx + 14 + (sg % 3) * 18;
+      var sgy = dby + 10 + Math.floor(sg / 3) * 7;
+      ctx.beginPath();
+      ctx.arc(sgx, sgy, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+    /* rim highlight */
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(dx, dby + 3, dw / 2 - 8, 3, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    /* ── Bunsen burner (with orange gas tube) ── */
+    ctx.save();
+    var bx = cx, by = benchY;
+    /* heavy base */
+    var baseGrad = ctx.createLinearGradient(bx - 28, by - 8, bx + 28, by + 6);
+    baseGrad.addColorStop(0, '#444');
+    baseGrad.addColorStop(0.3, '#777');
+    baseGrad.addColorStop(0.5, '#999');
+    baseGrad.addColorStop(0.7, '#777');
+    baseGrad.addColorStop(1, '#333');
+    ctx.fillStyle = baseGrad;
+    ctx.beginPath();
+    ctx.ellipse(bx, by, 28, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    /* air collar */
+    ctx.fillStyle = '#555';
+    ctx.beginPath();
+    ctx.ellipse(bx, by - 10, 12, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    /* barrel */
+    var barrelGrad = ctx.createLinearGradient(bx - 8, 0, bx + 8, 0);
+    barrelGrad.addColorStop(0, '#555');
+    barrelGrad.addColorStop(0.3, '#999');
+    barrelGrad.addColorStop(0.5, '#bbb');
+    barrelGrad.addColorStop(0.7, '#888');
+    barrelGrad.addColorStop(1, '#444');
+    ctx.fillStyle = barrelGrad;
+    ctx.fillRect(bx - 8, by - 72, 16, 64);
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx - 8, by - 72, 16, 64);
+    /* top collar */
+    ctx.fillStyle = '#444';
+    ctx.fillRect(bx - 10, by - 78, 20, 8);
+    /* orange gas tube */
+    ctx.strokeStyle = '#e87820';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(bx + 28, by);
+    ctx.quadraticCurveTo(bx + 60, by + 5, bx + 90, by + 2);
+    ctx.stroke();
+    ctx.strokeStyle = '#c06018';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(bx + 28, by);
+    ctx.quadraticCurveTo(bx + 60, by + 5, bx + 90, by + 2);
+    ctx.stroke();
+    /* flame */
+    var flameH = heating ? 80 : (done ? 50 : 35);
+    var fy = by - 78;
+    var outerGrad = ctx.createRadialGradient(bx, fy - flameH * 0.35, 3, bx, fy - flameH * 0.35, flameH * 0.55);
+    outerGrad.addColorStop(0, '#ffaa00');
+    outerGrad.addColorStop(0.3, '#ff8800');
+    outerGrad.addColorStop(0.7, '#ff6600');
+    outerGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = outerGrad;
+    ctx.beginPath();
+    ctx.moveTo(bx - 14, fy);
+    ctx.quadraticCurveTo(bx - 10, fy - flameH * 0.45, bx, fy - flameH);
+    ctx.quadraticCurveTo(bx + 10, fy - flameH * 0.45, bx + 14, fy);
+    ctx.closePath();
+    ctx.fill();
+    /* inner blue cone */
+    ctx.fillStyle = 'rgba(80,120,255,0.5)';
+    ctx.beginPath();
+    ctx.moveTo(bx - 5, fy);
+    ctx.quadraticCurveTo(bx - 2, fy - flameH * 0.3, bx, fy - flameH * 0.55);
+    ctx.quadraticCurveTo(bx + 2, fy - flameH * 0.3, bx + 5, fy);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    /* ── Inverted funnel (large, over china dish) ── */
+    ctx.save();
+    var fx = cx, fy2 = benchY - 155;
+    var fw = 120, fh = 100;
+    var coneH = fh * 0.7;
+    var fhw = fw / 2;
+    var funGrad = ctx.createLinearGradient(fx - fhw, 0, fx + fhw, 0);
+    funGrad.addColorStop(0, 'rgba(160,195,225,0.4)');
+    funGrad.addColorStop(0.1, 'rgba(200,225,245,0.18)');
+    funGrad.addColorStop(0.5, 'rgba(240,248,255,0.05)');
+    funGrad.addColorStop(0.9, 'rgba(200,225,245,0.15)');
+    funGrad.addColorStop(1, 'rgba(160,195,225,0.38)');
+    ctx.fillStyle = funGrad;
+    ctx.strokeStyle = 'rgba(80,120,160,0.55)';
+    ctx.lineWidth = 2;
+    /* cone (wide end down) */
+    ctx.beginPath();
+    ctx.moveTo(fx - fhw, fy2 + coneH);
+    ctx.lineTo(fx - 8, fy2);
+    ctx.lineTo(fx + 8, fy2);
+    ctx.lineTo(fx + fhw, fy2 + coneH);
+    ctx.lineTo(fx + fhw - 8, fy2 + coneH);
+    ctx.lineTo(fx + 5, fy2 + 10);
+    ctx.lineTo(fx - 5, fy2 + 10);
+    ctx.lineTo(fx - fhw + 8, fy2 + coneH);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* stem */
+    ctx.fillRect(fx - 6, fy2 - 35, 12, 35);
+    ctx.strokeRect(fx - 6, fy2 - 35, 12, 35);
+    ctx.restore();
+
+    /* ── Cotton plug in funnel stem ── */
+    ctx.save();
+    var cpx = cx, cpy = fy2 - 40;
+    ctx.fillStyle = '#f5f2ee';
+    ctx.strokeStyle = '#d0ccc4';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(cpx, cpy, 12, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    /* cotton texture */
+    ctx.fillStyle = '#e8e4de';
+    ctx.beginPath();
+    ctx.ellipse(cpx - 3, cpy - 2, 5, 4, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cpx + 4, cpy + 1, 4, 3, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    /* ── Naphthalene crystals on funnel interior ── */
+    if (done || heating) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      for (var c = 0; c < 16; c++) {
+        var angle = (c / 16) * Math.PI;
+        var cr = 35 + (c % 3) * 10;
+        var ccx = cx + Math.cos(angle) * cr * 0.6;
+        var ccy = fy2 + 20 + Math.sin(angle) * cr * 0.4;
+        ctx.beginPath();
+        ctx.arc(ccx, ccy, 2 + (c % 2), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    /* ── Naphthalene vapour rising ── */
     if (heating) {
       ctx.save();
-      ctx.globalAlpha = 0.3;
-      ctx.fillStyle = '#aaa';
-      for (var i = 0; i < 6; i++) {
-        var vy = benchY - 120 - i * 14 - (Date.now() / 30 % 14);
-        var vx = cx - 80 + Math.sin((Date.now() / 200) + i) * 10;
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = '#bbb';
+      for (var v = 0; v < 5; v++) {
+        var vy = benchY - 135 - v * 12 - (Date.now() / 30 % 12);
+        var vx = cx + Math.sin((Date.now() / 200) + v) * 8;
         ctx.beginPath();
-        ctx.arc(vx, vy, 4 + i * 0.6, 0, Math.PI * 2);
+        ctx.arc(vx, vy, 3 + v * 0.5, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
       ctx.restore();
     }
 
-    /* Sublimate on funnel */
-    if (done) {
-      ctx.save();
-      ctx.fillStyle = 'rgba(220,220,220,0.65)';
-      for (var j = 0; j < 10; j++) {
-        var sx = cx - 80 - 28 + (j % 5) * 14;
-        var sy = benchY - 168 + Math.floor(j / 5) * 10;
-        ctx.beginPath();
-        ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-
-    /* Residue in dish (sand + salt) */
-    if (done) {
-      ctx.save();
-      ctx.fillStyle = '#b0a090';
-      for (var k = 0; k < 4; k++) {
-        var rx = cx - 80 - 15 + k * 10;
-        var ry = benchY - 108;
-        ctx.beginPath();
-        ctx.arc(rx, ry, 3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-
-    /* Labels */
+    /* ── Labels (blue background, like reference) ── */
     ctx.save();
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#444';
-    ctx.textAlign = 'center';
-    ctx.fillText('Evaporating dish', cx - 80, benchY + 25);
-    ctx.fillText('Inverted funnel', cx - 80, benchY - 195);
-    ctx.fillText('Bunsen burner', cx - 80, benchY + 42);
+    function drawLabel(text, lx, ly, tw) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(lx, ly, tw, 18);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, lx + tw / 2, ly + 13);
+    }
+    function drawLine(x1, y1, x2, y2) {
+      ctx.strokeStyle = '#1a3a6a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+    /* Cotton plug label */
+    drawLine(cx + 6, cpy - 10, cx + 80, cpy - 30);
+    drawLabel('Cotton plug', cx + 80, cpy - 48, 80);
+    /* Inverted funnel label */
+    drawLine(cx + 60, fy2 + 30, cx + 90, fy2 + 10);
+    drawLabel('Inverted funnel', cx + 90, fy2 - 8, 95);
+    /* Naphthalene crystals label */
+    drawLine(cx + 40, fy2 + 50, cx + 90, fy2 + 60);
+    drawLabel('Naphthalene crystals', cx + 90, fy2 + 52, 120);
+    /* China dish label */
+    drawLine(cx + 45, dby + 10, cx + 90, dby + 5);
+    drawLabel('China dish', cx + 90, dby - 13, 75);
+    /* Wire gauze label */
+    drawLine(cx + 70, gy + 5, cx + 100, gy + 15);
+    drawLabel('Wire gauze', cx + 100, gy + 8, 75);
+    /* Tripod label */
+    drawLine(cx + thw, ty - 40, cx + thw + 20, ty - 40);
+    drawLabel('Tripod stand', cx + thw + 20, ty - 48, 85);
+    /* Burner label */
+    drawLine(cx + 28, by - 30, cx + 90, by - 30);
+    drawLabel('Burner', cx + 90, by - 38, 55);
     ctx.textAlign = 'left';
+    ctx.restore();
+
+    /* Simulated note */
+    ctx.save();
     ctx.fillStyle = '#888';
     ctx.font = '9px sans-serif';
+    ctx.textAlign = 'left';
     ctx.fillText('(simulated)', 10, ch - 10);
     ctx.restore();
   },
