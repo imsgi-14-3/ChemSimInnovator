@@ -13,7 +13,7 @@ ChemSim — Interactive Virtual Chemistry Laboratory for Grade 9/10 FBISE PBA ex
 - Repo: `https://github.com/imsgi-14-3/ChemSimInnovator.git`
 - Branch: `main`
 - Author: `imsgi-14-3 <imsgi14.3cb2@gmail.com>`
-- Last commit: (see `git log --oneline -1`)
+- Last commit: `f65b4cf` — feat: A4/A5 UI enhancements — titre tracker, gas identity cards, improved visuals
 
 ## How to Run
 1. Open `index.html` in browser
@@ -107,11 +107,41 @@ ChemSimInnovator/
 - Apparatus list updated: `'Beaker (250 mL, HCl)'` added to `PRACTICAL_APPARATUS.A4`
 - Cache-busted: `index.html` → `DemoScreen.js?v=a4beaker1`
 
-### A4 Interactive Canvas — Updated This Session
+### A4 Interactive Canvas — Enhanced This Session
 - `simulationConfig.js` A4: added `hclBeaker: { cx: 250, cy: 555, w: 72, h: 85, liquidLevel: 0.55, label: 'Beaker (250 mL)\n(with HCl)' }`
 - `TitrationRenderer.js`: new `drawBeaker()` (glass body, pour spout, rim, graduations, HCl liquid, label, highlights); called in `draw()` between flask and burette
 - `drawReagentBottle()`: ribbed screw cap + clear liquid fill with meniscus
 - `drawLabels()`: beaker label "Beaker (250 mL) / (with HCl)"
+
+### A4 UI Enhancements — New This Session
+- **TitrationRenderer.js HTML stages enhanced**:
+  - `renderPrepare()`: Titration quiz UI with numbered questions, tool buttons with icons, correct/wrong states
+  - `renderFillBurette()`: Step list with checkmarks, info box (HCl concentration)
+  - `renderMeasureSample()`: Step list, info box (sample volume, indicator)
+  - `renderTitrate()`: **Titre tracker** (trial dots with active/done states), live burette reading with progress bar, stopcock slider
+  - `renderEndpoint()`: **Endpoint visual** (pink→colourless swatches with arrow)
+  - `renderRecord()`: Styled table with rough/concordant row colours, **mean titre box**
+  - `renderCalculate()`: Info box with known values, styled calculation
+- **CSS added to components.css** (~634 lines):
+  - `.titration-quiz`, `.titration-tool-btn`, `.titration-step-list`, `.titration-info-box`
+  - `.titre-tracker`, `.titre-tracker-dot`, `.titrate-reading`, `.titrate-reading-bar`
+  - `.endpoint-visual`, `.endpoint-swatch`, `.titration-mean-box`, `.titration-table`
+  - Responsive `@media (max-width: 600px)` for all A4 elements
+
+### A5 UI Enhancements — New This Session
+- **GasRenderer.js fully rewritten**:
+  - `renderIdentify()`: **Gas identity cards** (NH₃, CO₂, Cl₂) with icons, active/detected/wrong states
+  - `renderTest()`: **Gas tracker** (test progress dots), wrong-test feedback, test options with visual feedback
+  - `renderConfirm()`: **Gas summary cards** (detected/not-detected badges), **gas confirm evidence table**
+  - `renderComplete()`: Gas summary with detection results
+  - Canvas: gas jar with bubbles, litmus strip colour change, limewater tube, delivery tube animation
+- **app.js bug fixes**: `st.currentStage` → `appState.currentStage` in `handleGasRecord`, `handleGasInterpret`, `handleGasConfirm`, `handleGasGoNext`
+- **CSS added to components.css**:
+  - `.gas-identity-cards`, `.gas-identity-card`, `.gas-identity-icon`
+  - `.gas-tracker`, `.gas-tracker-dot`, `.gas-tracker-line`
+  - `.gas-summary-cards`, `.gas-summary-card`, `.gas-summary-badge`
+  - `.gas-confirm-evidence`, `.gas-confirm-evidence-title`
+  - Responsive `@media (max-width: 600px)` for all A5 elements
 
 ### Demo State Structure
 ```javascript
@@ -183,9 +213,10 @@ Node/Python/browser unavailable in this environment. Tests used:
 - M14 release freeze noted; demo visual work is user-directed
 
 ## Next Steps When You Resume
-1. Open `index.html` in browser → Demo Mode → A4 Titration: verify new from-scratch scene renders correctly
-2. Verify beaker, bottles, flask, callouts all appear above caption bar
-3. Test interactive A4: Practical Lab → Titration → verify HCl beaker on bench at (250, 555)
-4. Check other 12 demo animations still run (splice shifted line numbers — all funcs intact)
-5. Run `git status` before starting any work
-6. Update DEVELOPMENT_LOG.md when milestone approved
+1. Open `index.html` in browser → A4 Titration: verify titre tracker, step lists, endpoint visual, mean titre box render correctly
+2. Test A4 interactive flow: Prepare → Fill Burette → Measure Sample → Titrate (verify titre tracker updates) → Endpoint → Record → Calculate
+3. Open A5 Gas Detection: verify gas identity cards, gas tracker, wrong-test feedback, gas summary cards render correctly
+4. Test A5 interactive flow: Identify → Test (verify gas tracker updates, wrong-test feedback) → Confirm → Complete
+5. Check responsive design at 600px width — verify all A4/A5 elements scale properly
+6. Run `git status` before starting any work
+7. Update DEVELOPMENT_LOG.md when milestone approved
