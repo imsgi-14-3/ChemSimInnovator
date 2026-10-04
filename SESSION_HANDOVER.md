@@ -146,6 +146,23 @@ ChemSimInnovator/
   - `.gas-confirm-evidence`, `.gas-confirm-evidence-title`
   - Responsive `@media (max-width: 600px)` for all A5 elements
 
+### M7 Canvas Rewrite — New This Session
+- **MinorExperimentRenderer.js canvas section fully rewritten** (~600 lines added):
+  - **Reusable lab equipment helpers**: `drawBench`, `drawBunsen`, `drawBeaker`, `drawTestTube`, `drawEvaporatingDish`, `drawTripod`, `drawWireGauze`, `drawThermometer`, `drawFunnel`, `drawWireLoop`
+  - **M7.1 Sublimation**: tripod + gauze + evaporating dish + inverted funnel + filter paper + Bunsen burner + vapour animation + sublimate collection
+  - **M7.2 Flame Tests**: Bunsen burner with coloured flame (per-ion), nichrome wire loop, 5 ion sample bottles
+  - **M7.3 CuSO₄ Crystals**: evaporating dish + Bunsen + funnel + filter paper + blue crystals + steam animation
+  - **M7.4 Melting Point**: oil bath beaker + thermometer + capillary tube + Bunsen + live temperature readout
+  - **M7.5 Boiling Point**: round-bottom flask + thermometer + side arm + condenser + receiving flask + Bunsen + bubble animation
+  - **M7.6 Displacement**: beaker with CuSO₄ + Zn granules + copper deposit + colour change + bubble animation
+  - **M7.7 Water Test**: test tube + white powder + dropper + falling water drop + colour change (white→blue)
+  - **M7.8 Water Purity**: heating beaker + thermometer + ice beaker + temperature labels + purity confirmation
+- **Prepare stage added** to all M7 renderers (was showing "Stage: prepare" before)
+- **labAnimActive() updated** in app.js to animate M7 canvas during active simulation
+- **getSimStagesForExp() updated** to include prepare/collect/monitor stages for M7
+- **goNext() updated** to save conclusion textarea content when leaving conclude stage
+- All files pass `node --check` syntax validation
+
 ### Demo State Structure
 ```javascript
 appState.demoState = {
@@ -216,9 +233,13 @@ Node/Python/browser unavailable in this environment. Tests used:
 - M14 release freeze noted; demo visual work is user-directed
 
 ## Next Steps When You Resume
-1. Open `index.html` in browser → A4 Titration: verify clean bench layout with new beaker, no bottles/pipette clutter
-2. Test A4 interactive flow: Prepare → Fill Burette → Measure Sample → Titrate → Endpoint → Record → Calculate
-3. Verify all buttons work: Fill Burette, Measure Sample, Record Titre, Check Calculation, tool quiz buttons
-4. Open A5 Gas Detection: verify gas identity cards, gas tracker, wrong-test feedback, gas summary cards
-5. Run `git status` before starting any work
-6. Update DEVELOPMENT_LOG.md when milestone approved
+1. Open `index.html` in browser → M7.1 Sublimation: verify tripod, evaporating dish, inverted funnel, Bunsen burner visible
+2. Test M7.2 Flame Test: verify ion selection, coloured flame animation, wire loop
+3. Test M7.4 Melting Point: verify thermometer with live temperature, oil bath, capillary tube
+4. Test M7.6 Displacement: verify beaker with blue CuSO₄, Zn granules, colour change to colourless
+5. Test M7.7 Water Test: verify test tube, dropper, white→blue colour change
+6. Verify all M7 buttons work: Start Heating, Start Flame Test, Confirm Identification, Record & Continue, Submit Interpretation
+7. Open A4 Titration: verify clean bench layout with new beaker, no bottles/pipette clutter
+8. Verify A4 flow: Prepare → Fill Burette → Measure Sample → Titrate → Endpoint → Record → Calculate
+9. Run `git status` before starting any work
+10. Update DEVELOPMENT_LOG.md when milestone approved

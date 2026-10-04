@@ -192,6 +192,12 @@ var ChemSim = (function() {
         if (!isStageCompleted(appState.experimentId, currentStage, appState.state)) {
           return;
         }
+        if (currentStage === 'conclude') {
+          var concEl = document.getElementById('conclusion-input');
+          if (concEl && concEl.value.trim()) {
+            appState.state.conclusion = concEl.value.trim();
+          }
+        }
         appState.stageIndex++;
         appState.currentStage = appState.stages[appState.stageIndex];
         renderExperimentStage();
@@ -392,6 +398,12 @@ var ChemSim = (function() {
     if (exp.id === 'A5' && typeof GasRenderer !== 'undefined' && GasRenderer.animActive) {
       return !!GasRenderer.animActive(appState.state, stage);
     }
+    if (exp.id && exp.id.indexOf('M7_') === 0) {
+      var st = appState.state;
+      if (!st.m7ActionDone || !st.simulation) return false;
+      if (st.simulation.done && st.m7ObservationDone) return false;
+      return true;
+    }
     return false;
   }
 
@@ -456,13 +468,14 @@ var ChemSim = (function() {
     if (id === 'A1') return ['setUp','checkSetup','startHeating','monitor','observe','collect'];
     if (id === 'A4') return ['fillBurette','measureSample','titrate','endpoint'];
     if (id === 'A5') return ['performTest'];
-    if (id === 'M7_1') return ['heat'];
-    if (id === 'M7_2') return ['performTest'];
-    if (id === 'M7_3') return ['dissolve','concentrate','crystallize'];
-    if (id === 'M7_4' || id === 'M7_5') return ['heat'];
+    if (id === 'M7_1') return ['prepare','heat','collect'];
+    if (id === 'M7_2') return ['prepare','performTest'];
+    if (id === 'M7_3') return ['prepare','dissolve','concentrate','crystallize'];
+    if (id === 'M7_4') return ['prepare','heat','monitor'];
+    if (id === 'M7_5') return ['prepare','heat','monitor'];
     if (id === 'M7_6') return ['performReaction'];
-    if (id === 'M7_7') return ['performTest'];
-    if (id === 'M7_8') return ['meltingPointTest','boilingPointTest'];
+    if (id === 'M7_7') return ['prepare','performTest'];
+    if (id === 'M7_8') return ['prepare','meltingPointTest','boilingPointTest'];
     return [];
   }
 
