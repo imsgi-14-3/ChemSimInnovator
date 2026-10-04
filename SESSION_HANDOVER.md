@@ -146,22 +146,24 @@ ChemSimInnovator/
   - `.gas-confirm-evidence`, `.gas-confirm-evidence-title`
   - Responsive `@media (max-width: 600px)` for all A5 elements
 
-### M7 Canvas Rewrite — New This Session
-- **MinorExperimentRenderer.js canvas section fully rewritten** (~600 lines added):
-  - **Reusable lab equipment helpers**: `drawBench`, `drawBunsen`, `drawBeaker`, `drawTestTube`, `drawEvaporatingDish`, `drawTripod`, `drawWireGauze`, `drawThermometer`, `drawFunnel`, `drawWireLoop`
-  - **M7.1 Sublimation**: tripod + gauze + evaporating dish + inverted funnel + filter paper + Bunsen burner + vapour animation + sublimate collection
-  - **M7.2 Flame Tests**: Bunsen burner with coloured flame (per-ion), nichrome wire loop, 5 ion sample bottles
-  - **M7.3 CuSO₄ Crystals**: evaporating dish + Bunsen + funnel + filter paper + blue crystals + steam animation
-  - **M7.4 Melting Point**: oil bath beaker + thermometer + capillary tube + Bunsen + live temperature readout
-  - **M7.5 Boiling Point**: round-bottom flask + thermometer + side arm + condenser + receiving flask + Bunsen + bubble animation
-  - **M7.6 Displacement**: beaker with CuSO₄ + Zn granules + copper deposit + colour change + bubble animation
-  - **M7.7 Water Test**: test tube + white powder + dropper + falling water drop + colour change (white→blue)
-  - **M7.8 Water Purity**: heating beaker + thermometer + ice beaker + temperature labels + purity confirmation
+### M7 Canvas Rewrite — New This Session (all 8 experiments complete)
+- **MinorExperimentRenderer.js canvas section fully rewritten** (~2100 lines of draw code):
+  - **Reusable lab equipment helpers**: `drawBench`, `drawBunsen`, `drawBeaker`, `drawTestTube`, `drawEvaporatingDish`, `drawTripod`, `drawWireGauze`, `drawThermometer`, `drawFunnel`, `drawWireLoop`, `drawDropper`
+  - **M7.1 Sublimation** (matched to user reference): large inverted funnel with cotton plug, white china dish with sand+salt+naphthalene, black wire gauze + tripod, Bunsen with orange gas tube + flame, naphthalene crystals on funnel, labelled mixture jar, blue background labels with leader lines
+  - **M7.2 Flame Test**: HCl beaker (cleaning), Bunsen + nichrome wire with cork handle, 5 watch glasses with ion solutions (Na⁺/K⁺/Ca²⁺/Cu²⁺/Ba²⁺), coloured flame per ion, blue labels
+  - **M7.3 CuSO₄ Crystals**: tripod + black wire gauze + white china dish + Bunsen (left), ring stand + funnel with filter paper + blue crystals + collecting beaker (right), steam animation
+  - **M7.4 Melting Point**: oil bath beaker (yellow oil) + thermometer with mercury + capillary tube with rubber band + Bunsen, digital temperature readout (green→red)
+  - **M7.5 Boiling Point**: round-bottom flask with liquid + boiling chips + thermometer, side arm → Liebig condenser with water jacket (in/out labels) → receiving flask, digital readout
+  - **M7.6 Displacement**: large beaker (blue→colourless) + Zn granules + copper deposit, Zn jar (left) + CuSO₄ jar (right), bubble animation, colour-change badges
+  - **M7.7 Water Test**: test tube stand + clamp + test tube with white powder, dropper with water drop animation, water beaker, white→blue colour change
+  - **M7.8 Water Purity**: heating beaker + thermometer + Bunsen + bubbles (left), ice beaker + thermometer (right), digital readout, BP:100°C / MP:0°C badges + "Pure water confirmed"
+  - All experiments: tiled wall + wooden bench background, blue background labels with leader lines, "(simulated)" badge
 - **Prepare stage added** to all M7 renderers (was showing "Stage: prepare" before)
 - **labAnimActive() updated** in app.js to animate M7 canvas during active simulation
 - **getSimStagesForExp() updated** to include prepare/collect/monitor stages for M7
 - **goNext() updated** to save conclusion textarea content when leaving conclude stage
 - All files pass `node --check` syntax validation
+- Commits: `3f5ab5d` (initial rewrite), `e774b08` (apparatus enlarged + bench), `7161f89` (M7.1 matched to reference), `40988e9` (M7.2–M7.8 realistic setups)
 
 ### Demo State Structure
 ```javascript
@@ -233,13 +235,17 @@ Node/Python/browser unavailable in this environment. Tests used:
 - M14 release freeze noted; demo visual work is user-directed
 
 ## Next Steps When You Resume
-1. Open `index.html` in browser → M7.1 Sublimation: verify tripod, evaporating dish, inverted funnel, Bunsen burner visible
-2. Test M7.2 Flame Test: verify ion selection, coloured flame animation, wire loop
-3. Test M7.4 Melting Point: verify thermometer with live temperature, oil bath, capillary tube
-4. Test M7.6 Displacement: verify beaker with blue CuSO₄, Zn granules, colour change to colourless
-5. Test M7.7 Water Test: verify test tube, dropper, white→blue colour change
-6. Verify all M7 buttons work: Start Heating, Start Flame Test, Confirm Identification, Record & Continue, Submit Interpretation
-7. Open A4 Titration: verify clean bench layout with new beaker, no bottles/pipette clutter
-8. Verify A4 flow: Prepare → Fill Burette → Measure Sample → Titrate → Endpoint → Record → Calculate
-9. Run `git status` before starting any work
+1. Open `index.html` in browser → verify each M7 experiment canvas visually:
+   - M7.1: inverted funnel + china dish + tripod + Bunsen + mixture jar + blue labels
+   - M7.2: HCl beaker + Bunsen + wire loop + 5 watch glasses + coloured flame
+   - M7.3: tripod + gauze + china dish + Bunsen + funnel with filter paper + crystals
+   - M7.4: oil bath + thermometer + capillary + Bunsen + digital readout
+   - M7.5: round-bottom flask + thermometer + condenser + receiving flask + digital readout
+   - M7.6: beaker + Zn/CuSO₄ jars + colour change + copper deposit
+   - M7.7: test tube stand + dropper + water beaker + white→blue change
+   - M7.8: heating beaker + ice beaker + thermometers + BP/MP badges
+2. Verify all M7 buttons work: Start Heating, Start Flame Test, Confirm Identification, Record & Continue, Submit Interpretation
+3. Open A4 Titration: verify clean bench layout with new beaker, no bottles/pipette clutter
+4. Verify A4 flow: Prepare → Fill Burette → Measure Sample → Titrate → Endpoint → Record → Calculate
+5. Run `git status` before starting any work
 10. Update DEVELOPMENT_LOG.md when milestone approved
