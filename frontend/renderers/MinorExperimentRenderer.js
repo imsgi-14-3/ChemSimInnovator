@@ -1502,67 +1502,162 @@ var MinorExperimentRenderer = {
     var testing = state.m7ActionDone && state.simulation && !state.simulation.done;
     var done = state.m7ActionDone && state.simulation && state.m7ObservationDone;
 
-    /* Bunsen burner — CENTER */
+    /* ── HCl beaker — LEFT SIDE ── */
+    ctx.save();
+    var hx = 65, hy = benchY - 40;
+    var hGrad = ctx.createLinearGradient(hx - 25, 0, hx + 25, 0);
+    hGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    hGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
+    hGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
+    hGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = hGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(hx - 25, hy - 30);
+    ctx.lineTo(hx - 25, hy + 30);
+    ctx.lineTo(hx + 25, hy + 30);
+    ctx.lineTo(hx + 25, hy - 30);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* HCl liquid */
+    ctx.fillStyle = 'rgba(200,220,240,0.35)';
+    ctx.fillRect(hx - 22, hy - 10, 44, 38);
+    /* label */
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(hx - 16, hy - 24, 32, 16);
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(hx - 16, hy - 24, 32, 16);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('HCl', hx, hy - 13);
+    ctx.textAlign = 'left';
+    ctx.restore();
+
+    /* ── Bunsen burner — CENTER ── */
     var flameColor = done && ion ? ion.flameHex : '#4488ff';
-    var flameH = testing ? 100 : (done ? 85 : 55);
+    var flameH = testing ? 110 : (done ? 95 : 55);
     this.drawBunsen(ctx, cx, benchY, true, flameColor, flameH);
 
-    /* Nichrome wire loop */
+    /* ── Nichrome wire loop with cork handle ── */
     if (testing || done) {
-      this.drawWireLoop(ctx, cx, benchY - 82, done && ion ? ion.flameHex : '#888');
-    }
-
-    /* Ion sample bottles — RIGHT SIDE */
-    var colors = ['#ffcc00', '#cc66ff', '#cc4422', '#22aa66', '#66cc22'];
-    var names = ['Na⁺', 'K⁺', 'Ca²⁺', 'Cu²⁺', 'Ba²⁺'];
-    for (var i = 0; i < 5; i++) {
-      var bx = cw - 200 + i * 38;
+      var wireColor = done && ion ? ion.flameHex : '#888';
       ctx.save();
-      /* bottle body */
-      var botGrad = ctx.createLinearGradient(bx - 12, 0, bx + 12, 0);
-      botGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
-      botGrad.addColorStop(0.3, 'rgba(220,238,252,0.15)');
-      botGrad.addColorStop(0.7, 'rgba(220,238,252,0.12)');
-      botGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
-      ctx.fillStyle = botGrad;
-      ctx.strokeStyle = 'rgba(100,140,180,0.5)';
-      ctx.lineWidth = 1.2;
-      ctx.fillRect(bx - 12, benchY - 45, 24, 45);
-      ctx.strokeRect(bx - 12, benchY - 45, 24, 45);
-      /* sample colour */
-      ctx.fillStyle = colors[i];
-      ctx.globalAlpha = 0.55;
-      ctx.fillRect(bx - 9, benchY - 28, 18, 25);
-      ctx.globalAlpha = 1;
-      /* cap */
-      ctx.fillStyle = '#777';
-      ctx.fillRect(bx - 7, benchY - 52, 14, 8);
-      ctx.strokeStyle = '#555';
-      ctx.strokeRect(bx - 7, benchY - 52, 14, 8);
-      /* label */
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(bx - 8, benchY - 22, 16, 12);
-      ctx.strokeStyle = '#ccc';
-      ctx.lineWidth = 0.5;
-      ctx.strokeRect(bx - 8, benchY - 22, 16, 12);
-      ctx.fillStyle = '#333';
-      ctx.font = '8px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(names[i], bx, benchY - 14);
+      /* cork handle */
+      ctx.fillStyle = '#c8a882';
+      ctx.strokeStyle = '#a08060';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - 35, benchY - 75);
+      ctx.lineTo(cx - 8, benchY - 88);
+      ctx.lineTo(cx - 6, benchY - 80);
+      ctx.lineTo(cx - 33, benchY - 67);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      /* nichrome wire */
+      ctx.strokeStyle = '#999';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - 8, benchY - 84);
+      ctx.lineTo(cx + 20, benchY - 84);
+      ctx.stroke();
+      /* loop */
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx + 25, benchY - 84, 7, 0, Math.PI * 2);
+      ctx.stroke();
       ctx.restore();
     }
 
-    /* Labels */
+    /* ── Watch glasses with ion solutions — RIGHT SIDE ── */
+    var ionColors = ['#ffcc00', '#cc66ff', '#cc4422', '#22aa66', '#66cc22'];
+    var ionNames = ['Na⁺', 'K⁺', 'Ca²⁺', 'Cu²⁺', 'Ba²⁺'];
+    for (var i = 0; i < 5; i++) {
+      var wx = cw - 210 + i * 42;
+      var wy = benchY - 15;
+      ctx.save();
+      /* watch glass */
+      var wgGrad = ctx.createRadialGradient(wx, wy - 4, 2, wx, wy, 18);
+      wgGrad.addColorStop(0, 'rgba(240,248,255,0.3)');
+      wgGrad.addColorStop(0.7, 'rgba(200,220,240,0.15)');
+      wgGrad.addColorStop(1, 'rgba(180,200,220,0.4)');
+      ctx.fillStyle = wgGrad;
+      ctx.strokeStyle = 'rgba(100,140,180,0.5)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.ellipse(wx, wy, 18, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      /* solution colour */
+      ctx.fillStyle = ionColors[i];
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.ellipse(wx, wy - 2, 12, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      /* label below */
+      ctx.fillStyle = '#333';
+      ctx.font = '9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(ionNames[i], wx, wy + 20);
+      ctx.textAlign = 'left';
+      ctx.restore();
+    }
+
+    /* ── Blue background labels with leader lines ── */
     ctx.save();
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#444';
+    function drawLabel(text, lx, ly, tw) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(lx, ly, tw, 18);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, lx + tw / 2, ly + 13);
+    }
+    function drawLine(x1, y1, x2, y2) {
+      ctx.strokeStyle = '#1a3a6a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+    /* Bunsen burner label */
+    drawLine(cx - 10, benchY - 30, cx - 80, benchY - 10);
+    drawLabel('Bunsen burner', cx - 145, benchY - 18, 90);
+    /* Wire loop label */
+    if (testing || done) {
+      drawLine(cx + 25, benchY - 92, cx + 80, benchY - 120);
+      drawLabel('Nichrome wire', cx + 80, benchY - 138, 90);
+    }
+    /* HCl label */
+    drawLine(hx + 25, hy - 10, hx + 55, hy - 30);
+    drawLabel('HCl (cleaning)', hx + 35, hy - 48, 95);
+    /* Watch glasses label */
+    drawLine(cw - 130, benchY - 20, cw - 130, benchY - 50);
+    drawLabel('Watch glasses', cw - 175, benchY - 68, 95);
+    /* Ion samples label */
+    drawLine(cw - 130, benchY - 68, cw - 130, benchY - 80);
+    drawLabel('Ion samples', cw - 175, benchY - 98, 90);
+    ctx.restore();
+
+    /* ── Result display ── */
+    ctx.save();
     ctx.textAlign = 'center';
-    ctx.fillText('Bunsen burner', cx, benchY + 25);
-    ctx.fillText('Ion samples', cw - 110, benchY + 25);
     if (done && ion) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(cx - 90, 50, 180, 40);
       ctx.fillStyle = ion.flameHex;
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillText(ion.name + ' — ' + ion.flameColour, cx, benchY - 180);
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText(ion.name, cx, 68);
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(ion.flameColour, cx, 84);
     }
     ctx.textAlign = 'left';
     ctx.fillStyle = '#888';
@@ -1571,71 +1666,260 @@ var MinorExperimentRenderer = {
     ctx.restore();
   },
 
-  /* ── M7.3 CuSO4 Crystals — WIDE ── */
+  /* ── M7.3 CuSO4 Crystals — realistic lab setup ── */
   drawM7_3: function(ctx, cw, ch, state) {
     var cx = cw / 2;
     var benchY = 540;
     var done = state.m7ActionDone && state.simulation && state.m7ObservationDone;
-    var dissolving = state.m7ActionDone && state.simulation && !state.simulation.done;
+    var heating = state.m7ActionDone && state.simulation && !state.simulation.done;
 
-    /* Tripod + gauze + dish + Bunsen — LEFT */
-    this.drawTripod(ctx, cx - 70, benchY, 120);
-    this.drawWireGauze(ctx, cx - 70, benchY - 95, 120);
-    this.drawEvaporatingDish(ctx, cx - 70, benchY - 110, 90, 30, done ? '#3366cc' : '#66aaff');
-    this.drawBunsen(ctx, cx - 70, benchY, dissolving || done, '#4488ff', dissolving ? 70 : 38);
-
-    /* Funnel + filter paper — RIGHT */
-    this.drawFunnel(ctx, cx + 80, benchY - 150, 80, 70, false);
-
-    /* Filter paper */
+    /* ── Tripod stand (black metal) — LEFT ── */
+    var tLx = cx - 90, tLy = benchY, tLhw = 55;
     ctx.save();
-    ctx.fillStyle = 'rgba(255,255,255,0.78)';
-    ctx.strokeStyle = 'rgba(170,170,170,0.55)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#2a2a2a';
+    ctx.lineWidth = 5;
     ctx.beginPath();
-    ctx.moveTo(cx + 80 - 32, benchY - 150);
-    ctx.lineTo(cx + 80 + 32, benchY - 150);
-    ctx.lineTo(cx + 80 + 4, benchY - 128);
-    ctx.lineTo(cx + 80 - 4, benchY - 128);
-    ctx.closePath();
+    ctx.moveTo(tLx - tLhw, tLy);
+    ctx.quadraticCurveTo(tLx - tLhw + 6, tLy - 40, tLx - tLhw + 12, tLy - 95);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(tLx + tLhw, tLy);
+    ctx.quadraticCurveTo(tLx + tLhw - 6, tLy - 40, tLx + tLhw - 12, tLy - 95);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(tLx, tLy + 4);
+    ctx.lineTo(tLx, tLy - 90);
+    ctx.stroke();
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.ellipse(tLx - tLhw, tLy, 5, 3.5, 0, 0, Math.PI * 2);
     ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(tLx + tLhw, tLy, 5, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    /* top ring */
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.ellipse(tLx, tLy - 95, tLhw - 6, 6, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
-    /* Blue crystals in funnel */
-    if (done) {
-      ctx.save();
-      ctx.fillStyle = '#3366cc';
-      for (var i = 0; i < 8; i++) {
-        var crx = cx + 80 - 18 + (i % 4) * 12;
-        var cry = benchY - 142 + Math.floor(i / 4) * 8;
-        ctx.fillRect(crx, cry, 9, 6);
-      }
-      ctx.restore();
+    /* ── Wire gauze (black mesh) ── */
+    var gx = tLx, gy = tLy - 97, ghw = 53;
+    ctx.save();
+    ctx.fillStyle = '#c8c0b4';
+    ctx.strokeStyle = '#a09890';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(gx, gy, 12, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#3a3a3a';
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.ellipse(gx, gy, ghw, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(80,80,80,0.5)';
+    ctx.lineWidth = 0.6;
+    for (var mi = -4; mi <= 4; mi++) {
+      ctx.beginPath();
+      ctx.moveTo(gx + mi * 10, gy - 5);
+      ctx.lineTo(gx + mi * 10, gy + 5);
+      ctx.stroke();
     }
+    for (var mj = -1; mj <= 1; mj++) {
+      ctx.beginPath();
+      ctx.moveTo(gx - ghw, gy + mj * 2);
+      ctx.lineTo(gx + ghw, gy + mj * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
 
-    /* Steam */
-    if (dissolving) {
+    /* ── China dish (white porcelain) on gauze ── */
+    var dx = tLx, dy = gy - 14, dw = 70, dh = 24;
+    var dbx = dx - dw / 2, dby = dy - dh / 2;
+    ctx.save();
+    var dishGrad = ctx.createLinearGradient(dbx, dby, dbx + dw, dby);
+    dishGrad.addColorStop(0, '#e8e4e0');
+    dishGrad.addColorStop(0.2, '#f8f6f4');
+    dishGrad.addColorStop(0.5, '#ffffff');
+    dishGrad.addColorStop(0.8, '#f4f2f0');
+    dishGrad.addColorStop(1, '#ddd8d2');
+    ctx.fillStyle = dishGrad;
+    ctx.strokeStyle = '#b0a8a0';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(dbx + 4, dby + 1);
+    ctx.lineTo(dbx + dw - 4, dby + 1);
+    ctx.quadraticCurveTo(dbx + dw, dby + 1, dbx + dw, dby + 6);
+    ctx.lineTo(dbx + dw - 7, dby + dh - 3);
+    ctx.quadraticCurveTo(dbx + dw - 9, dby + dh, dx, dby + dh);
+    ctx.quadraticCurveTo(dbx + 9, dby + dh, dbx + 7, dby + dh - 3);
+    ctx.lineTo(dbx, dby + 6);
+    ctx.quadraticCurveTo(dbx, dby + 1, dbx + 4, dby + 1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* CuSO4 solution inside */
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(dbx + 6, dby + 4);
+    ctx.lineTo(dbx + dw - 6, dby + 4);
+    ctx.lineTo(dbx + dw - 9, dby + dh - 5);
+    ctx.quadraticCurveTo(dbx + dw - 10, dby + dh - 2, dx, dby + dh - 2);
+    ctx.quadraticCurveTo(dbx + 10, dby + dh - 2, dbx + 9, dby + dh - 5);
+    ctx.closePath();
+    ctx.fillStyle = done ? '#5588cc' : '#4477bb';
+    ctx.globalAlpha = 0.7;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    ctx.restore();
+
+    /* ── Bunsen burner under tripod ── */
+    this.drawBunsen(ctx, tLx, benchY, heating || done, '#4488ff', heating ? 70 : 35);
+
+    /* ── Steam rising ── */
+    if (heating) {
       ctx.save();
       ctx.globalAlpha = 0.25;
       ctx.fillStyle = '#aaa';
       for (var s = 0; s < 5; s++) {
-        var sy = benchY - 125 - s * 16 - (Date.now() / 25 % 16);
-        var sx = cx - 70 + Math.sin((Date.now() / 180) + s) * 8;
+        var sy = dy - 10 - s * 14 - (Date.now() / 25 % 14);
+        var sx = tLx + Math.sin((Date.now() / 180) + s) * 7;
         ctx.beginPath();
-        ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+        ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
       ctx.restore();
     }
 
+    /* ── Bunsen burner stand — RIGHT SIDE ── */
+    var rBx = cx + 80, rBy = benchY;
     ctx.save();
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#444';
+    /* tripod stand for funnel */
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(rBx + 25, rBy);
+    ctx.lineTo(rBx + 25, rBy - 140);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(rBx + 15, rBy);
+    ctx.lineTo(rBx + 35, rBy);
+    ctx.stroke();
+    /* clamp */
+    ctx.strokeStyle = '#777';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(rBx + 25, rBy - 130);
+    ctx.lineTo(rBx + 5, rBy - 130);
+    ctx.stroke();
+    ctx.restore();
+
+    /* ── Funnel with filter paper ── */
+    var fx = rBx + 5, fy = rBy - 125;
+    ctx.save();
+    /* funnel glass */
+    var fGrad = ctx.createLinearGradient(fx - 28, 0, fx + 28, 0);
+    fGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    fGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
+    fGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
+    fGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = fGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1.5;
+    /* cone */
+    ctx.beginPath();
+    ctx.moveTo(fx - 28, fy);
+    ctx.lineTo(fx + 28, fy);
+    ctx.lineTo(fx + 4, fy + 35);
+    ctx.lineTo(fx - 4, fy + 35);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* stem */
+    ctx.fillStyle = 'rgba(180,200,220,0.3)';
+    ctx.fillRect(fx - 3, fy + 35, 6, 25);
+    ctx.strokeRect(fx - 3, fy + 35, 6, 25);
+    /* filter paper */
+    ctx.fillStyle = 'rgba(255,255,255,0.78)';
+    ctx.strokeStyle = 'rgba(170,170,170,0.55)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(fx - 26, fy + 1);
+    ctx.lineTo(fx + 26, fy + 1);
+    ctx.lineTo(fx + 3, fy + 32);
+    ctx.lineTo(fx - 3, fy + 32);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* blue crystals in funnel */
+    if (done) {
+      ctx.fillStyle = '#3366cc';
+      for (var ci = 0; ci < 7; ci++) {
+        var crx = fx - 15 + (ci % 4) * 10;
+        var cry = fy + 8 + Math.floor(ci / 4) * 7;
+        ctx.fillRect(crx, cry, 7, 5);
+      }
+    }
+    ctx.restore();
+
+    /* ── Beaker below funnel collecting filtrate ── */
+    this.drawBeaker(ctx, fx, rBy - 25, 45, 45, done ? '#5588cc' : '#4477bb', 0.4);
+
+    /* ── Blue background labels with leader lines ── */
+    ctx.save();
+    function drawLabel(text, lx, ly, tw) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(lx, ly, tw, 18);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, lx + tw / 2, ly + 13);
+    }
+    function drawLine(x1, y1, x2, y2) {
+      ctx.strokeStyle = '#1a3a6a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+    /* Tripod label */
+    drawLine(tLx - tLhw, tLy - 20, tLx - tLhw - 30, tLy - 5);
+    drawLabel('Tripod stand', tLx - tLhw - 100, tLy - 13, 80);
+    /* Wire gauze label */
+    drawLine(gx - ghw, gy, gx - ghw - 25, gy - 10);
+    drawLabel('Wire gauze', gx - ghw - 90, gy - 18, 70);
+    /* China dish label */
+    drawLine(dbx, dby, dbx - 20, dby - 15);
+    drawLabel('China dish', dbx - 80, dby - 23, 65);
+    /* Bunsen label */
+    drawLine(tLx - 10, benchY - 25, tLx - 50, benchY - 5);
+    drawLabel('Bunsen burner', tLx - 130, benchY - 13, 85);
+    /* Funnel label */
+    drawLine(fx + 28, fy + 10, fx + 55, fy - 5);
+    drawLabel('Funnel', fx + 35, fy - 23, 50);
+    /* Filter paper label */
+    drawLine(fx - 20, fy + 15, fx - 45, fy + 5);
+    drawLabel('Filter paper', fx - 110, fy - 3, 70);
+    ctx.restore();
+
+    /* ── Result display ── */
+    ctx.save();
     ctx.textAlign = 'center';
-    ctx.fillText('Evaporating dish', cx - 70, benchY + 25);
-    ctx.fillText('Funnel + filter paper', cx + 80, benchY + 25);
+    if (done) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(cx - 80, 50, 160, 30);
+      ctx.fillStyle = '#5588cc';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('Blue crystals formed', cx, 70);
+    }
     ctx.textAlign = 'left';
     ctx.fillStyle = '#888';
     ctx.font = '9px sans-serif';
@@ -1643,7 +1927,7 @@ var MinorExperimentRenderer = {
     ctx.restore();
   },
 
-  /* ── M7.4 Melting Point (Naphthalene) — WIDE ── */
+  /* ── M7.4 Melting Point (Naphthalene) — realistic oil bath setup ── */
   drawM7_4: function(ctx, cw, ch, state) {
     var sim = SIMULATION_CONFIG['M7_4'];
     var cx = cw / 2;
@@ -1652,43 +1936,199 @@ var MinorExperimentRenderer = {
     var heating = state.m7ActionDone && state.simulation && !state.simulation.done;
     var temp = done ? sim.expectedMeltingPoint : (heating ? 60 : 25);
 
-    /* Oil bath beaker — CENTER */
-    this.drawBeaker(ctx, cx - 20, benchY - 55, 120, 100, '#e8d090', 0.7);
+    /* ── Large beaker (oil bath) — CENTER ── */
+    var bx = cx - 10, by = benchY - 60, bw = 130, bh = 110;
+    ctx.save();
+    var bGrad = ctx.createLinearGradient(bx - bw/2, 0, bx + bw/2, 0);
+    bGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    bGrad.addColorStop(0.12, 'rgba(220,238,252,0.15)');
+    bGrad.addColorStop(0.88, 'rgba(220,238,252,0.12)');
+    bGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = bGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(bx - bw/2, by - bh/2);
+    ctx.lineTo(bx - bw/2, by + bh/2 - 5);
+    ctx.quadraticCurveTo(bx - bw/2, by + bh/2, bx - bw/2 + 5, by + bh/2);
+    ctx.lineTo(bx + bw/2 - 5, by + bh/2);
+    ctx.quadraticCurveTo(bx + bw/2, by + bh/2, bx + bw/2, by + bh/2 - 5);
+    ctx.lineTo(bx + bw/2, by - bh/2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* pour spout */
+    ctx.beginPath();
+    ctx.moveTo(bx - bw/2, by - bh/2);
+    ctx.lineTo(bx - bw/2 - 8, by - bh/2 - 6);
+    ctx.lineTo(bx - bw/2 + 2, by - bh/2);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(200,220,240,0.3)';
+    ctx.fill();
+    ctx.stroke();
+    /* oil liquid */
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(bx - bw/2 + 3, by - bh/2 + 8);
+    ctx.lineTo(bx + bw/2 - 3, by - bh/2 + 8);
+    ctx.lineTo(bx + bw/2 - 3, by + bh/2 - 5);
+    ctx.lineTo(bx - bw/2 + 3, by + bh/2 - 5);
+    ctx.closePath();
+    ctx.fillStyle = '#e8d090';
+    ctx.globalAlpha = 0.65;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    /* graduation marks */
+    ctx.strokeStyle = 'rgba(120,140,160,0.4)';
+    ctx.lineWidth = 1;
+    for (var gm = 1; gm < 6; gm++) {
+      var gy = by - bh/2 + gm * (bh/6);
+      ctx.beginPath();
+      ctx.moveTo(bx - bw/2 + 2, gy);
+      ctx.lineTo(bx - bw/2 + 12, gy);
+      ctx.stroke();
+    }
+    ctx.restore();
 
-    /* Thermometer in oil bath */
-    this.drawThermometer(ctx, cx - 20, benchY - 130, 120, temp, 120);
+    /* ── Thermometer in oil bath ── */
+    var tx = bx + 10, ty = by - 70, th = 130;
+    ctx.save();
+    /* thermometer bulb */
+    ctx.fillStyle = '#cc3333';
+    ctx.beginPath();
+    ctx.arc(tx, by + 30, 6, 0, Math.PI * 2);
+    ctx.fill();
+    /* glass tube */
+    var tGrad = ctx.createLinearGradient(tx - 4, 0, tx + 4, 0);
+    tGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    tGrad.addColorStop(0.3, 'rgba(240,248,255,0.15)');
+    tGrad.addColorStop(0.7, 'rgba(240,248,255,0.12)');
+    tGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = tGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.fillRect(tx - 4, by - 70, 8, 100);
+    ctx.strokeRect(tx - 4, by - 70, 8, 100);
+    /* mercury column */
+    var mercuryH = done ? 80 : (heating ? 50 : 20);
+    ctx.fillStyle = '#cc3333';
+    ctx.fillRect(tx - 1.5, by + 30 - mercuryH, 3, mercuryH);
+    /* graduations */
+    ctx.strokeStyle = 'rgba(80,80,80,0.5)';
+    ctx.lineWidth = 0.8;
+    for (var tg = 0; tg < 8; tg++) {
+      var gyy = by + 25 - tg * 12;
+      ctx.beginPath();
+      ctx.moveTo(tx + 4, gyy);
+      ctx.lineTo(tx + (tg % 2 === 0 ? 10 : 7), gyy);
+      ctx.stroke();
+    }
+    /* top */
+    ctx.fillStyle = '#aaa';
+    ctx.fillRect(tx - 5, by - 78, 10, 10);
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(tx - 5, by - 78, 10, 10);
+    ctx.restore();
 
-    /* Capillary tube — beside thermometer */
+    /* ── Capillary tube tied to thermometer ── */
     ctx.save();
     ctx.strokeStyle = 'rgba(140,175,205,0.65)';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.moveTo(cx + 25, benchY - 110);
-    ctx.lineTo(cx + 25, benchY - 30);
+    ctx.moveTo(tx + 18, by - 55);
+    ctx.lineTo(tx + 18, by + 15);
     ctx.stroke();
     /* naphthalene in capillary */
     ctx.fillStyle = done ? '#e8d0c0' : '#f0e8e0';
-    ctx.fillRect(cx + 23, benchY - 45, 4, 18);
+    ctx.fillRect(tx + 16.5, by - 5, 3, 18);
+    /* rubber band */
+    ctx.strokeStyle = '#cc8844';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(tx + 4, by - 55);
+    ctx.lineTo(tx + 18, by - 55);
+    ctx.stroke();
     ctx.restore();
 
-    /* Bunsen under beaker */
-    this.drawBunsen(ctx, cx - 20, benchY, heating || done, '#4488ff', heating ? 65 : 35);
+    /* ── Bunsen burner under beaker ── */
+    this.drawBunsen(ctx, bx, benchY, heating || done, '#4488ff', heating ? 65 : 35);
 
-    /* Temperature label */
+    /* ── Boiling bubbles in oil ── */
+    if (heating) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(200,180,120,0.4)';
+      for (var b = 0; b < 6; b++) {
+        var bubx = bx - 30 + b * 12;
+        var baby = by + 30 - ((Date.now() / 15 + b * 8) % 35);
+        ctx.beginPath();
+        ctx.arc(bubx, baby, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    /* ── Digital temperature readout — RIGHT SIDE ── */
     ctx.save();
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillStyle = done ? '#cc2222' : '#444';
+    var rx = cw - 120, ry = 100;
+    ctx.fillStyle = '#2a2a2a';
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(rx - 50, ry - 25, 100, 50, 5);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = done ? '#ff4444' : '#44ff44';
+    ctx.font = 'bold 22px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(temp.toFixed(1) + '°C', cx + 90, benchY - 80);
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#444';
-    ctx.fillText('Oil bath', cx - 20, benchY + 25);
-    ctx.fillText('Thermometer', cx - 20, benchY + 42);
-    ctx.fillText('Capillary tube', cx + 40, benchY + 25);
+    ctx.fillText(temp.toFixed(1) + '°C', rx, ry + 8);
+    ctx.restore();
+
+    /* ── Blue background labels with leader lines ── */
+    ctx.save();
+    function drawLabel(text, lx, ly, tw) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(lx, ly, tw, 18);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, lx + tw / 2, ly + 13);
+    }
+    function drawLine(x1, y1, x2, y2) {
+      ctx.strokeStyle = '#1a3a6a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+    /* Oil bath beaker label */
+    drawLine(bx - bw/2, by, bx - bw/2 - 30, by + 10);
+    drawLabel('Oil bath beaker', bx - bw/2 - 130, by + 2, 95);
+    /* Thermometer label */
+    drawLine(tx + 4, by - 40, tx + 40, by - 55);
+    drawLabel('Thermometer', tx + 20, by - 73, 80);
+    /* Capillary tube label */
+    drawLine(tx + 18, by - 20, tx + 50, by - 10);
+    drawLabel('Capillary tube', tx + 30, by - 28, 90);
+    /* Bunsen label */
+    drawLine(bx - 10, benchY - 25, bx - 50, benchY - 5);
+    drawLabel('Bunsen burner', bx - 130, benchY - 13, 85);
+    ctx.restore();
+
+    /* ── Result display ── */
+    ctx.save();
+    ctx.textAlign = 'center';
     if (done) {
-      ctx.fillStyle = '#cc2222';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText('MP: 80.26°C', cx + 90, benchY - 55);
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(cx - 90, 50, 180, 40);
+      ctx.fillStyle = '#ff4444';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('Melting Point', cx, 68);
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('80.26°C', cx, 84);
     }
     ctx.textAlign = 'left';
     ctx.fillStyle = '#888';
@@ -1697,7 +2137,7 @@ var MinorExperimentRenderer = {
     ctx.restore();
   },
 
-  /* ── M7.5 Boiling Point (Ethyl Alcohol) — WIDE ── */
+  /* ── M7.5 Boiling Point (Ethyl Alcohol) — distillation setup ── */
   drawM7_5: function(ctx, cw, ch, state) {
     var sim = SIMULATION_CONFIG['M7_5'];
     var cx = cw / 2;
@@ -1706,26 +2146,26 @@ var MinorExperimentRenderer = {
     var heating = state.m7ActionDone && state.simulation && !state.simulation.done;
     var temp = done ? sim.expectedBoilingPoint : (heating ? 60 : 25);
 
-    /* Round-bottom flask — LEFT */
-    var fx = cx - 80;
-    var fy = benchY - 55;
+    /* ── Round-bottom flask — LEFT ── */
+    var fx = cx - 100, fy = benchY - 50;
     ctx.save();
-    var flaskGrad = ctx.createLinearGradient(fx - 40, fy, fx + 40, fy);
-    flaskGrad.addColorStop(0, 'rgba(140,180,220,0.5)');
-    flaskGrad.addColorStop(0.12, 'rgba(180,210,240,0.25)');
-    flaskGrad.addColorStop(0.5, 'rgba(240,248,255,0.05)');
-    flaskGrad.addColorStop(0.88, 'rgba(180,210,240,0.22)');
-    flaskGrad.addColorStop(1, 'rgba(140,180,220,0.48)');
+    /* flask body */
+    var flaskGrad = ctx.createRadialGradient(fx, fy + 15, 5, fx, fy + 15, 42);
+    flaskGrad.addColorStop(0, 'rgba(240,248,255,0.05)');
+    flaskGrad.addColorStop(0.5, 'rgba(180,210,240,0.2)');
+    flaskGrad.addColorStop(1, 'rgba(140,180,220,0.5)');
     ctx.fillStyle = flaskGrad;
     ctx.strokeStyle = 'rgba(80,120,160,0.6)';
     ctx.lineWidth = 2.2;
-    /* round body */
     ctx.beginPath();
     ctx.arc(fx, fy + 15, 40, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     /* neck */
+    ctx.fillStyle = 'rgba(180,210,240,0.25)';
     ctx.fillRect(fx - 10, fy - 50, 20, 55);
+    ctx.strokeStyle = 'rgba(80,120,160,0.5)';
+    ctx.lineWidth = 1.5;
     ctx.strokeRect(fx - 10, fy - 50, 20, 55);
     /* liquid inside */
     ctx.save();
@@ -1734,29 +2174,65 @@ var MinorExperimentRenderer = {
     ctx.clip();
     ctx.fillStyle = '#e8dcc8';
     ctx.globalAlpha = 0.5;
-    ctx.fillRect(fx - 42, fy, 84, 55);
+    ctx.fillRect(fx - 42, fy - 5, 84, 60);
     ctx.globalAlpha = 1;
     ctx.restore();
+    /* boiling chips */
+    ctx.fillStyle = '#aaa';
+    for (var bc = 0; bc < 4; bc++) {
+      ctx.beginPath();
+      ctx.arc(fx - 12 + bc * 8, fy + 40, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
 
-    /* Thermometer in flask neck */
-    this.drawThermometer(ctx, fx, fy - 70, 90, temp, 120);
+    /* ── Thermometer in flask neck ── */
+    var tx = fx, ty = fy - 80, th = 100;
+    ctx.save();
+    /* bulb */
+    ctx.fillStyle = '#cc3333';
+    ctx.beginPath();
+    ctx.arc(tx, fy - 5, 5, 0, Math.PI * 2);
+    ctx.fill();
+    /* glass tube */
+    var tGrad = ctx.createLinearGradient(tx - 3.5, 0, tx + 3.5, 0);
+    tGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    tGrad.addColorStop(0.3, 'rgba(240,248,255,0.15)');
+    tGrad.addColorStop(0.7, 'rgba(240,248,255,0.12)');
+    tGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = tGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.fillRect(tx - 3.5, fy - 80, 7, 75);
+    ctx.strokeRect(tx - 3.5, fy - 80, 7, 75);
+    /* mercury */
+    var mercuryH = done ? 65 : (heating ? 40 : 18);
+    ctx.fillStyle = '#cc3333';
+    ctx.fillRect(tx - 1, fy - 5 - mercuryH, 2, mercuryH);
+    /* top */
+    ctx.fillStyle = '#aaa';
+    ctx.fillRect(tx - 4, fy - 88, 8, 10);
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(tx - 4, fy - 88, 8, 10);
+    ctx.restore();
 
-    /* Side arm / delivery tube */
+    /* ── Side arm / delivery tube ── */
     ctx.save();
     ctx.strokeStyle = 'rgba(140,175,205,0.55)';
     ctx.lineWidth = 5;
     ctx.beginPath();
-    ctx.moveTo(fx + 10, fy - 30);
-    ctx.lineTo(fx + 70, fy - 30);
-    ctx.lineTo(fx + 70, fy + 30);
+    ctx.moveTo(fx + 10, fy - 25);
+    ctx.lineTo(fx + 60, fy - 25);
+    ctx.lineTo(fx + 60, fy + 30);
     ctx.stroke();
     ctx.restore();
 
-    /* Condenser — CENTER RIGHT */
-    var conX = fx + 70;
+    /* ── Condenser (Liebig) — CENTER RIGHT ── */
+    var conX = fx + 60;
     ctx.save();
-    var conGrad = ctx.createLinearGradient(conX - 12, 0, conX + 12, 0);
+    /* water jacket */
+    var conGrad = ctx.createLinearGradient(conX - 14, 0, conX + 14, 0);
     conGrad.addColorStop(0, 'rgba(140,180,220,0.45)');
     conGrad.addColorStop(0.3, 'rgba(200,225,245,0.12)');
     conGrad.addColorStop(0.7, 'rgba(200,225,245,0.1)');
@@ -1764,56 +2240,158 @@ var MinorExperimentRenderer = {
     ctx.fillStyle = conGrad;
     ctx.strokeStyle = 'rgba(80,120,160,0.5)';
     ctx.lineWidth = 1.5;
-    /* inner tube */
-    ctx.fillRect(conX - 6, fy + 30, 12, 70);
-    ctx.strokeRect(conX - 6, fy + 30, 12, 70);
-    /* water jacket */
-    ctx.strokeStyle = 'rgba(80,120,160,0.35)';
+    ctx.fillRect(conX - 14, fy + 26, 28, 78);
     ctx.strokeRect(conX - 14, fy + 26, 28, 78);
-    /* water inlet/outlet */
+    /* inner tube */
+    ctx.fillStyle = 'rgba(200,225,245,0.2)';
+    ctx.fillRect(conX - 5, fy + 30, 10, 70);
+    ctx.strokeStyle = 'rgba(80,120,160,0.4)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(conX - 5, fy + 30, 10, 70);
+    /* water inlet (bottom) */
     ctx.strokeStyle = 'rgba(80,120,160,0.4)';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(conX - 14, fy + 40);
-    ctx.lineTo(conX - 22, fy + 40);
+    ctx.lineTo(conX - 24, fy + 40);
     ctx.stroke();
+    /* water outlet (top) */
     ctx.beginPath();
     ctx.moveTo(conX + 14, fy + 90);
-    ctx.lineTo(conX + 22, fy + 90);
+    ctx.lineTo(conX + 24, fy + 90);
     ctx.stroke();
+    /* labels on jacket */
+    ctx.fillStyle = '#666';
+    ctx.font = '8px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('in', conX - 24, fy + 36);
+    ctx.fillText('out', conX + 24, fy + 86);
+    ctx.textAlign = 'left';
     ctx.restore();
 
-    /* Receiving flask — RIGHT */
-    this.drawBeaker(ctx, conX, fy + 130, 55, 55, '#e8dcc8', done ? 0.5 : 0.1);
+    /* ── Receiving flask (conical) — RIGHT ── */
+    var rx = conX, ry = fy + 130;
+    ctx.save();
+    var rGrad = ctx.createLinearGradient(rx - 25, 0, rx + 25, 0);
+    rGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    rGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
+    rGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
+    rGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = rGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(rx - 8, ry - 25);
+    ctx.lineTo(rx - 25, ry + 20);
+    ctx.lineTo(rx - 25, ry + 35);
+    ctx.lineTo(rx + 25, ry + 35);
+    ctx.lineTo(rx + 25, ry + 20);
+    ctx.lineTo(rx + 8, ry - 25);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* collected alcohol */
+    ctx.fillStyle = '#e8dcc8';
+    ctx.globalAlpha = 0.5;
+    ctx.fillRect(rx - 22, ry + 5, 44, 28);
+    ctx.globalAlpha = 1;
+    ctx.restore();
 
-    /* Bunsen under flask */
+    /* ── Bunsen burner under flask ── */
     this.drawBunsen(ctx, fx, benchY, heating || done, '#4488ff', heating ? 65 : 35);
 
-    /* Bubbles in flask */
+    /* ── Bubbles in flask ── */
     if (heating) {
       ctx.save();
       ctx.fillStyle = 'rgba(255,255,255,0.4)';
       for (var b = 0; b < 5; b++) {
-        var bx = fx - 16 + b * 8;
-        var by = fy + 25 - ((Date.now() / 15 + b * 8) % 25);
+        var bubx = fx - 16 + b * 8;
+        var baby = fy + 30 - ((Date.now() / 15 + b * 8) % 25);
         ctx.beginPath();
-        ctx.arc(bx, by, 2.5, 0, Math.PI * 2);
+        ctx.arc(bubx, baby, 2.5, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.restore();
     }
 
+    /* ── Vapour moving through condenser ── */
+    if (heating || done) {
+      ctx.save();
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = '#fff';
+      for (var v = 0; v < 3; v++) {
+        var vy = fy + 35 + ((Date.now() / 20 + v * 20) % 60);
+        ctx.beginPath();
+        ctx.arc(conX, vy, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+
+    /* ── Digital temperature readout — TOP RIGHT ── */
     ctx.save();
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#444';
+    var dx = cw - 110, dy = 90;
+    ctx.fillStyle = '#2a2a2a';
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(dx - 50, dy - 25, 100, 50, 5);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = done ? '#ff4444' : '#44ff44';
+    ctx.font = 'bold 22px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('Distillation flask', fx, benchY + 25);
-    ctx.fillText('Condenser', conX, benchY + 25);
-    ctx.fillText('Receiving flask', conX, benchY + 42);
+    ctx.fillText(temp.toFixed(1) + '°C', dx, dy + 8);
+    ctx.restore();
+
+    /* ── Blue background labels with leader lines ── */
+    ctx.save();
+    function drawLabel(text, lx, ly, tw) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(lx, ly, tw, 18);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, lx + tw / 2, ly + 13);
+    }
+    function drawLine(x1, y1, x2, y2) {
+      ctx.strokeStyle = '#1a3a6a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+    /* Flask label */
+    drawLine(fx - 40, fy + 15, fx - 70, fy + 5);
+    drawLabel('Round-bottom flask', fx - 165, fy - 3, 100);
+    /* Thermometer label */
+    drawLine(tx + 3, fy - 50, tx + 35, fy - 60);
+    drawLabel('Thermometer', tx + 15, fy - 78, 75);
+    /* Condenser label */
+    drawLine(conX + 14, fy + 50, conX + 45, fy + 40);
+    drawLabel('Condenser', conX + 25, fy + 22, 65);
+    /* Receiving flask label */
+    drawLine(rx + 25, ry + 20, rx + 50, ry + 10);
+    drawLabel('Receiving flask', rx + 30, ry - 8, 90);
+    /* Bunsen label */
+    drawLine(fx - 10, benchY - 25, fx - 45, benchY - 5);
+    drawLabel('Bunsen burner', fx - 125, benchY - 13, 85);
+    ctx.restore();
+
+    /* ── Result display ── */
+    ctx.save();
+    ctx.textAlign = 'center';
     if (done) {
-      ctx.fillStyle = '#cc2222';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText('BP: 78.37°C', conX + 60, fy + 50);
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(cx - 90, 50, 180, 40);
+      ctx.fillStyle = '#ff4444';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('Boiling Point', cx, 68);
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('78.37°C', cx, 84);
     }
     ctx.textAlign = 'left';
     ctx.fillStyle = '#888';
@@ -1822,7 +2400,7 @@ var MinorExperimentRenderer = {
     ctx.restore();
   },
 
-  /* ── M7.6 Zn + CuSO4 Displacement — WIDE ── */
+  /* ── M7.6 Zn + CuSO4 Displacement — realistic beaker setup ── */
   drawM7_6: function(ctx, cw, ch, state) {
     var sim = SIMULATION_CONFIG['M7_6'];
     var cx = cw / 2;
@@ -1830,28 +2408,88 @@ var MinorExperimentRenderer = {
     var done = state.m7ActionDone && state.simulation && state.m7ObservationDone;
     var reacting = state.m7ActionDone && state.simulation && !state.simulation.done;
 
-    /* Large beaker with CuSO4 — CENTER */
-    var liqColor = done ? '#d0d0d0' : '#3366cc';
-    this.drawBeaker(ctx, cx, benchY - 55, 130, 110, liqColor, 0.65);
+    /* ── Large beaker with CuSO4 — CENTER ── */
+    var bx = cx, by = benchY - 65, bw = 140, bh = 120;
+    ctx.save();
+    var bGrad = ctx.createLinearGradient(bx - bw/2, 0, bx + bw/2, 0);
+    bGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    bGrad.addColorStop(0.12, 'rgba(220,238,252,0.15)');
+    bGrad.addColorStop(0.88, 'rgba(220,238,252,0.12)');
+    bGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = bGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(bx - bw/2, by - bh/2);
+    ctx.lineTo(bx - bw/2, by + bh/2 - 5);
+    ctx.quadraticCurveTo(bx - bw/2, by + bh/2, bx - bw/2 + 5, by + bh/2);
+    ctx.lineTo(bx + bw/2 - 5, by + bh/2);
+    ctx.quadraticCurveTo(bx + bw/2, by + bh/2, bx + bw/2, by + bh/2 - 5);
+    ctx.lineTo(bx + bw/2, by - bh/2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* pour spout */
+    ctx.beginPath();
+    ctx.moveTo(bx + bw/2, by - bh/2);
+    ctx.lineTo(bx + bw/2 + 8, by - bh/2 - 6);
+    ctx.lineTo(bx + bw/2 - 2, by - bh/2);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(200,220,240,0.3)';
+    ctx.fill();
+    ctx.stroke();
+    /* CuSO4 solution (blue → colourless) */
+    var liqColor = done ? '#d0d8e0' : (reacting ? '#5588bb' : '#3366cc');
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(bx - bw/2 + 3, by - bh/2 + 10);
+    ctx.lineTo(bx + bw/2 - 3, by - bh/2 + 10);
+    ctx.lineTo(bx + bw/2 - 3, by + bh/2 - 5);
+    ctx.lineTo(bx - bw/2 + 3, by + bh/2 - 5);
+    ctx.closePath();
+    ctx.fillStyle = liqColor;
+    ctx.globalAlpha = 0.65;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    /* graduation marks */
+    ctx.strokeStyle = 'rgba(120,140,160,0.4)';
+    ctx.lineWidth = 1;
+    for (var gm = 1; gm < 6; gm++) {
+      var gyy = by - bh/2 + gm * (bh/6);
+      ctx.beginPath();
+      ctx.moveTo(bx - bw/2 + 2, gyy);
+      ctx.lineTo(bx - bw/2 + 12, gyy);
+      ctx.stroke();
+    }
+    ctx.restore();
 
-    /* Zn granules */
+    /* ── Zn granules ── */
     ctx.save();
     if (reacting || done) {
-      ctx.fillStyle = '#888';
+      /* Zn granules at bottom with copper deposit */
       for (var i = 0; i < 8; i++) {
-        var gx = cx - 28 + (i % 4) * 18;
-        var gy = benchY - 25 + Math.floor(i / 4) * 12;
+        var gx = bx - 30 + (i % 4) * 20;
+        var gy = by + 35 + Math.floor(i / 4) * 14;
+        ctx.fillStyle = '#888';
         ctx.beginPath();
         ctx.arc(gx, gy, 5, 0, Math.PI * 2);
         ctx.fill();
+        /* copper deposit on Zn */
+        if (done) {
+          ctx.fillStyle = '#cc6622';
+          ctx.beginPath();
+          ctx.arc(gx, gy, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
-    /* Zn granules above (being added) */
+    /* Zn granules being added (falling) */
     if (!reacting && !done) {
-      ctx.fillStyle = '#999';
       for (var j = 0; j < 3; j++) {
-        var ax = cx - 15 + j * 15;
-        var ay = benchY - 150 + j * 8;
+        var ax = bx - 15 + j * 15;
+        var ay = by - 120 + j * 10;
+        ctx.fillStyle = '#999';
         ctx.beginPath();
         ctx.arc(ax, ay, 5, 0, Math.PI * 2);
         ctx.fill();
@@ -1859,46 +2497,153 @@ var MinorExperimentRenderer = {
     }
     ctx.restore();
 
-    /* Copper deposit */
-    if (done) {
-      ctx.save();
-      ctx.fillStyle = '#cc6622';
-      for (var k = 0; k < 6; k++) {
-        var dx = cx - 22 + k * 9;
-        var dy = benchY - 22;
-        ctx.beginPath();
-        ctx.arc(dx, dy, 4, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-
-    /* Bubbles during reaction */
+    /* ── Bubbles during reaction ── */
     if (reacting) {
       ctx.save();
       ctx.fillStyle = 'rgba(255,255,255,0.35)';
       for (var b = 0; b < 6; b++) {
-        var bx = cx - 24 + b * 10;
-        var by = benchY - 30 - ((Date.now() / 12 + b * 6) % 30);
+        var bubx = bx - 25 + b * 10;
+        var baby = by + 30 - ((Date.now() / 12 + b * 6) % 30);
         ctx.beginPath();
-        ctx.arc(bx, by, 2.5, 0, Math.PI * 2);
+        ctx.arc(bubx, baby, 2.5, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.restore();
     }
 
+    /* ── Zn granules container — LEFT SIDE ── */
     ctx.save();
-    ctx.font = '11px sans-serif';
+    var zx = 55, zy = benchY - 30;
+    /* small jar */
+    var zGrad = ctx.createLinearGradient(zx - 18, 0, zx + 18, 0);
+    zGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    zGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
+    zGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
+    zGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = zGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(zx - 18, zy - 25);
+    ctx.lineTo(zx - 18, zy + 20);
+    ctx.quadraticCurveTo(zx - 18, zy + 25, zx - 12, zy + 25);
+    ctx.lineTo(zx + 12, zy + 25);
+    ctx.quadraticCurveTo(zx + 18, zy + 25, zx + 18, zy + 20);
+    ctx.lineTo(zx + 18, zy - 25);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* Zn granules inside */
+    ctx.fillStyle = '#999';
+    for (var zg = 0; zg < 6; zg++) {
+      ctx.beginPath();
+      ctx.arc(zx - 10 + (zg % 3) * 10, zy - 5 + Math.floor(zg / 3) * 12, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    /* label */
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(zx - 14, zy - 20, 28, 16);
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(zx - 14, zy - 20, 28, 16);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Zn', zx, zy - 9);
+    ctx.textAlign = 'left';
+    ctx.restore();
+
+    /* ── CuSO4 solution container — RIGHT SIDE ── */
+    ctx.save();
+    var sx = cw - 55, sy = benchY - 30;
+    var sGrad = ctx.createLinearGradient(sx - 18, 0, sx + 18, 0);
+    sGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    sGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
+    sGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
+    sGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = sGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(sx - 18, sy - 25);
+    ctx.lineTo(sx - 18, sy + 20);
+    ctx.quadraticCurveTo(sx - 18, sy + 25, sx - 12, sy + 25);
+    ctx.lineTo(sx + 12, sy + 25);
+    ctx.quadraticCurveTo(sx + 18, sy + 25, sx + 18, sy + 20);
+    ctx.lineTo(sx + 18, sy - 25);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* CuSO4 solution */
+    ctx.fillStyle = '#3366cc';
+    ctx.globalAlpha = 0.55;
+    ctx.fillRect(sx - 15, sy - 5, 30, 28);
+    ctx.globalAlpha = 1;
+    /* label */
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(sx - 16, sy - 20, 32, 16);
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(sx - 16, sy - 20, 32, 16);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 7px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('CuSO₄', sx, sy - 9);
+    ctx.textAlign = 'left';
+    ctx.restore();
+
+    /* ── Blue background labels with leader lines ── */
+    ctx.save();
+    function drawLabel(text, lx, ly, tw) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(lx, ly, tw, 18);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, lx + tw / 2, ly + 13);
+    }
+    function drawLine(x1, y1, x2, y2) {
+      ctx.strokeStyle = '#1a3a6a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+    /* Beaker label */
+    drawLine(bx - bw/2, by, bx - bw/2 - 30, by + 10);
+    drawLabel('Beaker', bx - bw/2 - 80, by + 2, 55);
+    /* Zn container label */
+    drawLine(zx + 18, zy, zx + 40, zy - 10);
+    drawLabel('Zn granules', zx + 25, zy - 28, 75);
+    /* CuSO4 container label */
+    drawLine(sx - 18, sy, sx - 40, sy - 10);
+    drawLabel('CuSO₄ solution', sx - 110, sy - 28, 85);
+    ctx.restore();
+
+    /* ── Result display ── */
+    ctx.save();
     ctx.textAlign = 'center';
     if (done) {
-      ctx.fillStyle = '#cc2222';
-      ctx.fillText('Blue → Colourless', cx, benchY - 150);
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(cx - 100, 50, 200, 40);
+      ctx.fillStyle = '#cc6622';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('Blue → Colourless', cx, 68);
+      ctx.fillStyle = '#fff';
+      ctx.font = '11px sans-serif';
+      ctx.fillText('Cu deposited on Zn', cx, 84);
+    } else if (reacting) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(cx - 80, 50, 160, 30);
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('Reaction in progress...', cx, 70);
     } else {
       ctx.fillStyle = '#3366cc';
-      ctx.fillText('CuSO₄ solution (blue)', cx, benchY - 150);
+      ctx.font = '12px sans-serif';
+      ctx.fillText('CuSO₄ solution (blue)', cx, 65);
     }
-    ctx.fillStyle = '#444';
-    ctx.fillText('Beaker with Zn + CuSO₄', cx, benchY + 25);
     ctx.textAlign = 'left';
     ctx.fillStyle = '#888';
     ctx.font = '9px sans-serif';
@@ -1906,62 +2651,243 @@ var MinorExperimentRenderer = {
     ctx.restore();
   },
 
-  /* ── M7.7 Water Test (Anhydrous CuSO4) — WIDE ── */
+  /* ── M7.7 Water Test (Anhydrous CuSO4) — realistic test tube setup ── */
   drawM7_7: function(ctx, cw, ch, state) {
     var cx = cw / 2;
     var benchY = 540;
     var done = state.m7ActionDone && state.simulation && state.m7ObservationDone;
     var testing = state.m7ActionDone && state.simulation && !state.m7ObservationDone;
 
-    /* Large test tube — CENTER */
-    var liqColor = done ? '#3366cc' : null;
-    this.drawTestTube(ctx, cx, benchY - 60, 50, 140, liqColor, done ? 0.4 : 0);
+    /* ── Test tube stand — LEFT ── */
+    ctx.save();
+    var stx = cx - 80, sty = benchY;
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(stx, sty);
+    ctx.lineTo(stx, sty - 100);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(stx - 20, sty);
+    ctx.lineTo(stx + 20, sty);
+    ctx.stroke();
+    /* clamp */
+    ctx.strokeStyle = '#777';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(stx, sty - 80);
+    ctx.lineTo(stx + 25, sty - 80);
+    ctx.stroke();
+    /* base */
+    ctx.fillStyle = '#444';
+    ctx.beginPath();
+    ctx.ellipse(stx, sty, 22, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
 
-    /* White powder (anhydrous CuSO4) in test tube */
+    /* ── Test tube in clamp — CENTER ── */
+    var tx = cx, ty = benchY - 80, tw = 40, th = 130;
+    ctx.save();
+    /* glass tube */
+    var tGrad = ctx.createLinearGradient(tx - tw/2, 0, tx + tw/2, 0);
+    tGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    tGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
+    tGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
+    tGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = tGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(tx - tw/2, ty);
+    ctx.lineTo(tx - tw/2, ty + th - 15);
+    ctx.quadraticCurveTo(tx - tw/2, ty + th, tx, ty + th);
+    ctx.quadraticCurveTo(tx + tw/2, ty + th, tx + tw/2, ty + th - 15);
+    ctx.lineTo(tx + tw/2, ty);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* rim */
+    ctx.strokeStyle = 'rgba(100,140,180,0.65)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(tx - tw/2 - 2, ty);
+    ctx.lineTo(tx + tw/2 + 2, ty);
+    ctx.stroke();
+    ctx.restore();
+
+    /* ── White powder (anhydrous CuSO4) in test tube ── */
     ctx.save();
     if (!done) {
+      /* white powder layer */
       ctx.fillStyle = '#f0f0f0';
       ctx.strokeStyle = '#ccc';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(cx - 18, benchY - 30);
-      ctx.lineTo(cx + 18, benchY - 30);
-      ctx.lineTo(cx + 14, benchY - 8);
-      ctx.lineTo(cx - 14, benchY - 8);
+      ctx.moveTo(tx - tw/2 + 2, ty + th - 40);
+      ctx.lineTo(tx + tw/2 - 2, ty + th - 40);
+      ctx.lineTo(tx + tw/2 - 4, ty + th - 5);
+      ctx.quadraticCurveTo(tx, ty + th, tx - tw/2 + 4, ty + th - 5);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
+      /* powder texture */
+      ctx.fillStyle = '#e0e0e0';
+      for (var p = 0; p < 8; p++) {
+        ctx.beginPath();
+        ctx.arc(tx - 10 + (p % 4) * 7, ty + th - 30 + Math.floor(p / 4) * 12, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else {
+      /* blue hydrated crystals */
+      ctx.fillStyle = '#3366cc';
+      ctx.globalAlpha = 0.6;
+      ctx.fillRect(tx - tw/2 + 2, ty + th - 45, tw - 4, 40);
+      ctx.globalAlpha = 1;
+      /* crystal texture */
+      ctx.fillStyle = '#2255aa';
+      for (var c = 0; c < 6; c++) {
+        ctx.fillRect(tx - 8 + (c % 3) * 8, ty + th - 35 + Math.floor(c / 3) * 12, 6, 5);
+      }
     }
     ctx.restore();
 
-    /* Dropper — RIGHT SIDE */
-    this.drawDropper(ctx, cx + 55, benchY - 140, !done);
+    /* ── Dropper with water — RIGHT SIDE ── */
+    var dx = cx + 70, dy = benchY - 130;
+    ctx.save();
+    /* bulb */
+    ctx.fillStyle = '#cc4444';
+    ctx.strokeStyle = '#aa3333';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(dx, dy - 20, 8, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    /* glass tube */
+    var dGrad = ctx.createLinearGradient(dx - 4, 0, dx + 4, 0);
+    dGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    dGrad.addColorStop(0.3, 'rgba(240,248,255,0.15)');
+    dGrad.addColorStop(0.7, 'rgba(240,248,255,0.12)');
+    dGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = dGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.fillRect(dx - 3.5, dy - 8, 7, 40);
+    ctx.strokeRect(dx - 3.5, dy - 8, 7, 40);
+    /* tip */
+    ctx.beginPath();
+    ctx.moveTo(dx - 3, dy + 32);
+    ctx.lineTo(dx, dy + 40);
+    ctx.lineTo(dx + 3, dy + 32);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(180,200,220,0.4)';
+    ctx.fill();
+    ctx.stroke();
+    /* water inside */
+    ctx.fillStyle = 'rgba(100,180,230,0.4)';
+    ctx.fillRect(dx - 2, dy - 5, 4, 35);
+    ctx.restore();
 
-    /* Water drop falling */
+    /* ── Water drop falling ── */
     if (testing) {
       ctx.save();
       ctx.fillStyle = 'rgba(100,180,230,0.6)';
       var dropProgress = (Date.now() % 800) / 800;
-      var dropY2 = benchY - 88 + dropProgress * 40;
+      var dropY = dy + 40 + dropProgress * 35;
       ctx.beginPath();
-      ctx.ellipse(cx + 55, dropY2, 4, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(dx, dropY, 4, 5, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
 
+    /* ── Water beaker — FAR LEFT ── */
+    ctx.save();
+    var wbx = 45, wby = benchY - 25;
+    var wbGrad = ctx.createLinearGradient(wbx - 20, 0, wbx + 20, 0);
+    wbGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    wbGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
+    wbGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
+    wbGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = wbGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(wbx - 20, wby - 20);
+    ctx.lineTo(wbx - 20, wby + 18);
+    ctx.quadraticCurveTo(wbx - 20, wby + 22, wbx - 15, wby + 22);
+    ctx.lineTo(wbx + 15, wby + 22);
+    ctx.quadraticCurveTo(wbx + 20, wby + 22, wbx + 20, wby + 18);
+    ctx.lineTo(wbx + 20, wby - 20);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* water */
+    ctx.fillStyle = 'rgba(100,180,230,0.35)';
+    ctx.fillRect(wbx - 17, wby - 5, 34, 23);
+    /* label */
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(wbx - 14, wby - 16, 28, 14);
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(wbx - 14, wby - 16, 28, 14);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 8px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('H₂O', wbx, wby - 6);
+    ctx.textAlign = 'left';
+    ctx.restore();
+
+    /* ── Blue background labels with leader lines ── */
+    ctx.save();
+    function drawLabel(text, lx, ly, tw) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(lx, ly, tw, 18);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, lx + tw / 2, ly + 13);
+    }
+    function drawLine(x1, y1, x2, y2) {
+      ctx.strokeStyle = '#1a3a6a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+    /* Test tube label */
+    drawLine(tx + tw/2, ty + 20, tx + tw/2 + 30, ty + 10);
+    drawLabel('Test tube', tx + tw/2 + 10, ty - 8, 70);
+    /* Dropper label */
+    drawLine(dx + 3, dy + 10, dx + 25, dy);
+    drawLabel('Dropper', dx + 5, dy - 18, 60);
+    /* Water beaker label */
+    drawLine(wbx + 20, wby, wbx + 40, wby - 10);
+    drawLabel('Water', wbx + 25, wby - 28, 45);
+    ctx.restore();
+
+    /* ── Result display ── */
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.font = '11px sans-serif';
     if (done) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(cx - 100, 50, 200, 40);
       ctx.fillStyle = '#3366cc';
-      ctx.fillText('White → Blue (water present)', cx, benchY - 170);
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('White → Blue', cx, 68);
+      ctx.fillStyle = '#fff';
+      ctx.font = '11px sans-serif';
+      ctx.fillText('Water present!', cx, 84);
+    } else if (testing) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(cx - 80, 50, 160, 30);
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('Adding water...', cx, 70);
     } else {
       ctx.fillStyle = '#888';
-      ctx.fillText('Anhydrous CuSO₄ (white)', cx, benchY - 170);
+      ctx.font = '12px sans-serif';
+      ctx.fillText('Anhydrous CuSO₄ (white)', cx, 65);
     }
-    ctx.fillStyle = '#444';
-    ctx.fillText('Test tube', cx, benchY + 25);
-    ctx.fillText('Dropper', cx + 55, benchY + 25);
     ctx.textAlign = 'left';
     ctx.fillStyle = '#888';
     ctx.font = '9px sans-serif';
@@ -1969,7 +2895,7 @@ var MinorExperimentRenderer = {
     ctx.restore();
   },
 
-  /* ── M7.8 Water Purity Test — WIDE ── */
+  /* ── M7.8 Water Purity Test — MP & BP setup ── */
   drawM7_8: function(ctx, cw, ch, state) {
     var sim = SIMULATION_CONFIG['M7_8'];
     var cx = cw / 2;
@@ -1978,52 +2904,257 @@ var MinorExperimentRenderer = {
     var heating = state.m7ActionDone && state.simulation && !state.m7ObservationDone;
     var temp = done ? 100 : (heating ? 70 : 25);
 
-    /* Large beaker with water — LEFT */
-    this.drawBeaker(ctx, cx - 80, benchY - 55, 110, 100, '#a0d0f0', 0.65);
-
-    /* Thermometer */
-    this.drawThermometer(ctx, cx - 80, benchY - 135, 120, temp, 110);
-
-    /* Bunsen */
-    this.drawBunsen(ctx, cx - 80, benchY, heating || done, '#4488ff', heating ? 70 : 35);
-
-    /* Second beaker (ice/melting) — RIGHT */
-    this.drawBeaker(ctx, cx + 70, benchY - 45, 90, 80, done ? '#d0e8f8' : '#e0f0ff', 0.5);
-
-    /* Ice cubes */
+    /* ── Large beaker with water (heating) — LEFT ── */
+    var bx = cx - 90, by = benchY - 60, bw = 120, bh = 110;
     ctx.save();
+    var bGrad = ctx.createLinearGradient(bx - bw/2, 0, bx + bw/2, 0);
+    bGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    bGrad.addColorStop(0.12, 'rgba(220,238,252,0.15)');
+    bGrad.addColorStop(0.88, 'rgba(220,238,252,0.12)');
+    bGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = bGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(bx - bw/2, by - bh/2);
+    ctx.lineTo(bx - bw/2, by + bh/2 - 5);
+    ctx.quadraticCurveTo(bx - bw/2, by + bh/2, bx - bw/2 + 5, by + bh/2);
+    ctx.lineTo(bx + bw/2 - 5, by + bh/2);
+    ctx.quadraticCurveTo(bx + bw/2, by + bh/2, bx + bw/2, by + bh/2 - 5);
+    ctx.lineTo(bx + bw/2, by - bh/2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* pour spout */
+    ctx.beginPath();
+    ctx.moveTo(bx - bw/2, by - bh/2);
+    ctx.lineTo(bx - bw/2 - 8, by - bh/2 - 6);
+    ctx.lineTo(bx - bw/2 + 2, by - bh/2);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(200,220,240,0.3)';
+    ctx.fill();
+    ctx.stroke();
+    /* water */
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(bx - bw/2 + 3, by - bh/2 + 10);
+    ctx.lineTo(bx + bw/2 - 3, by - bh/2 + 10);
+    ctx.lineTo(bx + bw/2 - 3, by + bh/2 - 5);
+    ctx.lineTo(bx - bw/2 + 3, by + bh/2 - 5);
+    ctx.closePath();
+    ctx.fillStyle = '#a0d0f0';
+    ctx.globalAlpha = 0.65;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    /* graduation marks */
+    ctx.strokeStyle = 'rgba(120,140,160,0.4)';
+    ctx.lineWidth = 1;
+    for (var gm = 1; gm < 6; gm++) {
+      var gyy = by - bh/2 + gm * (bh/6);
+      ctx.beginPath();
+      ctx.moveTo(bx - bw/2 + 2, gyy);
+      ctx.lineTo(bx - bw/2 + 12, gyy);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    /* ── Thermometer in beaker ── */
+    var tx = bx + 5, ty = by - 75, th = 130;
+    ctx.save();
+    /* bulb */
+    ctx.fillStyle = '#cc3333';
+    ctx.beginPath();
+    ctx.arc(tx, by + 30, 5, 0, Math.PI * 2);
+    ctx.fill();
+    /* glass tube */
+    var tGrad = ctx.createLinearGradient(tx - 3.5, 0, tx + 3.5, 0);
+    tGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    tGrad.addColorStop(0.3, 'rgba(240,248,255,0.15)');
+    tGrad.addColorStop(0.7, 'rgba(240,248,255,0.12)');
+    tGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = tGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.fillRect(tx - 3.5, by - 75, 7, 105);
+    ctx.strokeRect(tx - 3.5, by - 75, 7, 105);
+    /* mercury */
+    var mercuryH = done ? 90 : (heating ? 60 : 20);
+    ctx.fillStyle = '#cc3333';
+    ctx.fillRect(tx - 1, by + 30 - mercuryH, 2, mercuryH);
+    /* graduations */
+    ctx.strokeStyle = 'rgba(80,80,80,0.5)';
+    ctx.lineWidth = 0.8;
+    for (var tg = 0; tg < 8; tg++) {
+      var gyy2 = by + 25 - tg * 12;
+      ctx.beginPath();
+      ctx.moveTo(tx + 3.5, gyy2);
+      ctx.lineTo(tx + (tg % 2 === 0 ? 10 : 7), gyy2);
+      ctx.stroke();
+    }
+    /* top */
+    ctx.fillStyle = '#aaa';
+    ctx.fillRect(tx - 4.5, by - 83, 9, 10);
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(tx - 4.5, by - 83, 9, 10);
+    ctx.restore();
+
+    /* ── Bunsen burner under beaker ── */
+    this.drawBunsen(ctx, bx, benchY, heating || done, '#4488ff', heating ? 70 : 35);
+
+    /* ── Bubbles when boiling ── */
+    if (heating || done) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      for (var b = 0; b < 6; b++) {
+        var bubx = bx - 25 + b * 10;
+        var baby = by + 30 - ((Date.now() / 12 + b * 6) % 35);
+        ctx.beginPath();
+        ctx.arc(bubx, baby, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    /* ── Second beaker with ice — RIGHT SIDE ── */
+    var ibx = cx + 80, iby = benchY - 50, ibw = 100, ibh = 90;
+    ctx.save();
+    var ibGrad = ctx.createLinearGradient(ibx - ibw/2, 0, ibx + ibw/2, 0);
+    ibGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    ibGrad.addColorStop(0.12, 'rgba(220,238,252,0.15)');
+    ibGrad.addColorStop(0.88, 'rgba(220,238,252,0.12)');
+    ibGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = ibGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(ibx - ibw/2, iby - ibh/2);
+    ctx.lineTo(ibx - ibw/2, iby + ibh/2 - 4);
+    ctx.quadraticCurveTo(ibx - ibw/2, iby + ibh/2, ibx - ibw/2 + 4, iby + ibh/2);
+    ctx.lineTo(ibx + ibw/2 - 4, iby + ibh/2);
+    ctx.quadraticCurveTo(ibx + ibw/2, iby + ibh/2, ibx + ibw/2, iby + ibh/2 - 4);
+    ctx.lineTo(ibx + ibw/2, iby - ibh/2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* water + ice */
+    ctx.fillStyle = done ? '#d0e8f8' : '#e0f0ff';
+    ctx.globalAlpha = 0.5;
+    ctx.fillRect(ibx - ibw/2 + 3, iby - ibh/2 + 8, ibw - 6, ibh - 12);
+    ctx.globalAlpha = 1;
+    /* ice cubes */
     ctx.fillStyle = 'rgba(200,230,250,0.65)';
     ctx.strokeStyle = 'rgba(150,190,220,0.55)';
     ctx.lineWidth = 1;
     for (var i = 0; i < 4; i++) {
-      var ix = cx + 52 + (i % 2) * 22;
-      var iy = benchY - 38 + Math.floor(i / 2) * 16;
-      ctx.fillRect(ix, iy, 18, 14);
-      ctx.strokeRect(ix, iy, 18, 14);
+      var ix = ibx - 25 + (i % 2) * 28;
+      var iy = iby - 15 + Math.floor(i / 2) * 18;
+      ctx.fillRect(ix, iy, 22, 15);
+      ctx.strokeRect(ix, iy, 22, 15);
     }
     ctx.restore();
 
-    /* Temperature labels */
+    /* ── Ice beaker thermometer (small) ── */
+    ctx.save();
+    var itx = ibx + 15, ity = iby - 50;
+    ctx.fillStyle = '#cc3333';
+    ctx.beginPath();
+    ctx.arc(itx, iby + 20, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    var itGrad = ctx.createLinearGradient(itx - 2.5, 0, itx + 2.5, 0);
+    itGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
+    itGrad.addColorStop(0.3, 'rgba(240,248,255,0.15)');
+    itGrad.addColorStop(0.7, 'rgba(240,248,255,0.12)');
+    itGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
+    ctx.fillStyle = itGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 1;
+    ctx.fillRect(itx - 2.5, ity, 5, 65);
+    ctx.strokeRect(itx - 2.5, ity, 5, 65);
+    /* mercury (low temp) */
+    ctx.fillStyle = '#cc3333';
+    ctx.fillRect(itx - 0.5, iby + 15, 1, 5);
+    ctx.restore();
+
+    /* ── Digital temperature readout — TOP CENTER ── */
+    ctx.save();
+    var rx = cx, ry = 80;
+    ctx.fillStyle = '#2a2a2a';
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(rx - 55, ry - 25, 110, 50, 5);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = done ? '#ff4444' : '#44ff44';
+    ctx.font = 'bold 22px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(temp.toFixed(0) + '°C', rx, ry + 8);
+    ctx.restore();
+
+    /* ── Blue background labels with leader lines ── */
+    ctx.save();
+    function drawLabel(text, lx, ly, tw) {
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(lx, ly, tw, 18);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, lx + tw / 2, ly + 13);
+    }
+    function drawLine(x1, y1, x2, y2) {
+      ctx.strokeStyle = '#1a3a6a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+    /* Heating beaker label */
+    drawLine(bx - bw/2, by, bx - bw/2 - 25, by + 10);
+    drawLabel('Water (heating)', bx - bw/2 - 120, by + 2, 90);
+    /* Thermometer label */
+    drawLine(tx + 3, by - 40, tx + 35, by - 50);
+    drawLabel('Thermometer', tx + 15, by - 68, 80);
+    /* Ice beaker label */
+    drawLine(ibx + ibw/2, iby, ibx + ibw/2 + 25, iby + 10);
+    drawLabel('Ice (melting)', ibx + ibw/2 + 5, iby + 2, 80);
+    /* Bunsen label */
+    drawLine(bx - 10, benchY - 25, bx - 40, benchY - 5);
+    drawLabel('Bunsen burner', bx - 120, benchY - 13, 85);
+    ctx.restore();
+
+    /* ── Result display ── */
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.font = 'bold 16px sans-serif';
     if (done) {
-      ctx.fillStyle = '#cc2222';
-      ctx.fillText('BP: 100°C', cx - 80, benchY - 160);
-      ctx.fillStyle = '#3366cc';
-      ctx.fillText('MP: 0°C', cx + 70, benchY - 65);
-    } else {
-      ctx.fillStyle = '#444';
-      ctx.fillText(temp.toFixed(0) + '°C', cx + 10, benchY - 90);
-    }
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#444';
-    ctx.fillText('Water (heating)', cx - 80, benchY + 25);
-    ctx.fillText('Ice (melting)', cx + 70, benchY + 25);
-    if (done) {
+      /* BP box */
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(bx - 50, 130, 100, 40);
+      ctx.fillStyle = '#ff4444';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('BP: 100°C', bx, 148);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('(boiling point)', bx, 162);
+      /* MP box */
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(ibx - 50, 130, 100, 40);
+      ctx.fillStyle = '#3388cc';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('MP: 0°C', ibx, 148);
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('(melting point)', ibx, 162);
+      /* Pure water badge */
       ctx.fillStyle = '#16a34a';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText('Pure water confirmed', cx, benchY + 45);
+      ctx.beginPath();
+      ctx.roundRect(cx - 70, 200, 140, 35, 5);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('Pure water confirmed', cx, 223);
     }
     ctx.textAlign = 'left';
     ctx.fillStyle = '#888';
