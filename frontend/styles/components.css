@@ -3478,3 +3478,637 @@ input.form-range[type="range"]::-moz-range-thumb {
     max-height: none;
   }
 }
+
+/* ============================================
+   A4 TITRATION ENHANCEMENTS
+   ============================================ */
+
+/* Titration quiz */
+.titration-quiz {
+  background: var(--color-surface-2, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 12px);
+  margin-bottom: var(--space-2, 8px);
+}
+
+.titration-quiz-q {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin-bottom: var(--space-2, 8px);
+}
+
+.titration-quiz-num {
+  background: var(--color-primary, #2563eb);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm, 4px);
+  flex-shrink: 0;
+}
+
+.titration-quiz-text {
+  font-weight: 600;
+  color: var(--color-text, #1e293b);
+  font-size: 0.95rem;
+}
+
+/* Titration tool buttons */
+.titration-tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 10px;
+  border: 2px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #1e293b);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 90px;
+}
+
+.titration-tool-btn:hover {
+  border-color: var(--color-primary, #2563eb);
+  background: var(--color-primary-50, #eff6ff);
+}
+
+.titration-tool-btn.correct {
+  border-color: var(--color-success, #16a34a);
+  background: var(--color-success-50, #f0fdf4);
+  color: var(--color-success-dark, #166534);
+}
+
+.titration-tool-btn.wrong {
+  border-color: var(--color-error, #dc2626);
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-dark, #991b1b);
+  opacity: 0.7;
+}
+
+.titration-tool-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+/* Titration step list */
+.titration-step-list {
+  margin: var(--space-3, 12px) 0;
+}
+
+.titration-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.9rem;
+}
+
+.titration-step:last-child {
+  border-bottom: none;
+}
+
+.titration-step.done {
+  color: var(--color-success-dark, #166534);
+}
+
+.titration-step-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-border, #e2e8f0);
+  color: var(--color-text-secondary, #64748b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.titration-step.done .titration-step-icon {
+  background: var(--color-success, #16a34a);
+  color: #fff;
+}
+
+/* Titration info box */
+.titration-info-box {
+  background: var(--color-surface-2, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 12px);
+  margin: var(--space-3, 12px) 0;
+}
+
+.titration-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 0.9rem;
+}
+
+.titration-info-row + .titration-info-row {
+  border-top: 1px solid var(--color-border-light, #f1f5f9);
+}
+
+.titration-info-label {
+  color: var(--color-text-secondary, #64748b);
+}
+
+.titration-info-value {
+  font-weight: 600;
+  color: var(--color-text, #1e293b);
+}
+
+/* Titration action button */
+.titration-action-btn {
+  width: 100%;
+  text-align: center;
+  margin-top: var(--space-3, 12px);
+  padding: 12px;
+  font-size: 1rem;
+}
+
+/* Titre tracker */
+.titre-tracker {
+  background: var(--color-surface-2, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 12px);
+  margin-bottom: var(--space-3, 12px);
+}
+
+.titre-tracker-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.titre-tracker-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.titre-tracker-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.titre-tracker-dot.pending {
+  background: var(--color-border, #e2e8f0);
+  color: var(--color-text-secondary, #64748b);
+}
+
+.titre-tracker-dot.active {
+  background: var(--color-primary, #2563eb);
+  color: #fff;
+  box-shadow: 0 0 0 3px var(--color-primary-100, #dbeafe);
+}
+
+.titre-tracker-dot.done {
+  background: var(--color-success, #16a34a);
+  color: #fff;
+}
+
+.titre-tracker-line {
+  width: 30px;
+  height: 3px;
+  background: var(--color-border, #e2e8f0);
+  border-radius: 2px;
+}
+
+.titre-tracker-line.done {
+  background: var(--color-success, #16a34a);
+}
+
+/* Titrate reading display */
+.titrate-reading {
+  text-align: center;
+  margin: var(--space-3, 12px) 0;
+}
+
+.titrate-reading-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.titrate-reading-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--color-primary, #2563eb);
+  font-family: 'JetBrains Mono', monospace, 'Courier New';
+  line-height: 1.2;
+}
+
+.titrate-reading-value span {
+  font-size: 1.1rem;
+  color: var(--color-text-secondary, #64748b);
+  font-weight: 500;
+}
+
+.titrate-reading-bar {
+  height: 10px;
+  background: var(--color-border-light, #f1f5f9);
+  border-radius: 5px;
+  margin: 10px 0 6px;
+  overflow: hidden;
+}
+
+.titrate-reading-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary, #2563eb), var(--color-primary-600, #4f46e5));
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.titrate-reading-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #64748b);
+}
+
+/* Endpoint visual */
+.endpoint-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3, 12px);
+  margin: var(--space-3, 12px) 0;
+}
+
+.endpoint-colour-pink,
+.endpoint-colour-clear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #64748b);
+}
+
+.endpoint-swatch {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md, 8px);
+  border: 2px solid var(--color-border, #e2e8f0);
+}
+
+.endpoint-colour-pink .endpoint-swatch {
+  background: #f9a8d4;
+  border-color: #ec4899;
+}
+
+.endpoint-colour-clear .endpoint-swatch {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.endpoint-arrow {
+  font-size: 1.8rem;
+  color: var(--color-text-secondary, #64748b);
+}
+
+/* Titration table */
+.titration-table {
+  margin: var(--space-2, 8px) 0;
+}
+
+.titration-table .trial-rough td {
+  background: var(--color-warning-50, #fffbeb);
+}
+
+.titration-table .trial-concordant td {
+  background: var(--color-success-50, #f0fdf4);
+}
+
+/* Mean titre box */
+.titration-mean-box {
+  text-align: center;
+  background: var(--color-primary-50, #eff6ff);
+  border: 2px solid var(--color-primary, #2563eb);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 12px);
+  margin: var(--space-3, 12px) 0;
+}
+
+.titration-mean-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.titration-mean-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-primary, #2563eb);
+  font-family: 'JetBrains Mono', monospace, 'Courier New';
+}
+
+/* ============================================
+   A5 GAS DETECTION ENHANCEMENTS
+   ============================================ */
+
+/* Gas identity cards */
+.gas-identity-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2, 8px);
+  margin: var(--space-3, 12px) 0;
+}
+
+.gas-identity-card {
+  text-align: center;
+  padding: var(--space-3, 12px) var(--space-2, 8px);
+  border-radius: var(--radius-md, 8px);
+  border: 2px solid var(--color-border, #e2e8f0);
+  background: var(--color-surface, #fff);
+  transition: all 0.2s ease;
+}
+
+.gas-identity-card.active {
+  border-color: var(--color-primary, #2563eb);
+  background: var(--color-primary-50, #eff6ff);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+}
+
+.gas-identity-card.detected {
+  border-color: var(--color-success, #16a34a);
+  background: var(--color-success-50, #f0fdf4);
+}
+
+.gas-identity-card.wrong {
+  border-color: var(--color-error, #dc2626);
+  background: var(--color-error-50, #fef2f2);
+  opacity: 0.7;
+}
+
+.gas-identity-icon {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.gas-identity-formula {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  font-family: 'JetBrains Mono', monospace, 'Courier New';
+}
+
+.gas-identity-name {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #64748b);
+  margin-top: 2px;
+}
+
+/* Gas tracker */
+.gas-tracker {
+  background: var(--color-surface-2, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 12px);
+  margin: var(--space-3, 12px) 0;
+}
+
+.gas-tracker-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.gas-tracker-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.gas-tracker-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.gas-tracker-dot.pending {
+  background: var(--color-border, #e2e8f0);
+  color: var(--color-text-secondary, #64748b);
+}
+
+.gas-tracker-dot.active {
+  background: var(--color-primary, #2563eb);
+  color: #fff;
+  box-shadow: 0 0 0 3px var(--color-primary-100, #dbeafe);
+}
+
+.gas-tracker-dot.done {
+  background: var(--color-success, #16a34a);
+  color: #fff;
+}
+
+.gas-tracker-dot.wrong {
+  background: var(--color-error, #dc2626);
+  color: #fff;
+}
+
+.gas-tracker-line {
+  width: 30px;
+  height: 3px;
+  background: var(--color-border, #e2e8f0);
+  border-radius: 2px;
+}
+
+.gas-tracker-line.done {
+  background: var(--color-success, #16a34a);
+}
+
+/* Gas summary cards */
+.gas-summary-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2, 8px);
+  margin: var(--space-3, 12px) 0;
+}
+
+.gas-summary-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  padding: var(--space-3, 12px);
+  border-radius: var(--radius-md, 8px);
+  border: 2px solid var(--color-border, #e2e8f0);
+  background: var(--color-surface, #fff);
+}
+
+.gas-summary-card.detected {
+  border-color: var(--color-success, #16a34a);
+  background: var(--color-success-50, #f0fdf4);
+}
+
+.gas-summary-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.gas-summary-info {
+  flex: 1;
+}
+
+.gas-summary-formula {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  font-family: 'JetBrains Mono', monospace, 'Courier New';
+}
+
+.gas-summary-name {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary, #64748b);
+}
+
+.gas-summary-test {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #64748b);
+  margin-top: 2px;
+}
+
+.gas-summary-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.gas-summary-badge.detected {
+  background: var(--color-success, #16a34a);
+  color: #fff;
+}
+
+.gas-summary-badge.not-detected {
+  background: var(--color-border, #e2e8f0);
+  color: var(--color-text-secondary, #64748b);
+}
+
+/* Gas confirm evidence table */
+.gas-confirm-evidence {
+  background: var(--color-surface-2, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 12px);
+  margin: var(--space-3, 12px) 0;
+}
+
+.gas-confirm-evidence-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+/* ============================================
+   RESPONSIVE — A4/A5 ENHANCEMENTS
+   ============================================ */
+
+@media (max-width: 600px) {
+  .gas-identity-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .gas-identity-card {
+    padding: 8px 4px;
+  }
+
+  .gas-identity-icon {
+    font-size: 1.5rem;
+  }
+
+  .gas-identity-formula {
+    font-size: 0.9rem;
+  }
+
+  .gas-identity-name {
+    font-size: 0.7rem;
+  }
+
+  .titre-tracker-dot {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .titre-tracker-line {
+    width: 20px;
+  }
+
+  .titrate-reading-value {
+    font-size: 1.8rem;
+  }
+
+  .titration-tool-btn {
+    min-width: 75px;
+    padding: 8px 6px;
+    font-size: 0.8rem;
+  }
+
+  .titration-tool-icon {
+    font-size: 1.3rem;
+  }
+
+  .endpoint-visual {
+    gap: var(--space-2, 8px);
+  }
+
+  .endpoint-swatch {
+    width: 40px;
+    height: 40px;
+  }
+
+  .endpoint-arrow {
+    font-size: 1.4rem;
+  }
+}

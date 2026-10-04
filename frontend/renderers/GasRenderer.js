@@ -20,16 +20,66 @@ var GasRenderer = {
     return html;
   },
 
+  /* Gas identity card helper */
+  gasCard: function(g, state, isActive) {
+    var done = state.gasResults[g.id] && state.gasResults[g.id].confirmed;
+    var cls = 'gas-card' + (done ? ' gas-card-done' : '') + (isActive ? ' gas-card-active' : '');
+    var h = '<div class="' + cls + '">';
+    h += '<div class="gas-card-icon" style="background:' + g.colour + ';">' + g.name + '</div>';
+    h += '<div class="gas-card-body">';
+    h += '<div class="gas-card-name">' + g.fullName + '</div>';
+    h += '<div class="gas-card-formula">' + g.name + '</div>';
+    if (done) {
+      h += '<div class="gas-card-status gas-status-confirmed">&#10003; Confirmed</div>';
+    } else if (isActive) {
+      h += '<div class="gas-card-status gas-status-active">Testing now</div>';
+    } else {
+      h += '<div class="gas-card-status gas-status-pending">Pending</div>';
+    }
+    h += '</div></div>';
+    return h;
+  },
+
+  /* Gas progress tracker */
+  progressTracker: function(state) {
+    var sim = SIMULATION_CONFIG['A5'];
+    var h = '<div class="gas-tracker">';
+    for (var i = 0; i < sim.gases.length; i++) {
+      var g = sim.gases[i];
+      var done = state.gasResults[g.id] && state.gasResults[g.id].confirmed;
+      var active = state.gasCurrentIndex === i && !done;
+      var cls = 'gas-tracker-item' + (done ? ' done' : '') + (active ? ' active' : '');
+      h += '<div class="' + cls + '">';
+      h += '<span class="gas-tracker-dot" style="background:' + (done ? '#2f7d4f' : active ? g.colour : '#ccc') + ';"></span>';
+      h += '<span class="gas-tracker-label">' + g.name + '</span>';
+      h += '</div>';
+    }
+    h += '</div>';
+    return h;
+  },
+
   renderPrepare: function(exp, state) {
+    var sim = SIMULATION_CONFIG['A5'];
     var html = '<div class="stage-card"><h3 class="stage-card-title">Prepare for Gas Detection</h3>';
-    html += '<p>You will test three gases: NH\u2083, CO\u2082, and Cl\u2082.</p>';
-    html += '<p>For each gas, you will:</p>';
+    html += '<p>You will test three gases using appropriate chemical tests.</p>';
+    html += '<div class="gas-prep-grid">';
+    for (var i = 0; i < sim.gases.length; i++) {
+      var g = sim.gases[i];
+      html += '<div class="gas-prep-card">';
+      html += '<div class="gas-prep-icon" style="background:' + g.colour + ';">' + g.name + '</div>';
+      html += '<div class="gas-prep-info">';
+      html += '<strong>' + g.fullName + '</strong>';
+      html += '<span class="gas-prep-test">' + g.correctTestLabel + '</span>';
+      html += '</div></div>';
+    }
+    html += '</div>';
+    html += '<p style="margin-top:1rem;">For each gas, you will:</p>';
     html += '<ul>';
-    html += '<li>Select the gas</li>';
-    html += '<li>Select the appropriate test</li>';
-    html += '<li>Perform the virtual test</li>';
-    html += '<li>Observe and record the evidence</li>';
-    html += '<li>Interpret and confirm the gas</li>';
+    html += '<li>Select the gas to test</li>';
+    html += '<li>Choose the correct chemical test</li>';
+    html += '<li>Perform the virtual test and observe the result</li>';
+    html += '<li>Record and interpret the evidence</li>';
+    html += '<li>Confirm the gas identity</li>';
     html += '</ul>';
     html += '<div class="sim-note">All observations shown are simulated educational values.</div>';
     html += '</div>';
@@ -39,14 +89,24 @@ var GasRenderer = {
   renderSelectGas: function(exp, state) {
     var sim = SIMULATION_CONFIG['A5'];
     var html = '<div class="stage-card"><h3 class="stage-card-title">Select a Gas</h3>';
+    html += this.progressTracker(state);
     html += '<p>Choose the next gas to test.</p>';
-    html += '<div class="tool-options">';
+    html += '<div class="gas-select-grid">';
     for (var i = 0; i < sim.gases.length; i++) {
       var g = sim.gases[i];
       var done = state.gasResults[g.id] && state.gasResults[g.id].confirmed;
-      var cls = done ? 'btn btn-secondary' : 'btn btn-accent';
-      var label = g.name + (done ? ' \u2713 Confirmed' : '');
-      html += '<button class="' + cls + '" data-gas="' + g.id + '" ' + (done ? 'disabled' : '') + '>' + label + '</button>';
+      var active = state.gasCurrentIndex === i && !done;
+      var cls = 'gas-select-card' + (done ? ' done' : '') + (active ? ' active' : '');
+      html += '<button class="' + cls + '" data-gas="' + g.id + '" ' + (done ? 'disabled' : '') + '>';
+      html += '<div class="gas-select-icon" style="background:' + g.colour + ';">' + g.name + '</div>';
+      html += '<div class="gas-select-name">' + g.fullName + '</div>';
+      html += '<div class="gas-select-formula">' + g.name + '</div>';
+      if (done) {
+        html += '<div class="gas-select-status confirmed">&#10003; Confirmed</div>';
+      } else {
+        html += '<div class="gas-select-status">Tap to test</div>';
+      }
+      html += '</button>';
     }
     html += '</div>';
     html += '</div>';
@@ -57,11 +117,21 @@ var GasRenderer = {
     var gas = this.getGasByIndex(state.gasCurrentIndex);
     if (!gas) return '';
     var html = '<div class="stage-card"><h3 class="stage-card-title">Select Test for ' + gas.name + '</h3>';
+    html += '<div class="gas-target-banner">';
+    html += '<div class="gas-target-icon" style="background:' + gas.colour + ';">' + gas.name + '</div>';
+    html += '<div class="gas-target-info">';
+    html += '<strong>' + gas.fullName + '</strong>';
+    html += '<span>' + gas.name + '</span>';
+    html += '</div></div>';
     html += '<p>Choose the correct test to identify <strong>' + gas.fullName + '</strong>.</p>';
-    html += '<div class="tool-options">';
+    html += '<div class="gas-test-options">';
     for (var i = 0; i < gas.testOptions.length; i++) {
       var t = gas.testOptions[i];
-      html += '<button class="btn btn-tool" data-test="' + t.id + '">' + t.label + '</button>';
+      var icon = t.id === 'limewater' ? '&#129514;' : (t.id === 'damp_red_litmus' ? '&#128331;' : '&#128993;');
+      html += '<button class="gas-test-btn" data-test="' + t.id + '">';
+      html += '<span class="gas-test-icon">' + icon + '</span>';
+      html += '<span class="gas-test-label">' + t.label + '</span>';
+      html += '</button>';
     }
     html += '</div>';
     html += '<div class="sim-note">Select the most appropriate test for this gas.</div>';
@@ -72,14 +142,42 @@ var GasRenderer = {
   renderPerformTest: function(exp, state) {
     var gas = this.getGasByIndex(state.gasCurrentIndex);
     if (!gas) return '';
+    var res = state.gasResults[gas.id] || {};
+    var selectedTest = res.selectedTest || gas.correctTest;
+    var testLabel = gas.correctTestLabel;
+    for (var t = 0; t < gas.testOptions.length; t++) {
+      if (gas.testOptions[t].id === selectedTest) testLabel = gas.testOptions[t].label;
+    }
+    var isCorrect = selectedTest === gas.correctTest;
+
     var html = '<div class="stage-card"><h3 class="stage-card-title">Perform Test: ' + gas.name + '</h3>';
-    html += '<p>Gas: <strong>' + gas.fullName + '</strong></p>';
-    html += '<p>Test: <strong>' + gas.correctTestLabel + '</strong></p>';
+    html += '<div class="gas-target-banner">';
+    html += '<div class="gas-target-icon" style="background:' + gas.colour + ';">' + gas.name + '</div>';
+    html += '<div class="gas-target-info">';
+    html += '<strong>' + gas.fullName + '</strong>';
+    html += '<span>Test: ' + testLabel + '</span>';
+    html += '</div></div>';
+
     if (state.gasTestPerformed && state.simulation && state.simulation.done) {
-      html += '<div class="feedback feedback-correct">Test performed. Observation: ' + gas.observedChange + '</div>';
+      if (isCorrect) {
+        html += '<div class="feedback feedback-correct">&#10003; Correct test selected!</div>';
+        html += '<div class="gas-observation-card">';
+        html += '<div class="gas-obs-label">Observed Result</div>';
+        html += '<div class="gas-obs-value">' + gas.observedChange + '</div>';
+        html += '</div>';
+      } else {
+        html += '<div class="feedback feedback-incorrect">&#10007; That test is not appropriate for ' + gas.name + '.</div>';
+        html += '<div class="gas-observation-card gas-obs-wrong">';
+        html += '<div class="gas-obs-label">What Happened</div>';
+        html += '<div class="gas-obs-value">No significant change was observed.</div>';
+        html += '<div class="gas-obs-hint">The correct test for ' + gas.name + ' is <strong>' + gas.correctTestLabel + '</strong>.</div>';
+        html += '</div>';
+      }
       html += '<div class="sim-note">This is a simulated educational value.</div>';
     } else {
-      html += '<div data-action="perform-test" class="btn btn-primary">Start Test</div>';
+      html += '<div class="gas-perform-area">';
+      html += '<div data-action="perform-test" class="btn btn-primary gas-perform-btn">Start Test</div>';
+      html += '</div>';
     }
     html += '</div>';
     return html;
@@ -89,9 +187,15 @@ var GasRenderer = {
     var gas = this.getGasByIndex(state.gasCurrentIndex);
     if (!gas) return '';
     var html = '<div class="stage-card"><h3 class="stage-card-title">Observe: ' + gas.name + '</h3>';
-    html += '<p>Examine the evidence from the test.</p>';
-    html += '<p class="detail-label">Simulated observation</p>';
-    html += '<p><strong>' + gas.observedChange + '</strong></p>';
+    html += '<div class="gas-target-banner">';
+    html += '<div class="gas-target-icon" style="background:' + gas.colour + ';">' + gas.name + '</div>';
+    html += '<div class="gas-target-info"><strong>' + gas.fullName + '</strong></div>';
+    html += '</div>';
+    html += '<div class="gas-observation-card">';
+    html += '<div class="gas-obs-label">Simulated Observation</div>';
+    html += '<div class="gas-obs-value">' + gas.observedChange + '</div>';
+    html += '</div>';
+    html += '<p style="margin-top:0.75rem;">Examine the evidence carefully. What does this observation tell you about the gas?</p>';
     html += '<div class="sim-note">The observation shown is a simulated educational value.</div>';
     html += '</div>';
     return html;
@@ -103,6 +207,10 @@ var GasRenderer = {
     var res = state.gasResults[gas.id] || {};
     var html = '<div class="stage-card"><h3 class="stage-card-title">Record Observation: ' + gas.name + '</h3>';
     html += '<p>Record what you observed during the test.</p>';
+    html += '<div class="gas-obs-hint-box">';
+    html += '<p><strong>Expected observation:</strong> ' + gas.observedChange + '</p>';
+    html += '<p>Write your own description based on what you saw.</p>';
+    html += '</div>';
     html += '<div class="form-group"><label class="form-label">Your observation</label>';
     html += '<textarea id="gas-record-input" class="form-textarea" placeholder="Describe what you observed...">' +
       ChemSim.escapeHtml(res.recorded || '') + '</textarea></div>';
@@ -117,8 +225,10 @@ var GasRenderer = {
     var res = state.gasResults[gas.id] || {};
     var html = '<div class="stage-card"><h3 class="stage-card-title">Interpret: ' + gas.name + '</h3>';
     html += '<p>Based on your observation, what does this tell you about the gas?</p>';
-    html += '<p class="detail-label">Guiding question</p>';
-    html += '<p>Does the evidence confirm the identity of ' + gas.fullName + '?</p>';
+    html += '<div class="gas-interpret-guide">';
+    html += '<p><strong>' + gas.name + ' (' + gas.fullName + ')</strong></p>';
+    html += '<p>' + gas.explanation + '</p>';
+    html += '</div>';
     html += '<div class="form-group"><label class="form-label">Your interpretation</label>';
     html += '<textarea id="gas-interpret-input" class="form-textarea" placeholder="Write your interpretation here...">' +
       ChemSim.escapeHtml(res.interpretation || '') + '</textarea></div>';
@@ -133,13 +243,14 @@ var GasRenderer = {
     var res = state.gasResults[gas.id] || {};
     var html = '<div class="stage-card"><h3 class="stage-card-title">Confirm: ' + gas.name + '</h3>';
     html += '<p>Based on your observation and interpretation, confirm the identity of the gas.</p>';
-    html += '<p class="detail-label">Evidence</p>';
-    html += '<p>Gas: <strong>' + gas.fullName + '</strong></p>';
-    html += '<p>Test: <strong>' + gas.correctTestLabel + '</strong></p>';
-    html += '<p>Observation: <strong>' + (res.recorded || '-') + '</strong></p>';
-    html += '<p>Interpretation: <strong>' + (res.interpretation || '-') + '</strong></p>';
-    html += '<p>Expected observation: <strong>' + gas.observedChange + '</strong></p>';
-    html += '<div data-action="confirm-gas" class="btn btn-primary">Confirm Gas</div>';
+    html += '<div class="gas-confirm-evidence">';
+    html += '<div class="gas-evidence-row"><span class="gas-evidence-label">Gas</span><span class="gas-evidence-value">' + gas.name + ' (' + gas.fullName + ')</span></div>';
+    html += '<div class="gas-evidence-row"><span class="gas-evidence-label">Test</span><span class="gas-evidence-value">' + gas.correctTestLabel + '</span></div>';
+    html += '<div class="gas-evidence-row"><span class="gas-evidence-label">Observation</span><span class="gas-evidence-value">' + ChemSim.escapeHtml(res.recorded || '-') + '</span></div>';
+    html += '<div class="gas-evidence-row"><span class="gas-evidence-label">Interpretation</span><span class="gas-evidence-value">' + ChemSim.escapeHtml(res.interpretation || '-') + '</span></div>';
+    html += '<div class="gas-evidence-row"><span class="gas-evidence-label">Expected</span><span class="gas-evidence-value">' + gas.observedChange + '</span></div>';
+    html += '</div>';
+    html += '<div data-action="confirm-gas" class="btn btn-primary">Confirm ' + gas.name + '</div>';
     html += '</div>';
     return html;
   },
@@ -151,13 +262,19 @@ var GasRenderer = {
     for (var i = 0; i < sim.gases.length; i++) {
       if (state.gasResults[sim.gases[i].id] && state.gasResults[sim.gases[i].id].confirmed) confirmedCount++;
     }
-    var html = '<div class="stage-card"><h3 class="stage-card-title">Gas Confirmed: ' + (gas ? gas.name : '') + '</h3>';
-    html += '<div class="feedback feedback-correct">' + (gas ? gas.name : '') + ' has been confirmed.</div>';
-    html += '<p>Confirmed: ' + confirmedCount + ' / ' + sim.gases.length + '</p>';
+    var html = '<div class="stage-card"><h3 class="stage-card-title">Gas Confirmed!</h3>';
+    html += '<div class="gas-confirm-success">';
+    html += '<div class="gas-confirm-icon" style="background:' + (gas ? gas.colour : '#2f7d4f') + ';">&#10003;</div>';
+    html += '<div class="gas-confirm-text">';
+    html += '<strong>' + (gas ? gas.fullName : '') + '</strong> has been confirmed.';
+    html += '<span>' + (gas ? gas.explanation : '') + '</span>';
+    html += '</div></div>';
+    html += this.progressTracker(state);
+    html += '<p style="margin-top:0.75rem;">Confirmed: ' + confirmedCount + ' / ' + sim.gases.length + ' gases</p>';
     if (confirmedCount < sim.gases.length) {
-      html += '<div data-action="go-next-gas" class="btn btn-accent">Test Next Gas</div>';
+      html += '<div data-action="go-next-gas" class="btn btn-accent">Test Next Gas &rarr;</div>';
     } else {
-      html += '<div data-action="go-summary" class="btn btn-accent">View Summary</div>';
+      html += '<div data-action="go-summary" class="btn btn-primary">View Summary &rarr;</div>';
     }
     html += '</div>';
     return html;
@@ -166,19 +283,23 @@ var GasRenderer = {
   renderSummary: function(exp, state) {
     var sim = SIMULATION_CONFIG['A5'];
     var html = '<div class="stage-card"><h3 class="stage-card-title">Summary of Gas Tests</h3>';
-    html += '<table class="table"><thead><tr><th>Gas</th><th>Test</th><th>Recorded Observation</th><th>Interpretation</th><th>Confirmation</th></tr></thead><tbody>';
+    html += '<div class="gas-summary-cards">';
     for (var i = 0; i < sim.gases.length; i++) {
       var g = sim.gases[i];
       var res = state.gasResults[g.id] || {};
-      html += '<tr>';
-      html += '<td>' + g.name + '</td>';
-      html += '<td>' + g.correctTestLabel + '</td>';
-      html += '<td>' + ChemSim.escapeHtml(res.recorded || '-') + '</td>';
-      html += '<td>' + ChemSim.escapeHtml(res.interpretation || '-') + '</td>';
-      html += '<td>' + (res.confirmed ? '\u2713 Confirmed' : '-') + '</td>';
-      html += '</tr>';
+      var confirmed = !!res.confirmed;
+      html += '<div class="gas-summary-card' + (confirmed ? ' confirmed' : '') + '">';
+      html += '<div class="gas-summary-header">';
+      html += '<div class="gas-summary-icon" style="background:' + g.colour + ';">' + g.name + '</div>';
+      html += '<div class="gas-summary-status">' + (confirmed ? '&#10003; Confirmed' : '&#10007; Not confirmed') + '</div>';
+      html += '</div>';
+      html += '<div class="gas-summary-body">';
+      html += '<p><strong>Test:</strong> ' + g.correctTestLabel + '</p>';
+      html += '<p><strong>Observation:</strong> ' + ChemSim.escapeHtml(res.recorded || '-') + '</p>';
+      html += '<p><strong>Interpretation:</strong> ' + ChemSim.escapeHtml(res.interpretation || '-') + '</p>';
+      html += '</div></div>';
     }
-    html += '</tbody></table>';
+    html += '</div>';
     html += '<div class="sim-note">All observations are simulated educational values.</div>';
     html += '</div>';
     return html;
@@ -207,14 +328,23 @@ var GasRenderer = {
     html += '<div class="detail-row"><span class="detail-label">Section</span><span class="detail-value">' + (exp.section.charAt(0).toUpperCase() + exp.section.slice(1)) + ' Practical</span></div>';
     html += '<div class="detail-row"><span class="detail-label">SLO</span><span class="detail-value">' + exp.slos.join(', ') + '</span></div>';
     html += '<hr class="divider">';
-    html += '<p><strong>Gases confirmed:</strong> ' + sim.gases.length + '</p>';
+    html += '<div class="gas-summary-cards">';
     for (var i = 0; i < sim.gases.length; i++) {
       var g = sim.gases[i];
       var res = state.gasResults[g.id] || {};
-      html += '<p>' + g.name + ' \u2014 Test: ' + g.correctTestLabel + ' \u2014 ' + (res.confirmed ? '\u2713 Confirmed' : '-') + '</p>';
-      html += '<p style="margin-left:1rem;">Observation: ' + ChemSim.escapeHtml(res.recorded || '-') + '</p>';
-      html += '<p style="margin-left:1rem;">Interpretation: ' + ChemSim.escapeHtml(res.interpretation || '-') + '</p>';
+      var confirmed = !!res.confirmed;
+      html += '<div class="gas-summary-card' + (confirmed ? ' confirmed' : '') + '">';
+      html += '<div class="gas-summary-header">';
+      html += '<div class="gas-summary-icon" style="background:' + g.colour + ';">' + g.name + '</div>';
+      html += '<div class="gas-summary-status">' + (confirmed ? '&#10003; Confirmed' : '-') + '</div>';
+      html += '</div>';
+      html += '<div class="gas-summary-body">';
+      html += '<p><strong>Test:</strong> ' + g.correctTestLabel + '</p>';
+      html += '<p><strong>Observation:</strong> ' + ChemSim.escapeHtml(res.recorded || '-') + '</p>';
+      html += '<p><strong>Interpretation:</strong> ' + ChemSim.escapeHtml(res.interpretation || '-') + '</p>';
+      html += '</div></div>';
     }
+    html += '</div>';
     html += '<hr class="divider">';
     html += '<p class="detail-label">Your Conclusion</p><p>' + ChemSim.escapeHtml(state.conclusion || '-') + '</p>';
     html += '<div class="sim-note">All observations are simulated educational values.</div>';
@@ -286,11 +416,26 @@ var GasRenderer = {
     ctx.fillStyle = '#b3a184';
     ctx.fillRect(0, 534, cw, ch - 534);
 
-    ctx.fillStyle = '#333';
+    /* Title banner */
+    var bannerW = 380, bannerH = 40, bannerX = cx - bannerW / 2, bannerY = 10;
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = gas.colour;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bannerX + 6, bannerY);
+    ctx.arcTo(bannerX + bannerW, bannerY, bannerX + bannerW, bannerY + bannerH, 6);
+    ctx.arcTo(bannerX + bannerW, bannerY + bannerH, bannerX, bannerY + bannerH, 6);
+    ctx.arcTo(bannerX, bannerY + bannerH, bannerX, bannerY, 6);
+    ctx.arcTo(bannerX, bannerY, bannerX + bannerW, bannerY, 6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#222';
     ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(gas.name + ' \u2014 ' + testLabel, cx, 30);
+    ctx.fillText(gas.name + ' \u2014 ' + testLabel, cx, bannerY + 25);
 
+    /* Gas jar */
     var gx = 95, gBase = 500, gW = 104, gH = 86, gNeckW = 28, gNeckH = 46;
     var gLeft = gx - gW / 2;
     var gRight = gx + gW / 2;
@@ -357,6 +502,7 @@ var GasRenderer = {
     ctx.stroke();
     ctx.restore();
 
+    /* Test apparatus */
     if (isLime) {
       this.drawRack(ctx, 420, 500);
       this.drawLimeTube(ctx, 420, 300, 470, gasConfig, colourT, prog, now);
@@ -364,6 +510,7 @@ var GasRenderer = {
       this.drawLitmusJar(ctx, 418, gasConfig, colourT, flowProg, now);
     }
 
+    /* Delivery tube */
     ctx.save();
     ctx.strokeStyle = 'rgba(125,145,165,0.9)';
     ctx.lineWidth = 6;
@@ -383,6 +530,7 @@ var GasRenderer = {
     ctx.stroke();
     ctx.restore();
 
+    /* Status banner */
     ctx.textAlign = 'center';
     if (!state.simulation) {
       ctx.fillStyle = '#556';

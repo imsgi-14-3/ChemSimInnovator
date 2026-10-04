@@ -719,8 +719,8 @@ var ChemSim = (function() {
     if (gas && recEl && recEl.value.trim()) {
       st.gasResults[gas.id] = st.gasResults[gas.id] || {};
       st.gasResults[gas.id].recorded = recEl.value.trim();
-      st.currentStage = 'interpret';
-      st.stageIndex = st.currentStage === 'interpret' ? appState.stages.indexOf('interpret') : appState.stageIndex;
+      appState.currentStage = 'interpret';
+      appState.stageIndex = appState.stages.indexOf('interpret');
       renderExperimentStage();
     }
   }
@@ -732,8 +732,8 @@ var ChemSim = (function() {
     if (gas && interpEl && interpEl.value.trim()) {
       st.gasResults[gas.id] = st.gasResults[gas.id] || {};
       st.gasResults[gas.id].interpretation = interpEl.value.trim();
-      st.currentStage = 'confirm';
-      st.stageIndex = appState.stages.indexOf('confirm');
+      appState.currentStage = 'confirm';
+      appState.stageIndex = appState.stages.indexOf('confirm');
       renderExperimentStage();
     }
   }
@@ -744,8 +744,8 @@ var ChemSim = (function() {
     if (gas) {
       st.gasResults[gas.id] = st.gasResults[gas.id] || {};
       st.gasResults[gas.id].confirmed = true;
-      st.currentStage = 'nextGas';
-      st.stageIndex = appState.stages.indexOf('nextGas');
+      appState.currentStage = 'nextGas';
+      appState.stageIndex = appState.stages.indexOf('nextGas');
       renderExperimentStage();
     }
   }
@@ -758,11 +758,11 @@ var ChemSim = (function() {
       if (st.gasResults[sim.gases[i].id] && st.gasResults[sim.gases[i].id].confirmed) confirmedCount++;
     }
     if (confirmedCount < sim.gases.length) {
-      st.currentStage = 'selectGas';
-      st.stageIndex = appState.stages.indexOf('selectGas');
+      appState.currentStage = 'selectGas';
+      appState.stageIndex = appState.stages.indexOf('selectGas');
     } else {
-      st.currentStage = 'summary';
-      st.stageIndex = appState.stages.indexOf('summary');
+      appState.currentStage = 'summary';
+      appState.stageIndex = appState.stages.indexOf('summary');
     }
     renderExperimentStage();
   }
