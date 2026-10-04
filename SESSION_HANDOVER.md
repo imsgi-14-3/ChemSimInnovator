@@ -13,7 +13,7 @@ ChemSim — Interactive Virtual Chemistry Laboratory for Grade 9/10 FBISE PBA ex
 - Repo: `https://github.com/imsgi-14-3/ChemSimInnovator.git`
 - Branch: `main`
 - Author: `imsgi-14-3 <imsgi14.3cb2@gmail.com>`
-- Last commit: `f65b4cf` — feat: A4/A5 UI enhancements — titre tracker, gas identity cards, improved visuals
+- Last commit: (see `git log --oneline -1`)
 
 ## How to Run
 1. Open `index.html` in browser
@@ -107,11 +107,14 @@ ChemSimInnovator/
 - Apparatus list updated: `'Beaker (250 mL, HCl)'` added to `PRACTICAL_APPARATUS.A4`
 - Cache-busted: `index.html` → `DemoScreen.js?v=a4beaker1`
 
-### A4 Interactive Canvas — Enhanced This Session
-- `simulationConfig.js` A4: added `hclBeaker: { cx: 250, cy: 555, w: 72, h: 85, liquidLevel: 0.55, label: 'Beaker (250 mL)\n(with HCl)' }`
-- `TitrationRenderer.js`: new `drawBeaker()` (glass body, pour spout, rim, graduations, HCl liquid, label, highlights); called in `draw()` between flask and burette
-- `drawReagentBottle()`: ribbed screw cap + clear liquid fill with meniscus
-- `drawLabels()`: beaker label "Beaker (250 mL) / (with HCl)"
+### A4 Interactive Canvas — Redesigned This Session (Clean)
+- **New layout**: bench surface + wall background, retort stand, burette, clamp, stopcock, conical flask on white tile, new realistic beaker
+- **Removed from surface**: NaOH bottle, HCl bottle, indicator bottle, pipette (clutter removed)
+- **New beaker** (`drawBeaker`): straight-walled 250 mL beaker with pour spout, rim, graduations (50–250 mL with minor ticks), HCl liquid fill with meniscus, white label, glass highlights, base thickness
+- **New bench** (`drawBench`): wood-grain bench surface + subtle wall panel background
+- **Minimal labels**: Burette (HCl), Beaker (HCl), Conical flask (NaOH + indicator), White tile
+- **simulationConfig.js A4**: removed `naohBottle`, `hclBottle`, `indicatorBottle`, `pipette`; new `hclBeaker: { cx: 160, cy: 540, w: 100, h: 110 }`; burette/stand/flask/tile repositioned
+- **Cache-busted**: `index.html` → `TitrationRenderer.js?v=a4clean1`, `simulationConfig.js?v=a4clean1`
 
 ### A4 UI Enhancements — New This Session
 - **TitrationRenderer.js HTML stages enhanced**:
@@ -213,10 +216,9 @@ Node/Python/browser unavailable in this environment. Tests used:
 - M14 release freeze noted; demo visual work is user-directed
 
 ## Next Steps When You Resume
-1. Open `index.html` in browser → A4 Titration: verify titre tracker, step lists, endpoint visual, mean titre box render correctly
-2. Test A4 interactive flow: Prepare → Fill Burette → Measure Sample → Titrate (verify titre tracker updates) → Endpoint → Record → Calculate
-3. Open A5 Gas Detection: verify gas identity cards, gas tracker, wrong-test feedback, gas summary cards render correctly
-4. Test A5 interactive flow: Identify → Test (verify gas tracker updates, wrong-test feedback) → Confirm → Complete
-5. Check responsive design at 600px width — verify all A4/A5 elements scale properly
-6. Run `git status` before starting any work
-7. Update DEVELOPMENT_LOG.md when milestone approved
+1. Open `index.html` in browser → A4 Titration: verify clean bench layout with new beaker, no bottles/pipette clutter
+2. Test A4 interactive flow: Prepare → Fill Burette → Measure Sample → Titrate → Endpoint → Record → Calculate
+3. Verify all buttons work: Fill Burette, Measure Sample, Record Titre, Check Calculation, tool quiz buttons
+4. Open A5 Gas Detection: verify gas identity cards, gas tracker, wrong-test feedback, gas summary cards
+5. Run `git status` before starting any work
+6. Update DEVELOPMENT_LOG.md when milestone approved
