@@ -238,7 +238,7 @@ var EXPERIMENTS = [
     stages: [
       "select", "objective", "apparatus", "prepare", "fillBurette",
       "measureSample", "titrate", "endpoint", "record",
-      "calculate", "interpret", "conclude", "complete"
+      "calculate", "interpret", "complete"
     ]
   },
   {

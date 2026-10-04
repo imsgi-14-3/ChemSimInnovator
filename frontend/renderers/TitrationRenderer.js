@@ -10,7 +10,6 @@ var TitrationRenderer = {
       case 'record': html = this.renderRecord(exp, state); break;
       case 'calculate': html = this.renderCalculate(exp, state); break;
       case 'interpret': html = this.renderInterpret(exp, state); break;
-      case 'conclude': html = this.renderConclude(exp, state); break;
       case 'complete': html = this.renderComplete(exp, state); break;
       default: html = '<p>Stage: ' + stage + '</p>';
     }
@@ -278,21 +277,6 @@ var TitrationRenderer = {
     return html;
   },
 
-  renderConclude: function(exp, state) {
-    var html = '<div class="stage-card"><h3 class="stage-card-title">Conclusion</h3>';
-    html += '<p>Write your conclusion based on your titration data and interpretation.</p>';
-    html += '<p>Your conclusion should address:</p>';
-    html += '<ul>';
-    html += '<li>The determined molarity of the NaOH solution</li>';
-    html += '<li>The concordance of your titre values</li>';
-    html += '<li>Any factors that may have affected the accuracy</li>';
-    html += '</ul>';
-    html += '<div class="form-group"><label class="form-label">Your Conclusion</label>';
-    html += '<textarea id="conclusion-input" class="form-textarea" placeholder="Write your conclusion here...">' + ChemSim.escapeHtml(state.conclusion) + '</textarea></div>';
-    html += '</div>';
-    return html;
-  },
-
   renderComplete: function(exp, state) {
     var sim = SIMULATION_CONFIG[exp.id];
     var html = '<div class="stage-card"><h3 class="stage-card-title">Experiment Complete</h3>';
@@ -306,7 +290,6 @@ var TitrationRenderer = {
     html += '<p><strong>Determined NaOH molarity:</strong> ' + sim.expectedMolarity.toFixed(4) + ' mol/L (simulated)</p>';
     html += '<hr class="divider">';
     html += '<p class="detail-label">Your Interpretation</p><p>' + ChemSim.escapeHtml(state.interpretation || '-') + '</p>';
-    html += '<p class="detail-label">Your Conclusion</p><p>' + ChemSim.escapeHtml(state.conclusion || '-') + '</p>';
     html += '<div class="sim-note">All volume and concentration values are simulated educational values, not real laboratory measurements.</div>';
     html += '<div data-action="finish-experiment" class="btn btn-primary" style="margin-top:1rem;">Finish Experiment</div>';
     html += '</div>';

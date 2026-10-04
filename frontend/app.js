@@ -178,7 +178,6 @@ var ChemSim = (function() {
         case 'record': return true;
         case 'calculate': return state.titrationCalcChecked === true;
         case 'interpret': return state.interpretation && state.interpretation.trim().length > 0;
-        case 'conclude': return state.conclusion && state.conclusion.trim().length > 0;
         case 'complete': return true;
         default: return true;
       }
