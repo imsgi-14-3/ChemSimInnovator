@@ -131,7 +131,8 @@ var TitrationRenderer = {
     var sim = SIMULATION_CONFIG[exp.id];
     var trialNum = state.titrationTrialIndex + 1;
     var totalTrials = sim.trials.length;
-    var html = '<div class="stage-card"><h3 class="stage-card-title">Titrate \u2014 Trial ' + trialNum + ' of ' + totalTrials + '</h3>';
+    var allDone = state.titrationTrialIndex >= totalTrials;
+    var html = '<div class="stage-card"><h3 class="stage-card-title">' + (allDone ? 'All Trials Complete' : 'Titrate \u2014 Trial ' + trialNum + ' of ' + totalTrials) + '</h3>';
 
     /* Titre tracker */
     html += '<div class="titre-tracker">';
@@ -147,41 +148,45 @@ var TitrationRenderer = {
     html += '</div>';
     html += '</div>';
 
-    html += '<p>Slowly add HCl from the burette while watching the flask colour.</p>';
-    html += '<p>Use the <strong>stopcock slider</strong> to control the flow rate.</p>';
+    if (allDone) {
+      html += '<div class="feedback feedback-correct">&#10003; All ' + totalTrials + ' trials recorded. Click <strong>Next Step</strong> to continue to the endpoint observation.</div>';
+    } else {
+      html += '<p>Slowly add HCl from the burette while watching the flask colour.</p>';
+      html += '<p>Use the <strong>stopcock slider</strong> to control the flow rate.</p>';
 
-    /* Live burette reading */
-    html += '<div class="titrate-reading">';
-    html += '<div class="titrate-reading-label">Burette Reading</div>';
-    html += '<div class="titrate-reading-value">' + state.titrationVolume.toFixed(2) + ' <span>mL</span></div>';
-    html += '<div class="titrate-reading-bar">';
-    var pct = Math.round((state.titrationVolume / sim.burette.maxML) * 100);
-    html += '<div class="titrate-reading-fill" style="width:' + pct + '%"></div>';
-    html += '</div>';
-    html += '<div class="titrate-reading-scale"><span>0 mL</span><span>' + sim.burette.maxML + ' mL</span></div>';
-    html += '</div>';
+      /* Live burette reading */
+      html += '<div class="titrate-reading">';
+      html += '<div class="titrate-reading-label">Burette Reading</div>';
+      html += '<div class="titrate-reading-value">' + state.titrationVolume.toFixed(2) + ' <span>mL</span></div>';
+      html += '<div class="titrate-reading-bar">';
+      var pct = Math.round((state.titrationVolume / sim.burette.maxML) * 100);
+      html += '<div class="titrate-reading-fill" style="width:' + pct + '%"></div>';
+      html += '</div>';
+      html += '<div class="titrate-reading-scale"><span>0 mL</span><span>' + sim.burette.maxML + ' mL</span></div>';
+      html += '</div>';
 
-    html += '<div class="form-group"><label class="form-label">Stopcock Control</label>';
-    var sliderVal = Math.round(((state.titrationVolume || 0) / sim.burette.maxML) * 100);
-    html += '<div class="form-range"><input type="range" id="stopcock-slider" min="0" max="100" value="' + sliderVal + '"></div>';
-    html += '<p class="text-sm text-secondary">Slide to open the stopcock. Move toward endpoint carefully.</p></div>';
+      html += '<div class="form-group"><label class="form-label">Stopcock Control</label>';
+      var sliderVal = Math.round(((state.titrationVolume || 0) / sim.burette.maxML) * 100);
+      html += '<div class="form-range"><input type="range" id="stopcock-slider" min="0" max="100" value="' + sliderVal + '"></div>';
+      html += '<p class="text-sm text-secondary">Slide to open the stopcock. Move toward endpoint carefully.</p></div>';
 
-    var fbCls = 'feedback';
-    var fbStyle = 'display:none';
-    var fbTxt = '';
-    if (state.titrationEndpointReached && !state.titrationEndpointPassed) {
-      fbCls = 'feedback feedback-correct';
-      fbStyle = '';
-      fbTxt = '&#10003; Endpoint reached! The pink colour has just disappeared. Stop adding HCl.';
-    } else if (state.titrationEndpointPassed) {
-      fbCls = 'feedback feedback-incorrect';
-      fbStyle = '';
-      fbTxt = '&#10007; Endpoint passed! Too much HCl was added. The solution is now acidic.';
+      var fbCls = 'feedback';
+      var fbStyle = 'display:none';
+      var fbTxt = '';
+      if (state.titrationEndpointReached && !state.titrationEndpointPassed) {
+        fbCls = 'feedback feedback-correct';
+        fbStyle = '';
+        fbTxt = '&#10003; Endpoint reached! The pink colour has just disappeared. Stop adding HCl.';
+      } else if (state.titrationEndpointPassed) {
+        fbCls = 'feedback feedback-incorrect';
+        fbStyle = '';
+        fbTxt = '&#10007; Endpoint passed! Too much HCl was added. The solution is now acidic.';
+      }
+      html += '<div id="titrate-feedback" class="' + fbCls + '" style="' + fbStyle + '">' + fbTxt + '</div>';
+
+      var recStyle = (state.titrationEndpointReached || state.titrationEndpointPassed) ? '' : 'display:none';
+      html += '<div id="titrate-record-btn" data-action="record-titre" class="btn btn-accent titration-action-btn" style="' + recStyle + '">Record Titre</div>';
     }
-    html += '<div id="titrate-feedback" class="' + fbCls + '" style="' + fbStyle + '">' + fbTxt + '</div>';
-
-    var recStyle = (state.titrationEndpointReached || state.titrationEndpointPassed) ? '' : 'display:none';
-    html += '<div id="titrate-record-btn" data-action="record-titre" class="btn btn-accent titration-action-btn" style="' + recStyle + '">Record Titre</div>';
     html += '<div class="sim-note">\u26a0 This is a simulated titration. Volume values are simulated educational values.</div>';
     html += '</div>';
     return html;
@@ -334,44 +339,31 @@ var TitrationRenderer = {
     this.drawLabels(ctx, sim, state);
   },
 
-  /* Clean lab bench surface */
+  /* Clean lab bench surface — matching reference style */
   drawBench: function(ctx, cw, ch) {
     ctx.save();
     var benchTop = 600;
-    /* bench surface */
+    /* clean white/light surface */
     var benchGrad = ctx.createLinearGradient(0, benchTop, 0, ch);
-    benchGrad.addColorStop(0, '#d4a574');
-    benchGrad.addColorStop(0.08, '#c9956a');
-    benchGrad.addColorStop(0.5, '#bf8a5e');
-    benchGrad.addColorStop(1, '#a87850');
+    benchGrad.addColorStop(0, '#f0f2f5');
+    benchGrad.addColorStop(0.3, '#e8ecf0');
+    benchGrad.addColorStop(1, '#dde2e8');
     ctx.fillStyle = benchGrad;
     ctx.fillRect(0, benchTop, cw, ch - benchTop);
-    /* bench top edge highlight */
-    ctx.fillStyle = 'rgba(255,220,180,0.4)';
-    ctx.fillRect(0, benchTop, cw, 2);
-    /* subtle wood grain lines */
-    ctx.strokeStyle = 'rgba(140,90,50,0.15)';
-    ctx.lineWidth = 1;
-    for (var i = 0; i < 6; i++) {
-      var gy = benchTop + 8 + i * 7;
-      ctx.beginPath();
-      ctx.moveTo(0, gy);
-      ctx.bezierCurveTo(cw * 0.3, gy + 2, cw * 0.6, gy - 1, cw, gy + 1);
-      ctx.stroke();
-    }
-    /* background wall */
+    /* surface edge line */
+    ctx.strokeStyle = '#c5ccd4';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, benchTop);
+    ctx.lineTo(cw, benchTop);
+    ctx.stroke();
+    /* background wall — clean white with subtle gradient */
     var wallGrad = ctx.createLinearGradient(0, 0, 0, benchTop);
-    wallGrad.addColorStop(0, '#e8eef4');
-    wallGrad.addColorStop(1, '#d5dfe8');
+    wallGrad.addColorStop(0, '#fafbfc');
+    wallGrad.addColorStop(0.5, '#f5f7f9');
+    wallGrad.addColorStop(1, '#eef1f4');
     ctx.fillStyle = wallGrad;
     ctx.fillRect(0, 0, cw, benchTop);
-    /* subtle wall panel line */
-    ctx.strokeStyle = 'rgba(180,195,210,0.4)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, 280);
-    ctx.lineTo(cw, 280);
-    ctx.stroke();
     ctx.restore();
   },
 
@@ -462,27 +454,27 @@ var TitrationRenderer = {
     ctx.restore();
   },
 
-  /* Burette with HCl */
+  /* Burette with HCl — clean vector style */
   drawBurette: function(ctx, sim, state) {
     var b = sim.burette;
     var bx = b.cx - b.w / 2;
     var by = b.topY;
     ctx.save();
-    /* glass tube */
+    /* glass tube — light blue tint */
     var glassGrad = ctx.createLinearGradient(bx, by, bx + b.w, by);
-    glassGrad.addColorStop(0, 'rgba(160,195,225,0.35)');
-    glassGrad.addColorStop(0.12, 'rgba(200,225,245,0.15)');
-    glassGrad.addColorStop(0.35, 'rgba(255,255,255,0.05)');
-    glassGrad.addColorStop(0.65, 'rgba(255,255,255,0.03)');
-    glassGrad.addColorStop(0.88, 'rgba(200,225,245,0.12)');
-    glassGrad.addColorStop(1, 'rgba(160,195,225,0.32)');
+    glassGrad.addColorStop(0, 'rgba(160,195,230,0.4)');
+    glassGrad.addColorStop(0.12, 'rgba(195,220,245,0.2)');
+    glassGrad.addColorStop(0.35, 'rgba(220,238,252,0.08)');
+    glassGrad.addColorStop(0.65, 'rgba(240,248,255,0.04)');
+    glassGrad.addColorStop(0.88, 'rgba(195,220,245,0.15)');
+    glassGrad.addColorStop(1, 'rgba(160,195,230,0.38)');
     ctx.fillStyle = glassGrad;
-    ctx.strokeStyle = 'rgba(60,100,140,0.55)';
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
     ctx.lineWidth = 1.6;
     ctx.fillRect(bx, by, b.w, b.h);
     ctx.strokeRect(bx, by, b.w, b.h);
     /* top rim */
-    ctx.strokeStyle = 'rgba(60,100,140,0.5)';
+    ctx.strokeStyle = 'rgba(100,140,180,0.5)';
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.ellipse(b.cx, by + 2, b.w / 2, 3, 0, 0, Math.PI * 2);
@@ -496,9 +488,9 @@ var TitrationRenderer = {
       liquidTop = by + b.h * (1 - fillProg);
     }
     var liquidGrad = ctx.createLinearGradient(bx, liquidTop, bx, by + b.h);
-    liquidGrad.addColorStop(0, 'rgba(80,155,220,0.32)');
-    liquidGrad.addColorStop(0.5, 'rgba(65,140,210,0.42)');
-    liquidGrad.addColorStop(1, 'rgba(50,125,200,0.52)');
+    liquidGrad.addColorStop(0, 'rgba(80,155,220,0.35)');
+    liquidGrad.addColorStop(0.5, 'rgba(65,140,210,0.45)');
+    liquidGrad.addColorStop(1, 'rgba(50,125,200,0.55)');
     ctx.fillStyle = liquidGrad;
     ctx.fillRect(bx + 2, liquidTop, b.w - 4, by + b.h - liquidTop - 2);
     /* meniscus */
@@ -506,19 +498,19 @@ var TitrationRenderer = {
     ctx.beginPath();
     ctx.ellipse(b.cx, liquidTop, b.w / 2 - 2, 2.5, 0, 0, Math.PI * 2);
     ctx.fill();
-    /* graduations */
+    /* graduations — clean white lines */
     ctx.textAlign = 'right';
     for (var ml = 0; ml <= b.maxML; ml += 5) {
       var y = by + ml * mlToPixel;
       var lw = (ml % 10 === 0) ? 10 : 4;
-      ctx.strokeStyle = 'rgba(50,90,130,0.45)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
       ctx.lineWidth = (ml % 10 === 0) ? 1 : 0.5;
       ctx.beginPath();
       ctx.moveTo(bx + b.w, y);
       ctx.lineTo(bx + b.w - lw, y);
       ctx.stroke();
       if (ml % 10 === 0) {
-        ctx.fillStyle = 'rgba(50,85,125,0.65)';
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
         ctx.font = '8px sans-serif';
         ctx.fillText(ml + '', bx + b.w - 13, y + 3);
       }
@@ -528,11 +520,11 @@ var TitrationRenderer = {
     var tipW = 5;
     var tipH = 18;
     var tipGrad = ctx.createLinearGradient(b.cx - tipW / 2, by + b.h, b.cx + tipW / 2, by + b.h);
-    tipGrad.addColorStop(0, 'rgba(160,195,225,0.3)');
-    tipGrad.addColorStop(0.5, 'rgba(200,225,245,0.15)');
-    tipGrad.addColorStop(1, 'rgba(160,195,225,0.28)');
+    tipGrad.addColorStop(0, 'rgba(160,195,230,0.35)');
+    tipGrad.addColorStop(0.5, 'rgba(200,225,245,0.18)');
+    tipGrad.addColorStop(1, 'rgba(160,195,230,0.32)');
     ctx.fillStyle = tipGrad;
-    ctx.strokeStyle = 'rgba(60,100,140,0.5)';
+    ctx.strokeStyle = 'rgba(100,140,180,0.5)';
     ctx.lineWidth = 1.3;
     ctx.fillRect(b.cx - tipW / 2, by + b.h, tipW, tipH);
     ctx.strokeRect(b.cx - tipW / 2, by + b.h, tipW, tipH);
@@ -600,18 +592,18 @@ var TitrationRenderer = {
     ctx.restore();
   },
 
-  /* White tile under flask */
+  /* White tile under flask — clean style */
   drawWhiteTile: function(ctx, sim) {
     var t = sim.whiteTile;
     ctx.save();
     var tileGrad = ctx.createLinearGradient(t.cx - t.w / 2, t.cy - t.h / 2, t.cx + t.w / 2, t.cy + t.h / 2);
-    tileGrad.addColorStop(0, '#e8e8e8');
-    tileGrad.addColorStop(0.3, '#f5f5f5');
-    tileGrad.addColorStop(0.7, '#fafafa');
-    tileGrad.addColorStop(1, '#e0e0e0');
+    tileGrad.addColorStop(0, '#f0f2f5');
+    tileGrad.addColorStop(0.3, '#f8f9fa');
+    tileGrad.addColorStop(0.7, '#fafbfc');
+    tileGrad.addColorStop(1, '#e8ecf0');
     ctx.fillStyle = tileGrad;
-    ctx.strokeStyle = '#c0c0c0';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#c5ccd4';
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.moveTo(t.cx - t.w / 2 + 3, t.cy - t.h / 2);
     ctx.lineTo(t.cx + t.w / 2 - 3, t.cy - t.h / 2);
@@ -625,13 +617,10 @@ var TitrationRenderer = {
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    /* subtle highlight */
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.fillRect(t.cx - t.w / 2 + 4, t.cy - t.h / 2 + 2, t.w - 8, 2);
     ctx.restore();
   },
 
-  /* Conical flask with NaOH + indicator */
+  /* Conical flask — clean vector style matching reference */
   drawFlask: function(ctx, sim, state) {
     var f = sim.flask;
     var fLeft = f.cx - f.bodyW / 2;
@@ -641,113 +630,143 @@ var TitrationRenderer = {
     var neckTop = fShoulder - f.neckH;
     ctx.save();
     if (state.currentStage === 'titrate') {
-      ctx.translate(Math.sin(Date.now() / 280) * 2, 0);
+      ctx.translate(Math.sin(Date.now() / 280) * 1.5, 0);
     }
-    /* flask glass body */
-    var flaskGrad = ctx.createLinearGradient(fLeft, f.cy, fRight, f.cy);
-    flaskGrad.addColorStop(0, 'rgba(145,185,215,0.38)');
-    flaskGrad.addColorStop(0.08, 'rgba(185,215,240,0.2)');
-    flaskGrad.addColorStop(0.25, 'rgba(230,245,255,0.08)');
-    flaskGrad.addColorStop(0.5, 'rgba(255,255,255,0.04)');
-    flaskGrad.addColorStop(0.75, 'rgba(230,245,255,0.06)');
-    flaskGrad.addColorStop(0.92, 'rgba(185,215,240,0.16)');
-    flaskGrad.addColorStop(1, 'rgba(145,185,215,0.34)');
-    ctx.fillStyle = flaskGrad;
-    ctx.strokeStyle = 'rgba(55,95,140,0.62)';
-    ctx.lineWidth = 2.2;
+
+    /* circular base / white tile under flask */
+    ctx.fillStyle = '#e8ecf0';
+    ctx.strokeStyle = '#c0c8d0';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(f.cx, fBottom + 6, f.bodyW / 2 + 10, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    /* flask glass body — light blue tinted */
+    var glassGrad = ctx.createLinearGradient(fLeft, f.cy, fRight, f.cy);
+    glassGrad.addColorStop(0, 'rgba(160,195,230,0.45)');
+    glassGrad.addColorStop(0.1, 'rgba(195,220,245,0.25)');
+    glassGrad.addColorStop(0.3, 'rgba(220,238,252,0.1)');
+    glassGrad.addColorStop(0.5, 'rgba(240,248,255,0.05)');
+    glassGrad.addColorStop(0.7, 'rgba(220,238,252,0.08)');
+    glassGrad.addColorStop(0.9, 'rgba(195,220,245,0.2)');
+    glassGrad.addColorStop(1, 'rgba(160,195,230,0.42)');
+    ctx.fillStyle = glassGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(f.cx - f.neckW / 2, neckTop);
     ctx.lineTo(f.cx - f.neckW / 2, fShoulder);
-    ctx.lineTo(fLeft + 16, fShoulder);
-    ctx.quadraticCurveTo(fLeft, fShoulder, fLeft, fShoulder + 16);
-    ctx.lineTo(fLeft, fBottom - 16);
-    ctx.quadraticCurveTo(fLeft, fBottom, fLeft + 16, fBottom);
-    ctx.lineTo(fRight - 16, fBottom);
-    ctx.quadraticCurveTo(fRight, fBottom, fRight, fBottom - 16);
-    ctx.lineTo(fRight, fShoulder + 16);
-    ctx.quadraticCurveTo(fRight, fShoulder, fRight - 16, fShoulder);
+    ctx.lineTo(fLeft + 18, fShoulder);
+    ctx.quadraticCurveTo(fLeft, fShoulder, fLeft, fShoulder + 18);
+    ctx.lineTo(fLeft, fBottom - 18);
+    ctx.quadraticCurveTo(fLeft, fBottom, fLeft + 18, fBottom);
+    ctx.lineTo(fRight - 18, fBottom);
+    ctx.quadraticCurveTo(fRight, fBottom, fRight, fBottom - 18);
+    ctx.lineTo(fRight, fShoulder + 18);
+    ctx.quadraticCurveTo(fRight, fShoulder, fRight - 18, fShoulder);
     ctx.lineTo(f.cx + f.neckW / 2, fShoulder);
     ctx.lineTo(f.cx + f.neckW / 2, neckTop);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    /* glass highlights */
-    ctx.strokeStyle = 'rgba(255,255,255,0.32)';
-    ctx.lineWidth = 1.3;
+
+    /* glass highlight — left edge */
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(fLeft + 6, fShoulder + 20);
-    ctx.lineTo(fLeft + 4, fBottom - 22);
+    ctx.moveTo(fLeft + 8, fShoulder + 22);
+    ctx.lineTo(fLeft + 5, fBottom - 25);
     ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-    ctx.lineWidth = 0.7;
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(fRight - 14, fShoulder + 28);
-    ctx.lineTo(fRight - 12, fBottom - 28);
+    ctx.moveTo(fLeft + 14, fShoulder + 22);
+    ctx.lineTo(fLeft + 11, fBottom - 25);
     ctx.stroke();
+
     /* neck rim */
-    ctx.strokeStyle = 'rgba(55,95,140,0.5)';
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = 'rgba(100,140,180,0.5)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.ellipse(f.cx, neckTop + 8, f.neckW / 2 - 2, 3, 0, 0, Math.PI * 2);
+    ctx.ellipse(f.cx, neckTop + 6, f.neckW / 2, 4, 0, 0, Math.PI * 2);
     ctx.stroke();
-    /* liquid (NaOH + phenolphthalein) */
+
+    /* liquid — NaOH + phenolphthalein (pink) */
     var vol = state.titrationVolume || 0;
     var hasSample = state.titrationSampleMeasured;
     var frac = hasSample ? Math.min(vol / sim.endpointVolume, 1.2) : 0;
     var r, g, b2;
     if (!hasSample) { r = 255; g = 255; b2 = 255; }
-    else if (frac < 0.85) { r = 210; g = 60; b2 = 155; }
-    else if (frac < 1.0) { var t = (frac - 0.85) / 0.15; r = Math.round(210 - t * 195); g = Math.round(60 - t * 45); b2 = Math.round(155 - t * 140); }
+    else if (frac < 0.85) { r = 220; g = 50; b2 = 140; }
+    else if (frac < 1.0) { var t = (frac - 0.85) / 0.15; r = Math.round(220 - t * 205); g = Math.round(50 - t * 40); b2 = Math.round(140 - t * 125); }
     else { r = 255; g = 255; b2 = 255; }
+
     if (hasSample) {
       var sampProg = 1;
       if (state.currentStage === 'measureSample' && state.titrationSampleStart) {
         sampProg = Math.min(1, (Date.now() - state.titrationSampleStart) / 1400);
       }
-      var liqTop = (fBottom - 70) + (fBottom - (fBottom - 70)) * (1 - sampProg);
+      var liqTop = (fBottom - 75) + (fBottom - (fBottom - 75)) * (1 - sampProg);
       ctx.save();
       ctx.beginPath();
-      ctx.moveTo(fLeft + 16, fShoulder);
-      ctx.quadraticCurveTo(fLeft, fShoulder, fLeft, fShoulder + 16);
-      ctx.lineTo(fLeft, fBottom - 16);
-      ctx.quadraticCurveTo(fLeft, fBottom, fLeft + 16, fBottom);
-      ctx.lineTo(fRight - 16, fBottom);
-      ctx.quadraticCurveTo(fRight, fBottom, fRight, fBottom - 16);
-      ctx.lineTo(fRight, fShoulder + 16);
-      ctx.quadraticCurveTo(fRight, fShoulder, fRight - 16, fShoulder);
+      ctx.moveTo(fLeft + 18, fShoulder);
+      ctx.quadraticCurveTo(fLeft, fShoulder, fLeft, fShoulder + 18);
+      ctx.lineTo(fLeft, fBottom - 18);
+      ctx.quadraticCurveTo(fLeft, fBottom, fLeft + 18, fBottom);
+      ctx.lineTo(fRight - 18, fBottom);
+      ctx.quadraticCurveTo(fRight, fBottom, fRight, fBottom - 18);
+      ctx.lineTo(fRight, fShoulder + 18);
+      ctx.quadraticCurveTo(fRight, fShoulder, fRight - 18, fShoulder);
       ctx.closePath();
       ctx.clip();
       var liqGrad = ctx.createLinearGradient(fLeft, liqTop, fLeft, fBottom);
-      liqGrad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b2 + ',' + (0.3 * sampProg) + ')');
-      liqGrad.addColorStop(0.5, 'rgba(' + r + ',' + g + ',' + b2 + ',' + (0.45 * sampProg) + ')');
-      liqGrad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b2 + ',' + (0.58 * sampProg) + ')');
+      liqGrad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b2 + ',' + (0.35 * sampProg) + ')');
+      liqGrad.addColorStop(0.4, 'rgba(' + r + ',' + g + ',' + b2 + ',' + (0.5 * sampProg) + ')');
+      liqGrad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b2 + ',' + (0.6 * sampProg) + ')');
       ctx.fillStyle = liqGrad;
       ctx.fillRect(fLeft, liqTop, f.bodyW, fBottom - liqTop);
       /* meniscus */
-      ctx.fillStyle = 'rgba(' + Math.min(r + 40, 255) + ',' + Math.min(g + 40, 255) + ',' + Math.min(b2 + 40, 255) + ',' + (0.22 * sampProg) + ')';
+      ctx.fillStyle = 'rgba(' + Math.min(r + 50, 255) + ',' + Math.min(g + 50, 255) + ',' + Math.min(b2 + 50, 255) + ',' + (0.25 * sampProg) + ')';
       ctx.beginPath();
-      ctx.ellipse(f.cx, liqTop, f.bodyW / 2 - 10, 3, 0, 0, Math.PI * 2);
+      ctx.ellipse(f.cx, liqTop, f.bodyW / 2 - 12, 3.5, 0, 0, Math.PI * 2);
       ctx.fill();
+      /* bubbles */
+      if (state.currentStage === 'titrate') {
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        for (var bi = 0; bi < 3; bi++) {
+          var bx2 = f.cx - 15 + bi * 14;
+          var by2 = fBottom - 20 - ((Date.now() / 20 + bi * 30) % 40);
+          ctx.beginPath();
+          ctx.arc(bx2, by2, 2 + bi * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
       ctx.restore();
     }
-    /* volume graduations */
-    ctx.fillStyle = 'rgba(50,80,110,0.45)';
-    ctx.font = '8px sans-serif';
+
+    /* graduation marks — clean white lines */
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.font = '9px sans-serif';
     ctx.textAlign = 'right';
     var marks = [50, 100, 150, 200, 250];
     for (var i = 0; i < marks.length; i++) {
-      var my = fBottom - 16 - (marks[i] / 250) * (f.bodyH - 22);
-      ctx.fillRect(fRight - 12, my, 6, 0.7);
+      var my = fBottom - 18 - (marks[i] / 250) * (f.bodyH - 24);
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(fRight - 8, my);
+      ctx.lineTo(fRight - (marks[i] % 100 === 0 ? 22 : 14), my);
+      ctx.stroke();
       if (marks[i] % 100 === 0) {
-        ctx.fillRect(fRight - 20, my, 14, 0.7);
-        ctx.fillText(marks[i] + '', fRight - 23, my + 3);
+        ctx.fillText(marks[i] + '', fRight - 25, my + 3);
       }
     }
     ctx.textAlign = 'left';
     ctx.restore();
   },
 
-  /* NEW REALISTIC BEAKER */
+  /* Beaker — clean vector style matching reference */
   drawBeaker: function(ctx, sim) {
     var bk = sim.hclBeaker;
     if (!bk) return;
@@ -757,93 +776,89 @@ var TitrationRenderer = {
     var bh = bk.h;
     ctx.save();
 
-    /* === GLASS BODY — realistic straight-walled beaker === */
-    var glassGrad = ctx.createLinearGradient(bx, by, bx + bw, by);
-    glassGrad.addColorStop(0, 'rgba(140,180,215,0.45)');
-    glassGrad.addColorStop(0.08, 'rgba(180,210,235,0.22)');
-    glassGrad.addColorStop(0.2, 'rgba(230,245,255,0.08)');
-    glassGrad.addColorStop(0.4, 'rgba(255,255,255,0.04)');
-    glassGrad.addColorStop(0.6, 'rgba(255,255,255,0.03)');
-    glassGrad.addColorStop(0.8, 'rgba(230,245,255,0.06)');
-    glassGrad.addColorStop(0.92, 'rgba(180,210,235,0.18)');
-    glassGrad.addColorStop(1, 'rgba(140,180,215,0.42)');
-    ctx.fillStyle = glassGrad;
-    ctx.strokeStyle = 'rgba(55,95,140,0.6)';
-    ctx.lineWidth = 2;
-    /* straight walls with slight base flare */
+    /* circular base under beaker */
+    ctx.fillStyle = '#e8ecf0';
+    ctx.strokeStyle = '#c0c8d0';
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
-    ctx.moveTo(bx + 2, by + 6);
-    ctx.lineTo(bx + 2, by + bh - 8);
+    ctx.ellipse(bk.cx, by + bh + 4, bw / 2 + 6, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    /* glass body — straight walls, light blue tint */
+    var glassGrad = ctx.createLinearGradient(bx, by, bx + bw, by);
+    glassGrad.addColorStop(0, 'rgba(160,195,230,0.48)');
+    glassGrad.addColorStop(0.1, 'rgba(195,220,245,0.25)');
+    glassGrad.addColorStop(0.3, 'rgba(220,238,252,0.1)');
+    glassGrad.addColorStop(0.5, 'rgba(240,248,255,0.05)');
+    glassGrad.addColorStop(0.7, 'rgba(220,238,252,0.08)');
+    glassGrad.addColorStop(0.9, 'rgba(195,220,245,0.22)');
+    glassGrad.addColorStop(1, 'rgba(160,195,230,0.45)');
+    ctx.fillStyle = glassGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bx + 2, by + 8);
+    ctx.lineTo(bx + 2, by + bh - 6);
     ctx.quadraticCurveTo(bx + 2, by + bh, bx + 8, by + bh);
     ctx.lineTo(bx + bw - 8, by + bh);
-    ctx.quadraticCurveTo(bx + bw - 2, by + bh, bx + bw - 2, by + bh - 8);
-    ctx.lineTo(bx + bw - 2, by + 6);
+    ctx.quadraticCurveTo(bx + bw - 2, by + bh, bx + bw - 2, by + bh - 6);
+    ctx.lineTo(bx + bw - 2, by + 8);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
-    /* === HCl LIQUID FILL === */
+    /* HCl liquid fill — light blue */
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(bx + 2, by + 6);
-    ctx.lineTo(bx + 2, by + bh - 8);
+    ctx.moveTo(bx + 2, by + 8);
+    ctx.lineTo(bx + 2, by + bh - 6);
     ctx.quadraticCurveTo(bx + 2, by + bh, bx + 8, by + bh);
     ctx.lineTo(bx + bw - 8, by + bh);
-    ctx.quadraticCurveTo(bx + bw - 2, by + bh, bx + bw - 2, by + bh - 8);
-    ctx.lineTo(bx + bw - 2, by + 6);
+    ctx.quadraticCurveTo(bx + bw - 2, by + bh, bx + bw - 2, by + bh - 6);
+    ctx.lineTo(bx + bw - 2, by + 8);
     ctx.closePath();
     ctx.clip();
     var liqTop = by + bh * (1 - (bk.liquidLevel || 0.55));
     var liqGrad = ctx.createLinearGradient(bx, liqTop, bx, by + bh);
-    liqGrad.addColorStop(0, 'rgba(170,215,245,0.38)');
-    liqGrad.addColorStop(0.3, 'rgba(150,205,240,0.48)');
-    liqGrad.addColorStop(0.7, 'rgba(130,195,235,0.55)');
-    liqGrad.addColorStop(1, 'rgba(110,180,230,0.62)');
+    liqGrad.addColorStop(0, 'rgba(140,190,230,0.4)');
+    liqGrad.addColorStop(0.4, 'rgba(120,180,225,0.5)');
+    liqGrad.addColorStop(1, 'rgba(100,170,220,0.58)');
     ctx.fillStyle = liqGrad;
     ctx.fillRect(bx, liqTop, bw, by + bh - liqTop);
-    /* liquid surface meniscus */
-    ctx.fillStyle = 'rgba(200,232,252,0.55)';
+    /* meniscus */
+    ctx.fillStyle = 'rgba(180,215,245,0.55)';
     ctx.beginPath();
-    ctx.ellipse(bk.cx, liqTop, bw / 2 - 5, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(220,240,255,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(bk.cx, liqTop, bw / 2 - 8, 2.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(bk.cx, liqTop, bw / 2 - 5, 3.5, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
-    /* === POUR SPOUT (left side) === */
+    /* pour spout */
     var spoutGrad = ctx.createLinearGradient(bx - 10, by, bx + 8, by + 14);
-    spoutGrad.addColorStop(0, 'rgba(160,200,230,0.45)');
-    spoutGrad.addColorStop(0.5, 'rgba(200,225,245,0.25)');
-    spoutGrad.addColorStop(1, 'rgba(160,200,230,0.4)');
+    spoutGrad.addColorStop(0, 'rgba(160,200,230,0.5)');
+    spoutGrad.addColorStop(0.5, 'rgba(200,225,245,0.3)');
+    spoutGrad.addColorStop(1, 'rgba(160,200,230,0.45)');
     ctx.fillStyle = spoutGrad;
-    ctx.strokeStyle = 'rgba(55,95,140,0.55)';
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
     ctx.lineWidth = 1.3;
     ctx.beginPath();
-    ctx.moveTo(bx + 4, by + 4);
-    ctx.quadraticCurveTo(bx - 12, by - 2, bx - 8, by + 14);
-    ctx.quadraticCurveTo(bx - 4, by + 16, bx + 6, by + 14);
+    ctx.moveTo(bx + 4, by + 5);
+    ctx.quadraticCurveTo(bx - 12, by - 1, bx - 8, by + 13);
+    ctx.quadraticCurveTo(bx - 4, by + 15, bx + 6, by + 13);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
-    /* === RIM (top ellipse) === */
-    ctx.strokeStyle = 'rgba(55,95,140,0.55)';
+    /* rim */
+    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.ellipse(bk.cx, by + 5, bw / 2 - 2, 5, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    /* rim inner shadow */
-    ctx.strokeStyle = 'rgba(55,95,140,0.2)';
-    ctx.lineWidth = 0.8;
-    ctx.beginPath();
-    ctx.ellipse(bk.cx, by + 6, bw / 2 - 5, 3.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(bk.cx, by + 6, bw / 2 - 2, 4.5, 0, 0, Math.PI * 2);
     ctx.stroke();
 
-    /* === GRADUATIONS (right side) === */
-    ctx.strokeStyle = 'rgba(45,80,120,0.55)';
-    ctx.fillStyle = 'rgba(45,80,120,0.65)';
+    /* graduation marks — clean white lines */
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
     ctx.font = '8px sans-serif';
     ctx.textAlign = 'right';
     var marks = [50, 100, 150, 200, 250];
@@ -853,57 +868,44 @@ var TitrationRenderer = {
       ctx.lineWidth = isMajor ? 1.2 : 0.7;
       ctx.beginPath();
       ctx.moveTo(bx + bw - 4, my);
-      ctx.lineTo(bx + bw - (isMajor ? 14 : 8), my);
+      ctx.lineTo(bx + bw - (isMajor ? 16 : 10), my);
       ctx.stroke();
       if (isMajor) {
-        ctx.fillText(marks[i] + '', bx + bw - 16, my + 3);
+        ctx.fillText(marks[i] + '', bx + bw - 18, my + 3);
       }
-    }
-    /* minor tick marks */
-    ctx.lineWidth = 0.4;
-    ctx.strokeStyle = 'rgba(45,80,120,0.3)';
-    for (var v = 25; v < 250; v += 25) {
-      if (v % 100 === 0) continue;
-      var my2 = by + bh - 10 - (v / 250) * (bh - 20);
-      ctx.beginPath();
-      ctx.moveTo(bx + bw - 4, my2);
-      ctx.lineTo(bx + bw - 8, my2);
-      ctx.stroke();
     }
     ctx.textAlign = 'left';
 
-    /* === WHITE LABEL (centered) === */
-    var labelW = bw - 24;
-    var labelH = 28;
-    var labelX = bx + 12;
-    var labelY = by + bh * 0.45;
-    ctx.fillStyle = 'rgba(255,255,255,0.94)';
+    /* white label */
+    var labelW = bw - 22;
+    var labelH = 26;
+    var labelX = bx + 11;
+    var labelY = by + bh * 0.42;
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
     ctx.fillRect(labelX, labelY, labelW, labelH);
-    ctx.strokeStyle = '#c5c5c5';
+    ctx.strokeStyle = '#c5c8cc';
     ctx.lineWidth = 0.7;
     ctx.strokeRect(labelX, labelY, labelW, labelH);
-    ctx.fillStyle = '#222';
+    ctx.fillStyle = '#333';
     ctx.font = 'bold 9px sans-serif';
     ctx.textAlign = 'center';
     var lines = bk.label.split('\n');
     for (var j = 0; j < lines.length; j++) {
-      ctx.fillText(lines[j], bk.cx, labelY + 11 + j * 11);
+      ctx.fillText(lines[j], bk.cx, labelY + 10 + j * 11);
     }
     ctx.textAlign = 'left';
 
-    /* === GLASS HIGHLIGHTS === */
-    ctx.fillStyle = 'rgba(255,255,255,0.42)';
-    ctx.fillRect(bx + 6, by + 16, 4, bh - 28);
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    ctx.fillRect(bx + 12, by + 18, 2, bh - 32);
+    /* glass highlights */
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.fillRect(bx + 6, by + 16, 3.5, bh - 28);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillRect(bx + 11, by + 18, 2, bh - 32);
     ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    ctx.fillRect(bx + bw - 12, by + 20, 2.5, bh - 36);
+    ctx.fillRect(bx + bw - 11, by + 20, 2, bh - 36);
 
-    /* === BASE THICKNESS === */
-    ctx.fillStyle = 'rgba(130,170,200,0.4)';
-    ctx.fillRect(bx + 6, by + bh - 7, bw - 12, 6);
-    ctx.fillStyle = 'rgba(255,255,255,0.1)';
-    ctx.fillRect(bx + 8, by + bh - 7, bw - 16, 1.5);
+    /* base thickness */
+    ctx.fillStyle = 'rgba(140,180,215,0.35)';
+    ctx.fillRect(bx + 6, by + bh - 6, bw - 12, 5);
 
     ctx.restore();
   },

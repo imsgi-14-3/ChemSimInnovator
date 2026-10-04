@@ -173,7 +173,7 @@ var ChemSim = (function() {
         case 'prepare': return state.titrationApparatusChoice1 === 'burette' && state.titrationApparatusChoice2 === 'volumetric-pipette';
         case 'fillBurette': return state.titrationBuretteFilled === true;
         case 'measureSample': return state.titrationSampleMeasured === true;
-        case 'titrate': return state.titrationEndpointReached === true || state.titrationEndpointPassed === true;
+        case 'titrate': return state.titrationEndpointReached === true || state.titrationEndpointPassed === true || (state.titrationTrialIndex >= 3);
         case 'endpoint': return true;
         case 'record': return true;
         case 'calculate': return state.titrationCalcChecked === true;
@@ -845,6 +845,10 @@ var ChemSim = (function() {
       st.titrationVolume = 0;
       st.titrationEndpointReached = false;
       st.titrationEndpointPassed = false;
+      if (st.titrationTrialIndex >= sim.trials.length) {
+        appState.currentStage = 'endpoint';
+        appState.stageIndex = appState.stages.indexOf('endpoint');
+      }
       renderExperimentStage();
     }
   }
@@ -1021,7 +1025,8 @@ var ChemSim = (function() {
     }
     var nextBtn = document.getElementById('stage-next-btn');
     if (nextBtn) {
-      nextBtn.disabled = !(st.titrationEndpointReached || st.titrationEndpointPassed);
+      var allTrialsDone = st.titrationTrialIndex >= 3;
+      nextBtn.disabled = !((st.titrationEndpointReached || st.titrationEndpointPassed) || allTrialsDone);
     }
     var actionRec = document.getElementById('action-record-titre');
     if (actionRec) {
