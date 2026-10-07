@@ -498,6 +498,12 @@ var ChemSim = (function() {
           handleAction(el.getAttribute('data-action'), el, exp, stage);
         });
       });
+      var actionSliders = actionCenter.querySelectorAll('input[type="range"]');
+      for (var k = 0; k < actionSliders.length; k++) {
+        actionSliders[k].addEventListener('input', function() {
+          handleSliderInput(this);
+        });
+      }
     }
 
     workspace.querySelectorAll('[data-tool]').forEach(function(el) {
@@ -1013,8 +1019,11 @@ var ChemSim = (function() {
   }
 
   function updateTitratePanel(st) {
-    var readEl = document.querySelector('#workspace-content .temp-display');
-    if (readEl) readEl.textContent = st.titrationVolume.toFixed(2) + ' mL';
+    var simA4 = SIMULATION_CONFIG['A4'];
+    var readEl = document.querySelector('#workspace-content .titrate-reading-value');
+    if (readEl) readEl.innerHTML = st.titrationVolume.toFixed(2) + ' <span>mL</span>';
+    var fillEl = document.querySelector('#workspace-content .titrate-reading-fill');
+    if (fillEl && simA4) fillEl.style.width = Math.round((st.titrationVolume / simA4.burette.maxML) * 100) + '%';
     var fbEl = document.getElementById('titrate-feedback');
     var recEl = document.getElementById('titrate-record-btn');
     if (fbEl) {

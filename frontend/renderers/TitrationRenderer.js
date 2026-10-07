@@ -151,7 +151,7 @@ var TitrationRenderer = {
       html += '<div class="feedback feedback-correct">&#10003; All ' + totalTrials + ' trials recorded. Click <strong>Next Step</strong> to continue to the endpoint observation.</div>';
     } else {
       html += '<p>Slowly add HCl from the burette while watching the flask colour.</p>';
-      html += '<p>Use the <strong>stopcock slider</strong> to control the flow rate.</p>';
+      html += '<p>Use the <strong>stopcock slider below</strong> to control the flow rate. Move toward endpoint carefully.</p>';
 
       /* Live burette reading */
       html += '<div class="titrate-reading">';
@@ -163,11 +163,6 @@ var TitrationRenderer = {
       html += '</div>';
       html += '<div class="titrate-reading-scale"><span>0 mL</span><span>' + sim.burette.maxML + ' mL</span></div>';
       html += '</div>';
-
-      html += '<div class="form-group"><label class="form-label">Stopcock Control</label>';
-      var sliderVal = Math.round(((state.titrationVolume || 0) / sim.burette.maxML) * 100);
-      html += '<div class="form-range"><input type="range" id="stopcock-slider" min="0" max="100" value="' + sliderVal + '"></div>';
-      html += '<p class="text-sm text-secondary">Slide to open the stopcock. Move toward endpoint carefully.</p></div>';
 
       var fbCls = 'feedback';
       var fbStyle = 'display:none';

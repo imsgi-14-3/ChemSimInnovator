@@ -787,6 +787,17 @@ input.form-range[type="range"]::-moz-range-thumb {
   margin-bottom: var(--space-1);
 }
 
+.action-stopcock-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.action-stopcock-range {
+  width: 150px;
+  margin: 0;
+}
+
 .module-header {
   text-align: center;
   padding: var(--space-8) var(--space-4);

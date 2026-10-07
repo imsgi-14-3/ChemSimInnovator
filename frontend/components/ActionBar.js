@@ -54,6 +54,11 @@ var ActionBar = {
       html += '<button class="btn btn-primary" data-action="measure-sample">Measure Sample</button>';
     } else if (stage === 'titrate') {
       var showRec = state.titrationEndpointReached || state.titrationEndpointPassed;
+      if (state.titrationTrialIndex < SIMULATION_CONFIG['A4'].trials.length) {
+        var scVal = Math.round(((state.titrationVolume || 0) / SIMULATION_CONFIG['A4'].burette.maxML) * 100);
+        html += '<label class="action-stopcock-label" for="stopcock-slider">Stopcock</label>';
+        html += '<div class="form-range action-stopcock-range"><input type="range" id="stopcock-slider" min="0" max="100" value="' + scVal + '"></div>';
+      }
       html += '<button class="btn btn-accent" data-action="record-titre" id="action-record-titre" style="' + (showRec ? '' : 'display:none') + '">Record Titre</button>';
     } else if (stage === 'calculate') {
       html += '<button class="btn btn-accent" data-action="check-calc">Check Calculation</button>';
