@@ -1084,7 +1084,7 @@ var MinorExperimentRenderer = {
        benchY 540  bench line        ax 265  apparatus axis
        stand  rod x69-81 y150-540, base rr(33,520,84,20), boss rr(66,278,18,20)
        tripod feet (180,540)/(350,540), ring (265,430) rx77 ry8
-       gauze  ellipse (265,426) rx84 ry8       flame fy 462 blue 18 standby / orange ~44 heating
+       gauze  ellipse (265,426) rx84 ry8       flame fy 462 blue 18 standby / dark orange ~44 heating
        flask  base y424 hw70, shoulder y306, neck hw21 y266, rim rx27
        callouts  green (356,248,172) purple (360,336,166) green✓ (358,452,186)
                  blue Heat (312,556,64)
@@ -1095,7 +1095,7 @@ var MinorExperimentRenderer = {
     var ax = 265;
     var by = benchY;
     var done = state.m7ActionDone && state.simulation && state.m7ObservationDone;
-    var heating = state.m7ActionDone && state.simulation && !state.simulation.done;
+    var heating = !!(state.simulation && !state.simulation.done);
 
     ctx.save();
 
@@ -1330,46 +1330,41 @@ var MinorExperimentRenderer = {
     ctx.quadraticCurveTo(ax + 62, by + 6, ax + 104, by - 1);
     ctx.stroke();
 
-    /* ── Flame — blue on standby, crossfades to orange while heating ── */
-    if (typeof this.m71HotMix !== 'number') this.m71HotMix = 0;
-    var target = heating ? 1 : 0;
-    this.m71HotMix += (target - this.m71HotMix) * 0.07;
-    if (Math.abs(this.m71HotMix - target) < 0.01) this.m71HotMix = target;
-    var m = this.m71HotMix;
+    /* ── Flame — blue on standby, dark orange while heating ── */
     var doneAlone = done && !heating;
-    var flameH = 18 + 26 * m + Math.sin(Date.now() / 90) * 3 * m + (doneAlone ? 12 : 0);
-    var fw = 9 + 5 * m + (doneAlone ? 2 : 0);
+    var flameH = heating ? 44 + Math.sin(Date.now() / 90) * 3 : (doneAlone ? 30 : 18);
+    var fw = heating ? 14 : (doneAlone ? 11 : 9);
     var fy = by - 78;
-    function mix(a, b, t) {
-      var ar = parseInt(a.substr(1, 2), 16), ag = parseInt(a.substr(3, 2), 16), ab = parseInt(a.substr(5, 2), 16);
-      var br = parseInt(b.substr(1, 2), 16), bg = parseInt(b.substr(3, 2), 16), bb = parseInt(b.substr(5, 2), 16);
-      return 'rgb(' + Math.round(ar + (br - ar) * t) + ',' + Math.round(ag + (bg - ag) * t) + ',' + Math.round(ab + (bb - ab) * t) + ')';
-    }
-    /* halo (blue → orange) */
-    var gr = Math.round(70 + 185 * m), gg = Math.round(120 + 20 * m), gb = Math.round(255 - 215 * m);
+    /* halo */
     var glow = ctx.createRadialGradient(ax, fy - flameH * 0.45, 4, ax, fy - flameH * 0.45, flameH * 1.6);
-    glow.addColorStop(0, 'rgba(' + gr + ',' + gg + ',' + gb + ',0.45)');
-    glow.addColorStop(1, 'rgba(' + gr + ',' + gg + ',' + gb + ',0)');
+    glow.addColorStop(0, heating ? 'rgba(255,110,30,0.45)' : 'rgba(70,120,255,0.45)');
+    glow.addColorStop(1, heating ? 'rgba(255,110,30,0)' : 'rgba(70,120,255,0)');
     ctx.fillStyle = glow;
     ctx.beginPath();
     ctx.arc(ax, fy - flameH * 0.45, flameH * 1.6, 0, Math.PI * 2);
     ctx.fill();
-    /* radiant heat wash — fades in and pulses while heating */
-    if (m > 0.02) {
-      var hot = (0.5 + Math.sin(Date.now() / 150) * 0.08) * m;
+    /* radiant heat wash while heating */
+    if (heating) {
+      var hotWash = 0.5 + Math.sin(Date.now() / 150) * 0.08;
       var wash = ctx.createRadialGradient(ax, 442, 6, ax, 442, 40);
-      wash.addColorStop(0, 'rgba(255,150,40,' + hot + ')');
+      wash.addColorStop(0, 'rgba(255,150,40,' + hotWash + ')');
       wash.addColorStop(1, 'rgba(255,150,40,0)');
       ctx.fillStyle = wash;
       ctx.beginPath();
       ctx.arc(ax, 442, 40, 0, Math.PI * 2);
       ctx.fill();
     }
-    /* outer flame — solid colour, crossfades blue → orange */
+    /* outer flame — solid dark orange while heating, blue on standby */
     var outer = ctx.createLinearGradient(0, fy, 0, fy - flameH);
-    outer.addColorStop(0, mix('#123fbe', '#d64000', m));
-    outer.addColorStop(0.5, mix('#2f6dff', '#ff7a1a', m));
-    outer.addColorStop(1, mix('#5fa0ff', '#ffbf4d', m));
+    if (heating) {
+      outer.addColorStop(0, '#8f2f00');
+      outer.addColorStop(0.5, '#d64a00');
+      outer.addColorStop(1, '#ff7a19');
+    } else {
+      outer.addColorStop(0, '#123fbe');
+      outer.addColorStop(0.5, '#2f6dff');
+      outer.addColorStop(1, '#5fa0ff');
+    }
     ctx.fillStyle = outer;
     ctx.beginPath();
     ctx.moveTo(ax - fw, fy);
@@ -1378,7 +1373,7 @@ var MinorExperimentRenderer = {
     ctx.closePath();
     ctx.fill();
     /* inner cone */
-    ctx.fillStyle = mix('#a9d0ff', '#ffe08a', m);
+    ctx.fillStyle = heating ? '#ffb347' : '#a9d0ff';
     ctx.beginPath();
     ctx.moveTo(ax - fw * 0.43, fy);
     ctx.quadraticCurveTo(ax - fw * 0.26, fy - flameH * 0.4, ax, fy - flameH * 0.66);
@@ -1386,7 +1381,7 @@ var MinorExperimentRenderer = {
     ctx.closePath();
     ctx.fill();
     /* bright core */
-    ctx.fillStyle = 'rgba(255,251,242,0.88)';
+    ctx.fillStyle = heating ? 'rgba(255,240,220,0.9)' : 'rgba(255,251,242,0.88)';
     ctx.beginPath();
     ctx.moveTo(ax - fw * 0.18, fy);
     ctx.quadraticCurveTo(ax - fw * 0.1, fy - flameH * 0.3, ax, fy - flameH * 0.5);

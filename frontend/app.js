@@ -400,8 +400,7 @@ var ChemSim = (function() {
     }
     if (exp.id && exp.id.indexOf('M7_') === 0) {
       var st = appState.state;
-      if (!st.m7ActionDone || !st.simulation) return false;
-      if (st.simulation.done && st.m7ObservationDone) return false;
+      if (!st.simulation || st.simulation.done) return false;
       return true;
     }
     return false;
