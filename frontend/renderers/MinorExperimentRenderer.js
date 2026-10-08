@@ -11,7 +11,7 @@ var MinorExperimentRenderer = {
     else if (id === 'M7_7') html = this.renderM7_7(stage, exp, state);
     else if (id === 'M7_8') html = this.renderM7_8(stage, exp, state);
     else html = '<p>Unknown experiment: ' + id + '</p>';
-    html += LaboratoryWorkspace.renderCanvas();
+    html += LaboratoryWorkspace.renderCanvas(id === 'M7_1' ? 900 : 550, 640);
     return html;
   },
 
@@ -1078,415 +1078,699 @@ var MinorExperimentRenderer = {
     ctx.restore();
   },
 
-  /* ── M7.1 Sublimation of Naphthalene — WIDE ── */
+  /* ── M7.1 Sublimation of Naphthalene — wide reference scene (900 × 640) ── */
   drawM7_1: function(ctx, cw, ch, state) {
-    var cx = cw / 2 + 20;
+    /* Coordinate table (canvas 900 × 640)
+       benchY 540  bench line        ax 265  apparatus axis
+       stand  rod x69-81 y150-540, base rr(33,520,84,20), boss rr(66,278,18,20)
+       tripod feet (180,540)/(350,540), ring (265,430) rx77 ry8
+       gauze  ellipse (265,426) rx84 ry8       flame fy 462, h 16/30/22
+       flask  base y424 hw70, shoulder y306, neck hw21 y266, rim rx27
+       callouts  green (356,248,172) purple (360,336,166) green✓ (358,452,186)
+                 blue Heat (312,556,64)
+       right  circles (650,108,56) (806,108,56), captions (575,178,150) (738,178,148)
+              card (580,300,305,192), dish centre (716,376), yellow (612,432,240)
+       banner (14,10,404,88) */
     var benchY = 540;
+    var ax = 265;
+    var by = benchY;
     var done = state.m7ActionDone && state.simulation && state.m7ObservationDone;
     var heating = state.m7ActionDone && state.simulation && !state.simulation.done;
 
-    /* ── Left: labelled mixture jar ── */
     ctx.save();
-    var jx = 55, jy = benchY - 55;
-    /* jar body */
-    var jarGrad = ctx.createLinearGradient(jx - 22, 0, jx + 22, 0);
-    jarGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
-    jarGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
-    jarGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
-    jarGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
-    ctx.fillStyle = jarGrad;
-    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(jx - 22, jy - 40);
-    ctx.lineTo(jx - 22, jy + 40);
-    ctx.quadraticCurveTo(jx - 22, jy + 48, jx - 14, jy + 48);
-    ctx.lineTo(jx + 14, jy + 48);
-    ctx.quadraticCurveTo(jx + 22, jy + 48, jx + 22, jy + 40);
-    ctx.lineTo(jx + 22, jy - 40);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    /* mixture inside */
-    ctx.fillStyle = '#c8b898';
-    ctx.globalAlpha = 0.6;
-    ctx.fillRect(jx - 18, jy - 5, 36, 45);
-    ctx.globalAlpha = 1;
-    /* grains */
-    ctx.fillStyle = '#a09070';
-    for (var g = 0; g < 8; g++) {
+
+    /* ── Shared helpers ── */
+    function rr(x, y, w, h, r) {
       ctx.beginPath();
-      ctx.arc(jx - 12 + (g % 4) * 8, jy + 5 + Math.floor(g / 4) * 12, 2.5, 0, Math.PI * 2);
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+    function wrapLines(text, maxW) {
+      var words = text.split(' ');
+      var lines = [], line = '';
+      for (var i = 0; i < words.length; i++) {
+        var test = line ? line + ' ' + words[i] : words[i];
+        if (ctx.measureText(test).width > maxW && line) {
+          lines.push(line);
+          line = words[i];
+        } else line = test;
+      }
+      if (line) lines.push(line);
+      return lines;
+    }
+    function callout(text, x, y, w, fill, stroke, color, size, bold) {
+      size = size || 12;
+      ctx.font = (bold ? 'bold ' : '') + size + 'px sans-serif';
+      var lines = wrapLines(text, w - 16);
+      var h = lines.length * 14 + 12;
+      rr(x, y, w, h, 8);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (var i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], x + w / 2, y + 13 + i * 14);
+      }
+      ctx.textBaseline = 'alphabetic';
+      ctx.textAlign = 'left';
+      return h;
+    }
+    function arrow(x1, y1, x2, y2, color, w) {
+      color = color || '#2b7a3d';
+      w = w || 2.5;
+      var a = Math.atan2(y2 - y1, x2 - x1);
+      var hl = 11;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = w;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - hl * Math.cos(a - 0.45), y2 - hl * Math.sin(a - 0.45));
+      ctx.lineTo(x2 - hl * Math.cos(a + 0.45), y2 - hl * Math.sin(a + 0.45));
+      ctx.closePath();
       ctx.fill();
     }
-    /* white label */
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(jx - 18, jy - 35, 36, 28);
-    ctx.strokeStyle = '#ccc';
-    ctx.lineWidth = 0.8;
-    ctx.strokeRect(jx - 18, jy - 35, 36, 28);
-    ctx.fillStyle = '#333';
-    ctx.font = 'bold 6px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Naphthalene', jx, jy - 26);
-    ctx.fillText('+ Sand', jx, jy - 18);
-    ctx.fillText('+ Salt', jx, jy - 10);
-    /* lid */
-    ctx.fillStyle = '#888';
-    ctx.fillRect(jx - 16, jy - 48, 32, 10);
-    ctx.strokeStyle = '#666';
-    ctx.strokeRect(jx - 16, jy - 48, 32, 10);
-    ctx.textAlign = 'left';
-    ctx.restore();
+    function bigArrow(x1, y1, x2, y2) {
+      arrow(x1, y1, x2, y2, '#4a5563', 6);
+    }
+    function flaskPath() {
+      ctx.beginPath();
+      ctx.moveTo(ax - 21, 266);
+      ctx.lineTo(ax - 21, 306);
+      ctx.lineTo(ax - 70, 414);
+      ctx.quadraticCurveTo(ax - 70, 424, ax - 58, 424);
+      ctx.lineTo(ax + 58, 424);
+      ctx.quadraticCurveTo(ax + 70, 424, ax + 70, 414);
+      ctx.lineTo(ax + 21, 306);
+      ctx.lineTo(ax + 21, 266);
+      ctx.closePath();
+    }
 
-    /* ── Tripod stand (black metal) ── */
-    ctx.save();
-    var tx = cx, ty = benchY;
-    var thw = 70;
-    ctx.strokeStyle = '#2a2a2a';
-    ctx.lineWidth = 5;
-    /* left leg */
+    /* ── Background: wall, bokeh, dark bench ── */
+    var wall = ctx.createLinearGradient(0, 0, 0, benchY);
+    wall.addColorStop(0, '#eef2f6');
+    wall.addColorStop(1, '#d5dde6');
+    ctx.fillStyle = wall;
+    ctx.fillRect(0, 0, cw, benchY);
+    var bok = [[120, 90, 52], [305, 55, 34], [475, 130, 62], [705, 85, 46],
+               [835, 185, 56], [600, 240, 40], [155, 310, 58], [430, 425, 48],
+               [770, 340, 36]];
+    for (var b = 0; b < bok.length; b++) {
+      var bgr = ctx.createRadialGradient(bok[b][0], bok[b][1], 2, bok[b][0], bok[b][1], bok[b][2]);
+      bgr.addColorStop(0, 'rgba(255,255,255,0.55)');
+      bgr.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = bgr;
+      ctx.beginPath();
+      ctx.arc(bok[b][0], bok[b][1], bok[b][2], 0, Math.PI * 2);
+      ctx.fill();
+    }
+    var bench = ctx.createLinearGradient(0, benchY, 0, ch);
+    bench.addColorStop(0, '#565c63');
+    bench.addColorStop(1, '#31353a');
+    ctx.fillStyle = bench;
+    ctx.fillRect(0, benchY, cw, ch - benchY);
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(tx - thw, ty);
-    ctx.quadraticCurveTo(tx - thw + 8, ty - 50, tx - thw + 14, ty - 110);
+    ctx.moveTo(0, benchY + 1);
+    ctx.lineTo(cw, benchY + 1);
     ctx.stroke();
-    /* right leg */
+
+    /* ── Bench shadows ── */
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
     ctx.beginPath();
-    ctx.moveTo(tx + thw, ty);
-    ctx.quadraticCurveTo(tx + thw - 8, ty - 50, tx + thw - 14, ty - 110);
-    ctx.stroke();
-    /* center leg */
-    ctx.beginPath();
-    ctx.moveTo(tx, ty + 4);
-    ctx.lineTo(tx, ty - 105);
-    ctx.stroke();
-    /* rubber feet */
-    ctx.fillStyle = '#1a1a1a';
-    ctx.beginPath();
-    ctx.ellipse(tx - thw, ty, 6, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(75, 543, 46, 6, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(tx + thw, ty, 6, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(ax, 544, 44, 7, 0, 0, Math.PI * 2);
     ctx.fill();
-    /* top ring */
-    ctx.strokeStyle = '#333';
+    ctx.beginPath();
+    ctx.ellipse(ax - 85, 543, 9, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(ax + 85, 543, 9, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* ── Retort stand ── */
+    ctx.fillStyle = '#3f454d';
+    rr(33, 520, 84, 20, 6);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(41, 525);
+    ctx.lineTo(109, 525);
+    ctx.stroke();
+    var standGrad = ctx.createLinearGradient(69, 0, 81, 0);
+    standGrad.addColorStop(0, '#565c64');
+    standGrad.addColorStop(0.4, '#9aa2ab');
+    standGrad.addColorStop(0.7, '#7c848d');
+    standGrad.addColorStop(1, '#4a5058');
+    ctx.fillStyle = standGrad;
+    rr(69, 150, 12, 388, 4);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.stroke();
+
+    /* ── Tripod stand ── */
+    ctx.strokeStyle = '#23262b';
     ctx.lineWidth = 5;
     ctx.beginPath();
-    ctx.ellipse(tx, ty - 110, thw - 8, 8, 0, 0, Math.PI * 2);
+    ctx.moveTo(ax - 85, by);
+    ctx.quadraticCurveTo(ax - 77, by - 60, ax - 71, 434);
     ctx.stroke();
-    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(ax + 85, by);
+    ctx.quadraticCurveTo(ax + 77, by - 60, ax + 71, 434);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ax, by + 4);
+    ctx.lineTo(ax, 436);
+    ctx.stroke();
+    ctx.fillStyle = '#15171a';
+    ctx.beginPath();
+    ctx.ellipse(ax - 85, by, 7, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(ax + 85, by, 7, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#2c3036';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.ellipse(ax, 430, 77, 8, 0, 0, Math.PI * 2);
+    ctx.stroke();
 
-    /* ── Wire gauze (black mesh) ── */
+    /* ── Bunsen burner ── */
+    var baseGrad = ctx.createLinearGradient(ax - 34, 0, ax + 34, 0);
+    baseGrad.addColorStop(0, '#3a3d42');
+    baseGrad.addColorStop(0.4, '#8b9199');
+    baseGrad.addColorStop(0.6, '#a8aeb6');
+    baseGrad.addColorStop(1, '#3a3d42');
+    ctx.fillStyle = baseGrad;
+    ctx.beginPath();
+    ctx.ellipse(ax, by - 4, 32, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#24272b';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#4d5158';
+    ctx.beginPath();
+    ctx.ellipse(ax, by - 16, 13, 4.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    var barrelGrad = ctx.createLinearGradient(ax - 8, 0, ax + 8, 0);
+    barrelGrad.addColorStop(0, '#4a4e55');
+    barrelGrad.addColorStop(0.4, '#9aa0a8');
+    barrelGrad.addColorStop(0.6, '#b4bac2');
+    barrelGrad.addColorStop(1, '#4a4e55');
+    ctx.fillStyle = barrelGrad;
+    ctx.fillRect(ax - 8, by - 74, 16, 62);
+    ctx.strokeStyle = '#2b2e33';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(ax - 8, by - 74, 16, 62);
+    ctx.fillStyle = '#2b2e33';
+    ctx.beginPath();
+    ctx.ellipse(ax - 4, by - 66, 2.2, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(ax + 4, by - 66, 2.2, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#43474e';
+    rr(ax - 10, by - 78, 20, 9, 2);
+    ctx.fill();
+    ctx.strokeStyle = '#26292e';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    /* gas tube */
+    ctx.strokeStyle = '#e87820';
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(ax + 26, by - 2);
+    ctx.quadraticCurveTo(ax + 62, by + 6, ax + 104, by - 1);
+    ctx.stroke();
+    ctx.strokeStyle = '#c06018';
+    ctx.lineWidth = 4.5;
+    ctx.beginPath();
+    ctx.moveTo(ax + 26, by - 2);
+    ctx.quadraticCurveTo(ax + 62, by + 6, ax + 104, by - 1);
+    ctx.stroke();
+
+    /* ── Blue flame (animated) ── */
+    var flameH = heating ? 30 + Math.sin(Date.now() / 90) * 2.5 : (done ? 22 : 16);
+    var fy = by - 78;
+    var glow = ctx.createRadialGradient(ax, fy - flameH * 0.4, 3, ax, fy - flameH * 0.4, flameH * 1.7);
+    glow.addColorStop(0, 'rgba(90,140,255,0.30)');
+    glow.addColorStop(1, 'rgba(90,140,255,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(ax, fy - flameH * 0.4, flameH * 1.7, 0, Math.PI * 2);
+    ctx.fill();
+    var outer = ctx.createRadialGradient(ax, fy - flameH * 0.4, 2, ax, fy - flameH * 0.4, flameH * 0.6);
+    outer.addColorStop(0, 'rgba(170,205,255,0.95)');
+    outer.addColorStop(0.55, 'rgba(70,130,240,0.75)');
+    outer.addColorStop(1, 'rgba(40,90,200,0.05)');
+    ctx.fillStyle = outer;
+    ctx.beginPath();
+    ctx.moveTo(ax - 10, fy);
+    ctx.quadraticCurveTo(ax - 6, fy - flameH * 0.5, ax, fy - flameH);
+    ctx.quadraticCurveTo(ax + 6, fy - flameH * 0.5, ax + 10, fy);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(235,244,255,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(ax - 4, fy);
+    ctx.quadraticCurveTo(ax - 2, fy - flameH * 0.35, ax, fy - flameH * 0.62);
+    ctx.quadraticCurveTo(ax + 2, fy - flameH * 0.35, ax + 4, fy);
+    ctx.closePath();
+    ctx.fill();
+
+    /* ── Wire gauze (over the flame, under the flask) ── */
+    ctx.fillStyle = '#3a3a3a';
+    ctx.strokeStyle = '#1e1e1e';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(ax, 426, 84, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
     ctx.save();
-    var gx = cx, gy = benchY - 112;
-    var ghw = 68;
-    /* ceramic centre */
+    ctx.beginPath();
+    ctx.ellipse(ax, 426, 84, 8, 0, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.strokeStyle = 'rgba(110,110,110,0.55)';
+    ctx.lineWidth = 0.7;
+    for (var mi = -6; mi <= 6; mi++) {
+      ctx.beginPath();
+      ctx.moveTo(ax + mi * 13, 418);
+      ctx.lineTo(ax + mi * 13, 434);
+      ctx.stroke();
+    }
+    for (var mj = -3; mj <= 3; mj++) {
+      ctx.beginPath();
+      ctx.moveTo(ax - 84, 426 + mj * 2.5);
+      ctx.lineTo(ax + 84, 426 + mj * 2.5);
+      ctx.stroke();
+    }
+    ctx.restore();
     ctx.fillStyle = '#c8c0b4';
     ctx.strokeStyle = '#a09890';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.ellipse(gx, gy, 14, 5, 0, 0, Math.PI * 2);
+    ctx.ellipse(ax, 426, 15, 5, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    /* black mesh */
-    ctx.fillStyle = '#3a3a3a';
-    ctx.strokeStyle = '#222';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.ellipse(gx, gy, ghw, 7, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    /* mesh grid */
-    ctx.strokeStyle = 'rgba(80,80,80,0.5)';
-    ctx.lineWidth = 0.7;
-    for (var mi = -5; mi <= 5; mi++) {
-      ctx.beginPath();
-      ctx.moveTo(gx + mi * 12, gy - 6);
-      ctx.lineTo(gx + mi * 12, gy + 6);
-      ctx.stroke();
-    }
-    for (var mj = -2; mj <= 2; mj++) {
-      ctx.beginPath();
-      ctx.moveTo(gx - ghw, gy + mj * 2.5);
-      ctx.lineTo(gx + ghw, gy + mj * 2.5);
-      ctx.stroke();
-    }
-    ctx.restore();
 
-    /* ── China dish (white porcelain) ── */
-    ctx.save();
-    var dx = cx, dy = benchY - 125;
-    var dw = 85, dh = 28;
-    var dbx = dx - dw / 2, dby = dy - dh / 2;
-    /* dish body */
-    var dishGrad = ctx.createLinearGradient(dbx, dby, dbx + dw, dby);
-    dishGrad.addColorStop(0, '#e8e4e0');
-    dishGrad.addColorStop(0.2, '#f8f6f4');
-    dishGrad.addColorStop(0.5, '#ffffff');
-    dishGrad.addColorStop(0.8, '#f4f2f0');
-    dishGrad.addColorStop(1, '#ddd8d2');
-    ctx.fillStyle = dishGrad;
-    ctx.strokeStyle = '#b0a8a0';
-    ctx.lineWidth = 1.8;
-    ctx.beginPath();
-    ctx.moveTo(dbx + 5, dby + 2);
-    ctx.lineTo(dbx + dw - 5, dby + 2);
-    ctx.quadraticCurveTo(dbx + dw, dby + 2, dbx + dw, dby + 8);
-    ctx.lineTo(dbx + dw - 8, dby + dh - 4);
-    ctx.quadraticCurveTo(dbx + dw - 10, dby + dh, dx, dby + dh);
-    ctx.quadraticCurveTo(dbx + 10, dby + dh, dbx + 8, dby + dh - 4);
-    ctx.lineTo(dbx, dby + 8);
-    ctx.quadraticCurveTo(dbx, dby + 2, dbx + 5, dby + 2);
-    ctx.closePath();
+    /* ── Conical flask on the gauze ── */
+    var glass = ctx.createLinearGradient(ax - 70, 0, ax + 70, 0);
+    glass.addColorStop(0, 'rgba(170,198,222,0.55)');
+    glass.addColorStop(0.12, 'rgba(232,242,252,0.18)');
+    glass.addColorStop(0.5, 'rgba(245,250,255,0.08)');
+    glass.addColorStop(0.88, 'rgba(232,242,252,0.16)');
+    glass.addColorStop(1, 'rgba(170,198,222,0.5)');
+    flaskPath();
+    ctx.fillStyle = glass;
     ctx.fill();
+    ctx.strokeStyle = 'rgba(88,128,168,0.85)';
+    ctx.lineWidth = 2.2;
     ctx.stroke();
-    /* mixture inside (sand + salt + naphthalene) */
+
+    /* mixture (sand + salt + naphthalene) inside */
     ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(dbx + 7, dby + 5);
-    ctx.lineTo(dbx + dw - 7, dby + 5);
-    ctx.lineTo(dbx + dw - 10, dby + dh - 6);
-    ctx.quadraticCurveTo(dbx + dw - 12, dby + dh - 2, dx, dby + dh - 2);
-    ctx.quadraticCurveTo(dbx + 12, dby + dh - 2, dbx + 10, dby + dh - 6);
-    ctx.closePath();
+    flaskPath();
     ctx.clip();
-    /* base colour */
-    ctx.fillStyle = '#d4c8a8';
-    ctx.globalAlpha = 0.7;
-    ctx.fillRect(dbx, dby + 5, dw, dh - 8);
-    /* grains */
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = '#b8a880';
-    for (var mg = 0; mg < 12; mg++) {
-      var mgx = dbx + 10 + (mg % 6) * 11;
-      var mgy = dby + 8 + Math.floor(mg / 6) * 8;
+    ctx.fillStyle = '#d9ccaa';
+    ctx.fillRect(ax - 75, 388, 150, 38);
+    var grains = [[-46, 396], [-32, 404], [-16, 394], [2, 402], [18, 395],
+                  [34, 404], [48, 397], [-40, 412], [-8, 414], [24, 413],
+                  [44, 411], [8, 391]];
+    ctx.fillStyle = '#b9a87e';
+    for (var g1 = 0; g1 < grains.length; g1++) {
       ctx.beginPath();
-      ctx.arc(mgx, mgy, 2, 0, Math.PI * 2);
+      ctx.arc(ax + grains[g1][0], grains[g1][1], 2.4, 0, Math.PI * 2);
       ctx.fill();
     }
-    /* white salt grains */
-    ctx.fillStyle = '#f0f0f0';
-    for (var sg = 0; sg < 6; sg++) {
-      var sgx = dbx + 14 + (sg % 3) * 18;
-      var sgy = dby + 10 + Math.floor(sg / 3) * 7;
+    ctx.fillStyle = '#f4f2ea';
+    var salts = [[-24, 400], [10, 408], [40, 401], [-4, 395], [-52, 406], [28, 416]];
+    for (var g2 = 0; g2 < salts.length; g2++) {
       ctx.beginPath();
-      ctx.arc(sgx, sgy, 1.5, 0, Math.PI * 2);
+      ctx.arc(ax + salts[g2][0], salts[g2][1], 1.8, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.restore();
-    /* rim highlight */
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillStyle = '#e6dbba';
+    ctx.beginPath();
+    ctx.ellipse(ax, 388, 58, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(150,132,92,0.7)';
     ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.ellipse(dx, dby + 3, dw / 2 - 8, 3, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
-    /* ── Bunsen burner (with orange gas tube) ── */
-    ctx.save();
-    var bx = cx, by = benchY;
-    /* heavy base */
-    var baseGrad = ctx.createLinearGradient(bx - 28, by - 8, bx + 28, by + 6);
-    baseGrad.addColorStop(0, '#444');
-    baseGrad.addColorStop(0.3, '#777');
-    baseGrad.addColorStop(0.5, '#999');
-    baseGrad.addColorStop(0.7, '#777');
-    baseGrad.addColorStop(1, '#333');
-    ctx.fillStyle = baseGrad;
-    ctx.beginPath();
-    ctx.ellipse(bx, by, 28, 9, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#222';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    /* air collar */
-    ctx.fillStyle = '#555';
-    ctx.beginPath();
-    ctx.ellipse(bx, by - 10, 12, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-    /* barrel */
-    var barrelGrad = ctx.createLinearGradient(bx - 8, 0, bx + 8, 0);
-    barrelGrad.addColorStop(0, '#555');
-    barrelGrad.addColorStop(0.3, '#999');
-    barrelGrad.addColorStop(0.5, '#bbb');
-    barrelGrad.addColorStop(0.7, '#888');
-    barrelGrad.addColorStop(1, '#444');
-    ctx.fillStyle = barrelGrad;
-    ctx.fillRect(bx - 8, by - 72, 16, 64);
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(bx - 8, by - 72, 16, 64);
-    /* top collar */
-    ctx.fillStyle = '#444';
-    ctx.fillRect(bx - 10, by - 78, 20, 8);
-    /* orange gas tube */
-    ctx.strokeStyle = '#e87820';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(bx + 28, by);
-    ctx.quadraticCurveTo(bx + 60, by + 5, bx + 90, by + 2);
-    ctx.stroke();
-    ctx.strokeStyle = '#c06018';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(bx + 28, by);
-    ctx.quadraticCurveTo(bx + 60, by + 5, bx + 90, by + 2);
-    ctx.stroke();
-    /* flame */
-    var flameH = heating ? 80 : (done ? 50 : 35);
-    var fy = by - 78;
-    var outerGrad = ctx.createRadialGradient(bx, fy - flameH * 0.35, 3, bx, fy - flameH * 0.35, flameH * 0.55);
-    outerGrad.addColorStop(0, '#ffaa00');
-    outerGrad.addColorStop(0.3, '#ff8800');
-    outerGrad.addColorStop(0.7, '#ff6600');
-    outerGrad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = outerGrad;
-    ctx.beginPath();
-    ctx.moveTo(bx - 14, fy);
-    ctx.quadraticCurveTo(bx - 10, fy - flameH * 0.45, bx, fy - flameH);
-    ctx.quadraticCurveTo(bx + 10, fy - flameH * 0.45, bx + 14, fy);
-    ctx.closePath();
-    ctx.fill();
-    /* inner blue cone */
-    ctx.fillStyle = 'rgba(80,120,255,0.5)';
-    ctx.beginPath();
-    ctx.moveTo(bx - 5, fy);
-    ctx.quadraticCurveTo(bx - 2, fy - flameH * 0.3, bx, fy - flameH * 0.55);
-    ctx.quadraticCurveTo(bx + 2, fy - flameH * 0.3, bx + 5, fy);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-
-    /* ── Inverted funnel (large, over china dish) ── */
-    ctx.save();
-    var fx = cx, fy2 = benchY - 155;
-    var fw = 120, fh = 100;
-    var coneH = fh * 0.7;
-    var fhw = fw / 2;
-    var funGrad = ctx.createLinearGradient(fx - fhw, 0, fx + fhw, 0);
-    funGrad.addColorStop(0, 'rgba(160,195,225,0.4)');
-    funGrad.addColorStop(0.1, 'rgba(200,225,245,0.18)');
-    funGrad.addColorStop(0.5, 'rgba(240,248,255,0.05)');
-    funGrad.addColorStop(0.9, 'rgba(200,225,245,0.15)');
-    funGrad.addColorStop(1, 'rgba(160,195,225,0.38)');
-    ctx.fillStyle = funGrad;
-    ctx.strokeStyle = 'rgba(80,120,160,0.55)';
-    ctx.lineWidth = 2;
-    /* cone (wide end down) */
-    ctx.beginPath();
-    ctx.moveTo(fx - fhw, fy2 + coneH);
-    ctx.lineTo(fx - 8, fy2);
-    ctx.lineTo(fx + 8, fy2);
-    ctx.lineTo(fx + fhw, fy2 + coneH);
-    ctx.lineTo(fx + fhw - 8, fy2 + coneH);
-    ctx.lineTo(fx + 5, fy2 + 10);
-    ctx.lineTo(fx - 5, fy2 + 10);
-    ctx.lineTo(fx - fhw + 8, fy2 + coneH);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    /* stem */
-    ctx.fillRect(fx - 6, fy2 - 35, 12, 35);
-    ctx.strokeRect(fx - 6, fy2 - 35, 12, 35);
-    ctx.restore();
-
-    /* ── Cotton plug in funnel stem ── */
-    ctx.save();
-    var cpx = cx, cpy = fy2 - 40;
-    ctx.fillStyle = '#f5f2ee';
-    ctx.strokeStyle = '#d0ccc4';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.ellipse(cpx, cpy, 12, 9, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    /* cotton texture */
-    ctx.fillStyle = '#e8e4de';
-    ctx.beginPath();
-    ctx.ellipse(cpx - 3, cpy - 2, 5, 4, 0.3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(cpx + 4, cpy + 1, 4, 3, -0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    /* ── Naphthalene crystals on funnel interior ── */
+    /* crystals deposited on the cooler inner walls */
     if (done || heating) {
       ctx.save();
-      ctx.fillStyle = 'rgba(255,255,255,0.75)';
-      for (var c = 0; c < 16; c++) {
-        var angle = (c / 16) * Math.PI;
-        var cr = 35 + (c % 3) * 10;
-        var ccx = cx + Math.cos(angle) * cr * 0.6;
-        var ccy = fy2 + 20 + Math.sin(angle) * cr * 0.4;
+      flaskPath();
+      ctx.clip();
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+      ctx.lineWidth = 1;
+      var k, t, xw, yv;
+      for (k = 0; k < 12; k++) {
+        yv = 310 + k * 9;
+        t = (yv - 306) / 108;
+        xw = ax - 24 - t * 42 + 3 + (k % 4);
         ctx.beginPath();
-        ctx.arc(ccx, ccy, 2 + (c % 2), 0, Math.PI * 2);
+        ctx.arc(xw, yv, 1.5 + (k % 3) * 0.7, 0, Math.PI * 2);
         ctx.fill();
+        xw = ax + 24 + t * 42 - 3 - ((k + 2) % 4);
+        ctx.beginPath();
+        ctx.arc(xw, yv + 4, 1.5 + ((k + 1) % 3) * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      var necks = [[-16, 274], [-16, 286], [-16, 298], [16, 278], [16, 292],
+                   [-30, 316], [0, 318], [-12, 330], [14, 334], [4, 348]];
+      for (k = 0; k < necks.length; k++) {
+        ctx.beginPath();
+        ctx.arc(ax + necks[k][0], necks[k][1], 2 + (k % 3) * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      var spk = [[-36, 344], [30, 356], [-10, 366], [40, 378], [-44, 386]];
+      for (k = 0; k < spk.length; k++) {
+        ctx.beginPath();
+        ctx.moveTo(ax + spk[k][0] - 3, spk[k][1]);
+        ctx.lineTo(ax + spk[k][0] + 3, spk[k][1]);
+        ctx.moveTo(ax + spk[k][0], spk[k][1] - 3);
+        ctx.lineTo(ax + spk[k][0], spk[k][1] + 3);
+        ctx.stroke();
       }
       ctx.restore();
     }
 
-    /* ── Naphthalene vapour rising ── */
+    /* rising naphthalene vapour */
     if (heating) {
       ctx.save();
-      ctx.globalAlpha = 0.25;
-      ctx.fillStyle = '#bbb';
-      for (var v = 0; v < 5; v++) {
-        var vy = benchY - 135 - v * 12 - (Date.now() / 30 % 12);
-        var vx = cx + Math.sin((Date.now() / 200) + v) * 8;
+      flaskPath();
+      ctx.clip();
+      ctx.fillStyle = 'rgba(214,224,238,0.55)';
+      for (var v = 0; v < 6; v++) {
+        var prog = (Date.now() / 14 + v * 34) % 136;
+        var vy = 384 - prog;
+        var jit = vy < 306 ? 7 : 24;
+        var vx = ax + Math.sin(Date.now() / 300 + v * 1.7) * jit;
+        ctx.globalAlpha = vy > 320 ? 0.35 : 0.25;
         ctx.beginPath();
-        ctx.arc(vx, vy, 3 + v * 0.5, 0, Math.PI * 2);
+        ctx.arc(vx, vy, 3 + (v % 3), 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
       ctx.restore();
     }
 
-    /* ── Labels (blue background, like reference) ── */
+    /* flask rim + highlights */
+    ctx.fillStyle = 'rgba(214,232,248,0.75)';
+    ctx.beginPath();
+    ctx.ellipse(ax, 266, 27, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(88,128,168,0.9)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(ax - 15, 314);
+    ctx.lineTo(ax - 50, 404);
+    ctx.stroke();
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(ax - 13, 272);
+    ctx.lineTo(ax - 13, 302);
+    ctx.stroke();
+
+    /* ── Clamp boss, arm and jaw (grips the neck) ── */
+    ctx.fillStyle = '#4a5058';
+    rr(66, 278, 18, 20, 4);
+    ctx.fill();
+    ctx.strokeStyle = '#2b2f35';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.strokeStyle = '#7c848d';
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(84, 288);
+    ctx.lineTo(238, 288);
+    ctx.stroke();
+    ctx.strokeStyle = '#3f454d';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.strokeStyle = '#8a929b';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(ax, 288, 26, Math.PI * 0.78, Math.PI * 1.22);
+    ctx.stroke();
+    ctx.fillStyle = '#3f454d';
+    ctx.beginPath();
+    ctx.arc(236, 288, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* ── Coloured callouts + arrows ── */
+    arrow(356, 268, 303, 326, '#3d9b57');
+    callout('Naphthalene crystals (on cooler surface)', 356, 248, 172, '#e6f6ea', '#3d9b57', '#175c2c', 12);
+    arrow(360, 356, 329, 398, '#8a5cd0');
+    callout('Mixture of sand, salt and naphthalene', 360, 336, 166, '#f2ebfb', '#8a5cd0', '#4a2d80', 12);
+    arrow(358, 472, 335, 414, '#3d9b57');
+    callout('\u2713 Sand + salt remain behind (they do not sublime)', 358, 452, 186, '#e6f6ea', '#3d9b57', '#175c2c', 12);
+    arrow(330, 556, 285, 505, '#d97706');
+    callout('Heat', 312, 556, 64, '#e3f0ff', '#3b82d0', '#14477e', 13, true);
+
+    /* ── Right column: 3-step flow ── */
+    var inBg = ctx.createLinearGradient(0, 52, 0, 164);
+    inBg.addColorStop(0, '#eef4fa');
+    inBg.addColorStop(1, '#d9e4ef');
+
+    /* circle 1 — mixture bowl */
     ctx.save();
-    function drawLabel(text, lx, ly, tw) {
-      ctx.fillStyle = '#1a3a6a';
-      ctx.fillRect(lx, ly, tw, 18);
-      ctx.fillStyle = '#fff';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(text, lx + tw / 2, ly + 13);
-    }
-    function drawLine(x1, y1, x2, y2) {
-      ctx.strokeStyle = '#1a3a6a';
-      ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(650, 108, 56, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = inBg;
+    ctx.fillRect(594, 52, 112, 112);
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#9aa7b4';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(614, 126);
+    ctx.quadraticCurveTo(618, 152, 650, 152);
+    ctx.quadraticCurveTo(682, 152, 686, 126);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(650, 126, 36, 9, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#f3f6f9';
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(650, 124, 31, 7, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#d9ccaa';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(150,132,92,0.6)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    var bowlG = [[-18, 123], [-6, 127], [8, 122], [20, 126], [0, 120], [-12, 130], [14, 130]];
+    ctx.fillStyle = '#b9a87e';
+    for (var b1 = 0; b1 < bowlG.length; b1++) {
       ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
+      ctx.arc(650 + bowlG[b1][0], bowlG[b1][1], 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#f4f2ea';
+    var bowlS = [[-24, 125], [4, 124], [24, 123]];
+    for (var b2 = 0; b2 < bowlS.length; b2++) {
+      ctx.beginPath();
+      ctx.arc(650 + bowlS[b2][0], bowlS[b2][1], 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(650, 108, 56, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = '#9fb6cd';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(650, 108, 58.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    /* circle 2 — mini flask with deposited crystals */
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(806, 108, 56, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = inBg;
+    ctx.fillRect(750, 52, 112, 112);
+    var mf = ctx.createLinearGradient(778, 0, 834, 0);
+    mf.addColorStop(0, 'rgba(170,198,222,0.6)');
+    mf.addColorStop(0.5, 'rgba(245,250,255,0.15)');
+    mf.addColorStop(1, 'rgba(170,198,222,0.55)');
+    ctx.beginPath();
+    ctx.moveTo(798, 74);
+    ctx.lineTo(798, 96);
+    ctx.lineTo(780, 140);
+    ctx.quadraticCurveTo(778, 148, 786, 148);
+    ctx.lineTo(826, 148);
+    ctx.quadraticCurveTo(834, 148, 832, 140);
+    ctx.lineTo(814, 96);
+    ctx.lineTo(814, 74);
+    ctx.closePath();
+    ctx.fillStyle = mf;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(88,128,168,0.9)';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = '#d9ccaa';
+    ctx.fillRect(776, 132, 60, 18);
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    var mc = [[799, 100], [799, 111], [795, 123], [813, 104], [812, 117],
+              [816, 128], [806, 82], [806, 88]];
+    for (var c2i = 0; c2i < mc.length; c2i++) {
+      ctx.beginPath();
+      ctx.arc(mc[c2i][0], mc[c2i][1], 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.ellipse(806, 140, 26, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = 'rgba(214,232,248,0.8)';
+    ctx.beginPath();
+    ctx.ellipse(806, 74, 12, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(88,128,168,0.9)';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.restore();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(806, 108, 56, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = '#9fb6cd';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(806, 108, 58.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    /* flow arrows + step captions */
+    bigArrow(712, 108, 746, 108);
+    callout('1. Mixture of sand, salt and naphthalene', 575, 178, 150, '#e8f1fb', '#5b93d9', '#16375e', 12);
+    callout('2. On heating, naphthalene sublimes and deposits on cooler surface', 738, 178, 148, '#e8f1fb', '#5b93d9', '#16375e', 12);
+    bigArrow(812, 254, 812, 296);
+
+    /* dark card with the separated-crystal dish */
+    rr(580, 300, 305, 192, 18);
+    ctx.fillStyle = '#232b36';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(716, 406, 62, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    var bowlGrad = ctx.createLinearGradient(0, 372, 0, 404);
+    bowlGrad.addColorStop(0, '#f8fafc');
+    bowlGrad.addColorStop(1, '#c3cad2');
+    ctx.fillStyle = bowlGrad;
+    ctx.strokeStyle = '#9aa4af';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(648, 372);
+    ctx.quadraticCurveTo(652, 404, 716, 404);
+    ctx.quadraticCurveTo(780, 404, 784, 372);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#eef1f5';
+    ctx.beginPath();
+    ctx.ellipse(716, 372, 68, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#9aa4af';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#dfe4ea';
+    ctx.beginPath();
+    ctx.ellipse(716, 372, 60, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    var pile = [
+      [366, [-44, -33, -22, -11, 0, 11, 22, 33, 44]],
+      [357, [-33, -22, -11, 0, 11, 22, 33]],
+      [349, [-22, -11, 0, 11, 22]],
+      [342, [-11, 0, 11]]
+    ];
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#d3dbe3';
+    ctx.lineWidth = 0.8;
+    for (var p1 = 0; p1 < pile.length; p1++) {
+      for (var p2 = 0; p2 < pile[p1][1].length; p2++) {
+        ctx.beginPath();
+        ctx.arc(716 + pile[p1][1][p2], pile[p1][0], 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1.2;
+    var sp2 = [[752, 350], [684, 358], [726, 336], [700, 344]];
+    for (var s1 = 0; s1 < sp2.length; s1++) {
+      ctx.beginPath();
+      ctx.moveTo(sp2[s1][0] - 4, sp2[s1][1]);
+      ctx.lineTo(sp2[s1][0] + 4, sp2[s1][1]);
+      ctx.moveTo(sp2[s1][0], sp2[s1][1] - 4);
+      ctx.lineTo(sp2[s1][0], sp2[s1][1] + 4);
       ctx.stroke();
     }
-    /* Cotton plug label */
-    drawLine(cx + 6, cpy - 10, cx + 80, cpy - 30);
-    drawLabel('Cotton plug', cx + 80, cpy - 48, 80);
-    /* Inverted funnel label */
-    drawLine(cx + 60, fy2 + 30, cx + 90, fy2 + 10);
-    drawLabel('Inverted funnel', cx + 90, fy2 - 8, 95);
-    /* Naphthalene crystals label */
-    drawLine(cx + 40, fy2 + 50, cx + 90, fy2 + 60);
-    drawLabel('Naphthalene crystals', cx + 90, fy2 + 52, 120);
-    /* China dish label */
-    drawLine(cx + 45, dby + 10, cx + 90, dby + 5);
-    drawLabel('China dish', cx + 90, dby - 13, 75);
-    /* Wire gauze label */
-    drawLine(cx + 70, gy + 5, cx + 100, gy + 15);
-    drawLabel('Wire gauze', cx + 100, gy + 8, 75);
-    /* Tripod label */
-    drawLine(cx + thw, ty - 40, cx + thw + 20, ty - 40);
-    drawLabel('Tripod stand', cx + thw + 20, ty - 48, 85);
-    /* Burner label */
-    drawLine(cx + 28, by - 30, cx + 90, by - 30);
-    drawLabel('Burner', cx + 90, by - 38, 55);
-    ctx.textAlign = 'left';
-    ctx.restore();
+    callout('Separated naphthalene (white crystals)', 612, 432, 240, '#f8d97a', '#dcb84e', '#3a2c0d', 12, true);
 
-    /* Simulated note */
-    ctx.save();
-    ctx.fillStyle = '#888';
+    /* ── Title banner ── */
+    var banGrad = ctx.createLinearGradient(14, 10, 418, 98);
+    banGrad.addColorStop(0, '#132a4d');
+    banGrad.addColorStop(1, '#1e4275');
+    rr(14, 10, 404, 88, 16);
+    ctx.fillStyle = banGrad;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(245,197,66,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText('Separation of Naphthalene', 216, 42);
+    ctx.font = '12.5px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    ctx.fillText('(from a mixture of sand and salt)', 216, 64);
+    ctx.font = 'bold 13.5px sans-serif';
+    ctx.fillStyle = '#f5c542';
+    ctx.fillText('\u2014 by Sublimation \u2014', 216, 86);
+    ctx.textAlign = 'left';
+
+    /* simulated note */
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.font = '9px sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText('(simulated)', 10, ch - 10);

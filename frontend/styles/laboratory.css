@@ -14,6 +14,7 @@
 
 .canvas-container canvas {
   max-width: 100%;
+  height: auto;
   cursor: crosshair;
   border-radius: var(--radius-sm);
 }
