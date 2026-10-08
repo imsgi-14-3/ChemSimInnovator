@@ -1084,7 +1084,7 @@ var MinorExperimentRenderer = {
        benchY 540  bench line        ax 265  apparatus axis
        stand  rod x69-81 y150-540, base rr(33,520,84,20), boss rr(66,278,18,20)
        tripod feet (180,540)/(350,540), ring (265,430) rx77 ry8
-       gauze  ellipse (265,426) rx84 ry8       flame fy 462, h 16/30/22
+       gauze  ellipse (265,426) rx84 ry8       flame fy 462, h 18/44/30
        flask  base y424 hw70, shoulder y306, neck hw21 y266, rim rx27
        callouts  green (356,248,172) purple (360,336,166) green✓ (358,452,186)
                  blue Heat (312,556,64)
@@ -1331,31 +1331,52 @@ var MinorExperimentRenderer = {
     ctx.stroke();
 
     /* ── Blue flame (animated) ── */
-    var flameH = heating ? 30 + Math.sin(Date.now() / 90) * 2.5 : (done ? 22 : 16);
+    var flameH = heating ? 44 + Math.sin(Date.now() / 90) * 3 : (done ? 30 : 18);
+    var fw = heating ? 14 : (done ? 11 : 9);
+    var hot = heating ? 0.5 + Math.sin(Date.now() / 150) * 0.08 : (done ? 0.32 : 0.16);
     var fy = by - 78;
-    var glow = ctx.createRadialGradient(ax, fy - flameH * 0.4, 3, ax, fy - flameH * 0.4, flameH * 1.7);
-    glow.addColorStop(0, 'rgba(90,140,255,0.30)');
-    glow.addColorStop(1, 'rgba(90,140,255,0)');
+    /* cool blue halo */
+    var glow = ctx.createRadialGradient(ax, fy - flameH * 0.45, 4, ax, fy - flameH * 0.45, flameH * 1.6);
+    glow.addColorStop(0, 'rgba(70,120,255,0.45)');
+    glow.addColorStop(1, 'rgba(70,120,255,0)');
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(ax, fy - flameH * 0.4, flameH * 1.7, 0, Math.PI * 2);
+    ctx.arc(ax, fy - flameH * 0.45, flameH * 1.6, 0, Math.PI * 2);
     ctx.fill();
-    var outer = ctx.createRadialGradient(ax, fy - flameH * 0.4, 2, ax, fy - flameH * 0.4, flameH * 0.6);
-    outer.addColorStop(0, 'rgba(170,205,255,0.95)');
-    outer.addColorStop(0.55, 'rgba(70,130,240,0.75)');
-    outer.addColorStop(1, 'rgba(40,90,200,0.05)');
+    /* radiant heat wash — strongest (and pulsing) while heating */
+    var wash = ctx.createRadialGradient(ax, 442, 6, ax, 442, 40);
+    wash.addColorStop(0, 'rgba(255,150,40,' + hot + ')');
+    wash.addColorStop(1, 'rgba(255,150,40,0)');
+    ctx.fillStyle = wash;
+    ctx.beginPath();
+    ctx.arc(ax, 442, 40, 0, Math.PI * 2);
+    ctx.fill();
+    /* outer flame — solid saturated blue, crisp against the pale wall */
+    var outer = ctx.createLinearGradient(0, fy, 0, fy - flameH);
+    outer.addColorStop(0, '#123fbe');
+    outer.addColorStop(0.5, '#2f6dff');
+    outer.addColorStop(1, '#5fa0ff');
     ctx.fillStyle = outer;
     ctx.beginPath();
-    ctx.moveTo(ax - 10, fy);
-    ctx.quadraticCurveTo(ax - 6, fy - flameH * 0.5, ax, fy - flameH);
-    ctx.quadraticCurveTo(ax + 6, fy - flameH * 0.5, ax + 10, fy);
+    ctx.moveTo(ax - fw, fy);
+    ctx.quadraticCurveTo(ax - fw * 0.64, fy - flameH * 0.5, ax, fy - flameH);
+    ctx.quadraticCurveTo(ax + fw * 0.64, fy - flameH * 0.5, ax + fw, fy);
     ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = 'rgba(235,244,255,0.9)';
+    /* inner cone */
+    ctx.fillStyle = '#a9d0ff';
     ctx.beginPath();
-    ctx.moveTo(ax - 4, fy);
-    ctx.quadraticCurveTo(ax - 2, fy - flameH * 0.35, ax, fy - flameH * 0.62);
-    ctx.quadraticCurveTo(ax + 2, fy - flameH * 0.35, ax + 4, fy);
+    ctx.moveTo(ax - fw * 0.43, fy);
+    ctx.quadraticCurveTo(ax - fw * 0.26, fy - flameH * 0.4, ax, fy - flameH * 0.66);
+    ctx.quadraticCurveTo(ax + fw * 0.26, fy - flameH * 0.4, ax + fw * 0.43, fy);
+    ctx.closePath();
+    ctx.fill();
+    /* bright core */
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.beginPath();
+    ctx.moveTo(ax - fw * 0.18, fy);
+    ctx.quadraticCurveTo(ax - fw * 0.1, fy - flameH * 0.3, ax, fy - flameH * 0.5);
+    ctx.quadraticCurveTo(ax + fw * 0.1, fy - flameH * 0.3, ax + fw * 0.18, fy);
     ctx.closePath();
     ctx.fill();
 
