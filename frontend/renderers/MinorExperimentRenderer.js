@@ -2082,20 +2082,6 @@ var MinorExperimentRenderer = {
     ctx.fillStyle = '#1d3f77';
     rr(140, 6, 680, 52, 26);
     ctx.fill();
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    for (var q = 0; q < 3; q++) {
-      ctx.beginPath();
-      ctx.moveTo(166 + q * 9, 22);
-      ctx.lineTo(158 + q * 9, 42);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(776 + q * 9, 22);
-      ctx.lineTo(768 + q * 9, 42);
-      ctx.stroke();
-    }
-    ctx.lineCap = 'butt';
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 21px sans-serif';
     ctx.textAlign = 'center';
@@ -2526,8 +2512,6 @@ var MinorExperimentRenderer = {
     /* ── Panel 4: crystallisation ── */
     clipPanel(0, 354, 316, 286);
     panelBg(0, 354, 316, 286, '#eff2f6', '#e6eaef');
-    ctx.fillStyle = 'rgba(50,66,80,0.16)';
-    ctx.fillRect(10, 384, 46, 120);
     ctx.fillStyle = '#cfd4da';
     ctx.fillRect(0, 566, 316, 74);
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
@@ -2603,10 +2587,6 @@ var MinorExperimentRenderer = {
     ctx.fillStyle = 'rgba(255,255,255,0.10)';
     ctx.fillRect(322, 430, 638, 3);
     /* watch glass */
-    ctx.fillStyle = 'rgba(16,18,22,0.35)';
-    ctx.beginPath();
-    ctx.ellipse(519, 560, 163, 26, 0, 0, Math.PI * 2);
-    ctx.fill();
     ctx.fillStyle = 'rgba(226,238,250,0.20)';
     ctx.strokeStyle = 'rgba(255,255,255,0.62)';
     ctx.lineWidth = 2.4;
@@ -2797,13 +2777,6 @@ var MinorExperimentRenderer = {
     wallg.addColorStop(1, '#e7ebef');
     ctx.fillStyle = wallg;
     ctx.fillRect(0, 0, cw, 431);
-    ctx.fillStyle = 'rgba(56,70,86,0.14)';
-    ctx.fillRect(10, 128, 52, 196);
-    ctx.fillStyle = 'rgba(255,255,255,0.75)';
-    ctx.fillRect(470, 182, 44, 50);
-    ctx.strokeStyle = 'rgba(150,160,172,0.5)';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(470, 182, 44, 50);
     var benchg = ctx.createLinearGradient(0, 431, 0, 640);
     benchg.addColorStop(0, '#787e86');
     benchg.addColorStop(1, '#545a61');
@@ -2811,9 +2784,6 @@ var MinorExperimentRenderer = {
     ctx.fillRect(0, 431, cw, 209);
     ctx.fillStyle = 'rgba(255,255,255,0.16)';
     ctx.fillRect(0, 431, cw, 3);
-    ctx.fillStyle = 'rgba(255,255,255,0.05)';
-    ctx.fillRect(0, 470, cw, 2);
-    ctx.fillRect(0, 540, cw, 2);
 
     /* title banner */
     ctx.fillStyle = '#bfdcfb';
@@ -2827,10 +2797,6 @@ var MinorExperimentRenderer = {
     ctx.textAlign = 'left';
 
     /* retort stand */
-    ctx.fillStyle = 'rgba(24,26,30,0.4)';
-    ctx.beginPath();
-    ctx.ellipse(126, 634, 92, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
     var footg = ctx.createLinearGradient(0, 612, 0, 632);
     footg.addColorStop(0, '#eef1f4');
     footg.addColorStop(0.45, '#aab2ba');
@@ -3137,10 +3103,6 @@ var MinorExperimentRenderer = {
     ctx.restore();
 
     /* watch glass with naphthalene */
-    ctx.fillStyle = 'rgba(20,22,26,0.4)';
-    ctx.beginPath();
-    ctx.ellipse(66, 578, 126, 24, 0, 0, Math.PI * 2);
-    ctx.fill();
     ctx.fillStyle = 'rgba(225,235,245,0.22)';
     ctx.strokeStyle = 'rgba(255,255,255,0.6)';
     ctx.lineWidth = 2.5;
@@ -3313,7 +3275,6 @@ var MinorExperimentRenderer = {
     }
     ctx.textAlign = 'center';
     ctx.font = 'bold 9.5px sans-serif';
-    ctx.fillText('Temperature (\u00b0C)', 600, 557);
     ctx.save();
     ctx.translate(600, 557);
     ctx.rotate(-Math.PI / 2);
