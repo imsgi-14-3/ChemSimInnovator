@@ -497,3 +497,68 @@
   font-size: var(--text-xs);
   color: var(--color-info);
 }
+
+/* ===== M7.4 — observation & graph beside the stage (not on the canvas) ===== */
+.m74-stage-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+.m74-stage-row .canvas-container {
+  margin-top: 0;
+}
+.m74-canvas-cell {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.m74-side {
+  flex: 0 0 330px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.m74-obs {
+  background: #fdf7dc;
+  border: 1px solid #f0e6bd;
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+.m74-obs-title {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #16345e;
+}
+.m74-obs-list {
+  margin: 0;
+  padding-left: 18px;
+}
+.m74-obs-list li {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #334155;
+  margin-bottom: 6px;
+}
+.m74-obs-banner {
+  margin-top: 12px;
+  background: #cfc0f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #16345e;
+  line-height: 1.45;
+}
+.m74-graph {
+  background: #d4e8fb;
+  border: 1px solid #b9d6f2;
+  border-radius: 14px;
+  padding: 10px;
+}
+.m74-graph svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}

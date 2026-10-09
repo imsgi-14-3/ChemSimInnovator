@@ -13,7 +13,12 @@ var MinorExperimentRenderer = {
     else html = '<p>Unknown experiment: ' + id + '</p>';
     var canvasW = id === 'M7_1' ? 900 : 550;
     if (id === 'M7_3' || id === 'M7_4') canvasW = 960;
-    html += LaboratoryWorkspace.renderCanvas(canvasW, 640);
+    var canvasHtml = LaboratoryWorkspace.renderCanvas(canvasW, 640);
+    if (id === 'M7_4' && (stage === 'prepare' || stage === 'heat' || stage === 'monitor')) {
+      html += '<div class="m74-stage-row"><div class="m74-canvas-cell">' + canvasHtml + '</div>' + this.renderM7_4Side(state) + '</div>';
+    } else {
+      html += canvasHtml;
+    }
     return html;
   },
 
@@ -215,6 +220,44 @@ var MinorExperimentRenderer = {
       default: html = '<p>Stage: ' + stage + '</p>';
     }
     return html;
+  },
+
+  /* -- M7.4 side panel: observation + graph shown beside the stage (HTML) -- */
+  renderM7_4Side: function(state) {
+    var g = '<svg viewBox="0 0 340 188" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">';
+    g += '<rect width="340" height="188" rx="12" fill="#d4e8fb"/>';
+    g += '<text x="170" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#16345e">Temperature vs Time</text>';
+    g += '<line x1="58" y1="152" x2="58" y2="38" stroke="#16345e" stroke-width="1.6"/>';
+    g += '<polygon points="58,30 54,39 62,39" fill="#16345e"/>';
+    g += '<line x1="58" y1="152" x2="326" y2="152" stroke="#16345e" stroke-width="1.6"/>';
+    g += '<polygon points="334,152 325,148 325,156" fill="#16345e"/>';
+    var yt = [60, 70, 80, 90];
+    for (var i = 0; i < yt.length; i++) {
+      var yy = 152 - (yt[i] - 60) * 3.8;
+      g += '<line x1="54" y1="' + yy + '" x2="62" y2="' + yy + '" stroke="#16345e" stroke-width="1.2"/>';
+      g += '<text x="48" y="' + (yy + 3.5) + '" text-anchor="end" font-size="10" fill="#16345e">' + yt[i] + '</text>';
+    }
+    g += '<line x1="136" y1="80" x2="136" y2="152" stroke="#8a94ab" stroke-width="1.2" stroke-dasharray="4 4"/>';
+    g += '<line x1="214" y1="76" x2="214" y2="152" stroke="#8a94ab" stroke-width="1.2" stroke-dasharray="4 4"/>';
+    g += '<path d="M72 146 Q112 98 136 78 Q176 74 214 74 Q266 68 310 44" fill="none" stroke="#1b3c8a" stroke-width="3" stroke-linecap="round"/>';
+    g += '<rect x="118" y="38" width="150" height="34" rx="9" fill="#cfc0f0"/>';
+    g += '<text x="193" y="52" text-anchor="middle" font-size="9.5" font-weight="700" fill="#16345e">Melting point range</text>';
+    g += '<text x="193" y="66" text-anchor="middle" font-size="9.5" font-weight="700" fill="#16345e">(80\u201382 \u00b0C)</text>';
+    g += '<text x="14" y="108" text-anchor="middle" font-size="9.5" font-weight="700" fill="#16345e" transform="rotate(-90 14 108)">Temperature (\u00b0C)</text>';
+    g += '<text x="240" y="174" text-anchor="middle" font-size="9.5" font-weight="700" fill="#16345e">Time (min)</text>';
+    g += '</svg>';
+    var h = '<div class="m74-side">';
+    h += '<div class="m74-obs">';
+    h += '<h4 class="m74-obs-title">Observation</h4>';
+    h += '<ul class="m74-obs-list">';
+    h += '<li>The naphthalene starts to melt at about 80 \u00b0C.</li>';
+    h += '<li>It is completely liquid at about 80\u201382 \u00b0C.</li>';
+    h += '</ul>';
+    h += '<div class="m74-obs-banner">Melting point of naphthalene<br>= 80\u201382 \u00b0C</div>';
+    h += '</div>';
+    h += '<div class="m74-graph">' + g + '</div>';
+    h += '</div>';
+    return h;
   },
 
   /* ── M7.5 Boiling Point ── */
@@ -3158,11 +3201,13 @@ var MinorExperimentRenderer = {
     callout(436, 288, 170, ['Oil bath', '(gradual heating)']);
     arrow(434, 314, 398, 306, 376, 300);
     callout(836, 84, 120, ['Naphthalene', '(white crystals)']);
-    arrow(834, 112, 796, 142, 750, 174);
+    arrow(834, 112, 770, 300, 802, 488);
     callout(830, 196, 126, ['Capillary tube', '(close-up view)']);
-    arrow(828, 222, 792, 212, 758, 200);
+    arrow(828, 222, 846, 330, 786, 500);
 
-    /* circular close-up inset */
+    /* circular close-up inset (moved down to fill area freed by observation/graph) */
+    ctx.save();
+    ctx.translate(52, 314);
     var insg = ctx.createRadialGradient(720, 130, 14, 720, 138, 110);
     insg.addColorStop(0, '#161d2b');
     insg.addColorStop(1, '#06080d');
@@ -3203,115 +3248,7 @@ var MinorExperimentRenderer = {
     ctx.lineWidth = 2.5;
     rr(700, 44, 48, 170, 20);
     ctx.stroke();
-
-    /* observation box */
-    ctx.fillStyle = '#fdf7dc';
-    rr(552, 256, 392, 186, 14);
-    ctx.fill();
-    ctx.strokeStyle = '#f0e6bd';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.fillStyle = '#16345e';
-    ctx.font = 'bold 17px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('Observation', 572, 286);
-    ctx.font = '11.5px sans-serif';
-    ctx.beginPath();
-    ctx.arc(576, 314, 2.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillText('The naphthalene starts to melt at', 586, 318);
-    ctx.fillText('about 80 \u00b0C.', 586, 336);
-    ctx.beginPath();
-    ctx.arc(576, 360, 2.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillText('It is completely liquid at about', 586, 364);
-    ctx.fillText('80\u201382 \u00b0C.', 586, 382);
-    ctx.fillStyle = '#cfc0f0';
-    rr(586, 394, 324, 44, 12);
-    ctx.fill();
-    ctx.fillStyle = '#16345e';
-    ctx.font = 'bold 13.5px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Melting point of naphthalene', 748, 412);
-    ctx.fillText('= 80\u201382 \u00b0C', 748, 430);
-    ctx.textAlign = 'left';
-
-    /* temperature vs time graph */
-    ctx.fillStyle = '#d4e8fb';
-    rr(576, 462, 384, 172, 14);
-    ctx.fill();
-    ctx.strokeStyle = '#b9d6f2';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.fillStyle = '#16345e';
-    ctx.font = 'bold 13.5px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Temperature vs Time', 768, 486);
-    ctx.textAlign = 'left';
-    ctx.strokeStyle = '#16345e';
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
-    ctx.moveTo(640, 604);
-    ctx.lineTo(640, 502);
-    ctx.stroke();
-    head(640, 502, -Math.PI / 2, 8, '#16345e');
-    ctx.beginPath();
-    ctx.moveTo(640, 604);
-    ctx.lineTo(946, 604);
-    ctx.stroke();
-    head(946, 604, 0, 8, '#16345e');
-    var yt = [60, 70, 80, 90];
-    ctx.font = '10px sans-serif';
-    for (var yt2 = 0; yt2 < yt.length; yt2++) {
-      var yy = 604 - (yt[yt2] - 60) * 3.133;
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(636, yy);
-      ctx.lineTo(644, yy);
-      ctx.stroke();
-      ctx.fillStyle = '#16345e';
-      ctx.textAlign = 'right';
-      ctx.fillText(String(yt[yt2]), 632, yy + 3.5);
-    }
-    ctx.textAlign = 'center';
-    ctx.font = 'bold 9.5px sans-serif';
-    ctx.save();
-    ctx.translate(600, 557);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText('Temperature (\u00b0C)', 0, 0);
     ctx.restore();
-    ctx.fillText('Time (min)', 790, 628);
-    ctx.strokeStyle = '#1b3c8a';
-    ctx.lineWidth = 2.6;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(654, 590);
-    ctx.quadraticCurveTo(690, 556, 722, 542);
-    ctx.quadraticCurveTo(766, 537, 812, 536);
-    ctx.quadraticCurveTo(860, 532, 930, 505);
-    ctx.stroke();
-    ctx.lineCap = 'butt';
-    ctx.strokeStyle = '#8a94ab';
-    ctx.lineWidth = 1.2;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(722, 542);
-    ctx.lineTo(722, 604);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(812, 536);
-    ctx.lineTo(812, 604);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#cfc0f0';
-    rr(700, 496, 150, 40, 10);
-    ctx.fill();
-    ctx.fillStyle = '#16345e';
-    ctx.font = 'bold 10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Melting point range', 775, 512);
-    ctx.fillText('(80\u201382 \u00b0C)', 775, 527);
-    ctx.textAlign = 'left';
 
     ctx.fillStyle = '#b9c0c8';
     ctx.font = '9px sans-serif';
