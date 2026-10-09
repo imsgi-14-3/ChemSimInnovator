@@ -135,6 +135,13 @@ var ChemSimLanding = (function() {
       '</button>';
   }
 
+  function safeItem(ico, title, text) {
+    return '<div class="lg-modal-item">' +
+      '<span class="lg-modal-ico">' + ico + '</span>' +
+      '<div class="lg-modal-txt"><b>' + title + '</b><p>' + text + '</p></div>' +
+      '</div>';
+  }
+
   function markup() {
     var h = '';
     h += '<div class="lg-hex" style="left:-40px;top:120px;">' + HEX1 + '</div>';
@@ -178,8 +185,20 @@ var ChemSimLanding = (function() {
     h += card('experiments', ICON.flask, 'Virtual Experiments', 'Perform chemical experiments safely and easily.');
     h += card('experiments', ICON.atom, 'Chemical Reactions', 'Explore reactions and understand the science.');
     h += card('learn', ICON.book, 'Learn &amp; Grow', 'Build your knowledge with interactive learning.');
-    h += card('about', ICON.shield, 'Safe &amp; Eco-Friendly', 'No real chemicals, no harm to environment.');
+    h += card('safe', ICON.shield, 'Safe &amp; Eco-Friendly', 'No real chemicals, no harm to environment.');
     h += '</section>';
+
+    /* Safe & Eco-Friendly modal (opens with a small animation) */
+    h += '<div class="lg-modal" id="lg-safe" hidden>';
+    h += '<div class="lg-modal-card">';
+    h += '<button class="lg-modal-close" data-lg="safe-close" aria-label="Close">&times;</button>';
+    h += '<div class="lg-modal-head"><span class="lg-modal-ico lg-modal-ico--head">' + ICON.shield + '</span><h3>Safe &amp; Eco-Friendly</h3></div>';
+    h += '<div class="lg-modal-list">';
+    h += safeItem('\uD83C\uDF3F', 'No Harmful Chemicals', 'Learn through virtual experiments without handling real chemicals.');
+    h += safeItem('\uD83C\uDF0D', 'Reduces Waste and Pollution', 'Practice experiments digitally and reduce material waste.');
+    h += safeItem('\u267B\uFE0F', 'Promotes Sustainable Learning', 'Explore chemistry while learning environmentally responsible habits.');
+    h += safeItem('\uD83C\uDF31', 'Builds Environmental Awareness', 'Understand how science can support a cleaner future.');
+    h += '</div></div></div>';
 
     h += '<section class="lg-about" id="lg-about">';
     h += '<h3>About ChemSim</h3>';
@@ -210,6 +229,20 @@ var ChemSimLanding = (function() {
     if (target && el) el.scrollTo({ top: target.offsetTop - 16, behavior: 'smooth' });
   }
 
+  function openSafeModal() {
+    var m = document.getElementById('lg-safe');
+    if (!m) return;
+    m.hidden = false;
+    window.setTimeout(function() { m.className = 'lg-modal lg-modal--open'; }, 20);
+  }
+
+  function closeSafeModal() {
+    var m = document.getElementById('lg-safe');
+    if (!m || m.hidden) return;
+    m.className = 'lg-modal';
+    window.setTimeout(function() { m.hidden = true; }, 300);
+  }
+
   function wire(el) {
     var nodes = el.querySelectorAll('[data-lg]');
     for (var i = 0; i < nodes.length; i++) {
@@ -217,11 +250,22 @@ var ChemSimLanding = (function() {
         ev.preventDefault();
         var action = this.getAttribute('data-lg');
         if (action === 'about') scrollToAbout();
+        else if (action === 'safe') openSafeModal();
+        else if (action === 'safe-close') closeSafeModal();
         else if (action === 'experiments') closeLanding('experiment-select');
         else if (action === 'learn') closeLanding('revision');
         else closeLanding('home');
       });
     }
+    var modal = document.getElementById('lg-safe');
+    if (modal) {
+      modal.addEventListener('click', function(ev) {
+        if (ev.target === modal) closeSafeModal();
+      });
+    }
+    document.addEventListener('keydown', function(ev) {
+      if (ev.keyCode === 27) closeSafeModal();
+    });
   }
 
   function registerSW() {
