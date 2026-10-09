@@ -11,7 +11,9 @@ var MinorExperimentRenderer = {
     else if (id === 'M7_7') html = this.renderM7_7(stage, exp, state);
     else if (id === 'M7_8') html = this.renderM7_8(stage, exp, state);
     else html = '<p>Unknown experiment: ' + id + '</p>';
-    html += LaboratoryWorkspace.renderCanvas(id === 'M7_1' ? 900 : 550, 640);
+    var canvasW = id === 'M7_1' ? 900 : 550;
+    if (id === 'M7_3' || id === 'M7_4') canvasW = 960;
+    html += LaboratoryWorkspace.renderCanvas(canvasW, 640);
     return html;
   },
 
@@ -1980,472 +1982,1377 @@ var MinorExperimentRenderer = {
     ctx.restore();
   },
 
-  /* ── M7.3 CuSO4 Crystals — realistic lab setup ── */
+  /* ── M7.3 CuSO4 Crystals — 5-step poster (reference image) ── */
   drawM7_3: function(ctx, cw, ch, state) {
-    var cx = cw / 2;
-    var benchY = 540;
-    var done = state.m7ActionDone && state.simulation && state.m7ObservationDone;
-    var heating = state.m7ActionDone && state.simulation && !state.simulation.done;
+    var simRun = !!(state.simulation && !state.simulation.done);
+    var simDone = !!(state.simulation && state.simulation.done);
+    var t = Date.now();
 
-    /* ── Tripod stand (black metal) — LEFT ── */
-    var tLx = cx - 90, tLy = benchY, tLhw = 55;
-    ctx.save();
-    ctx.strokeStyle = '#2a2a2a';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.moveTo(tLx - tLhw, tLy);
-    ctx.quadraticCurveTo(tLx - tLhw + 6, tLy - 40, tLx - tLhw + 12, tLy - 95);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(tLx + tLhw, tLy);
-    ctx.quadraticCurveTo(tLx + tLhw - 6, tLy - 40, tLx + tLhw - 12, tLy - 95);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(tLx, tLy + 4);
-    ctx.lineTo(tLx, tLy - 90);
-    ctx.stroke();
-    ctx.fillStyle = '#1a1a1a';
-    ctx.beginPath();
-    ctx.ellipse(tLx - tLhw, tLy, 5, 3.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(tLx + tLhw, tLy, 5, 3.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    /* top ring */
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.ellipse(tLx, tLy - 95, tLhw - 6, 6, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-
-    /* ── Wire gauze (black mesh) ── */
-    var gx = tLx, gy = tLy - 97, ghw = 53;
-    ctx.save();
-    ctx.fillStyle = '#c8c0b4';
-    ctx.strokeStyle = '#a09890';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.ellipse(gx, gy, 12, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = '#3a3a3a';
-    ctx.strokeStyle = '#222';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.ellipse(gx, gy, ghw, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.strokeStyle = 'rgba(80,80,80,0.5)';
-    ctx.lineWidth = 0.6;
-    for (var mi = -4; mi <= 4; mi++) {
+    function rr(x, y, w, h, r) {
       ctx.beginPath();
-      ctx.moveTo(gx + mi * 10, gy - 5);
-      ctx.lineTo(gx + mi * 10, gy + 5);
-      ctx.stroke();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
     }
-    for (var mj = -1; mj <= 1; mj++) {
+
+    function head(x, y, ang, s, color) {
+      ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.moveTo(gx - ghw, gy + mj * 2);
-      ctx.lineTo(gx + ghw, gy + mj * 2);
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    /* ── China dish (white porcelain) on gauze ── */
-    var dx = tLx, dy = gy - 14, dw = 70, dh = 24;
-    var dbx = dx - dw / 2, dby = dy - dh / 2;
-    ctx.save();
-    var dishGrad = ctx.createLinearGradient(dbx, dby, dbx + dw, dby);
-    dishGrad.addColorStop(0, '#e8e4e0');
-    dishGrad.addColorStop(0.2, '#f8f6f4');
-    dishGrad.addColorStop(0.5, '#ffffff');
-    dishGrad.addColorStop(0.8, '#f4f2f0');
-    dishGrad.addColorStop(1, '#ddd8d2');
-    ctx.fillStyle = dishGrad;
-    ctx.strokeStyle = '#b0a8a0';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(dbx + 4, dby + 1);
-    ctx.lineTo(dbx + dw - 4, dby + 1);
-    ctx.quadraticCurveTo(dbx + dw, dby + 1, dbx + dw, dby + 6);
-    ctx.lineTo(dbx + dw - 7, dby + dh - 3);
-    ctx.quadraticCurveTo(dbx + dw - 9, dby + dh, dx, dby + dh);
-    ctx.quadraticCurveTo(dbx + 9, dby + dh, dbx + 7, dby + dh - 3);
-    ctx.lineTo(dbx, dby + 6);
-    ctx.quadraticCurveTo(dbx, dby + 1, dbx + 4, dby + 1);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    /* CuSO4 solution inside */
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(dbx + 6, dby + 4);
-    ctx.lineTo(dbx + dw - 6, dby + 4);
-    ctx.lineTo(dbx + dw - 9, dby + dh - 5);
-    ctx.quadraticCurveTo(dbx + dw - 10, dby + dh - 2, dx, dby + dh - 2);
-    ctx.quadraticCurveTo(dbx + 10, dby + dh - 2, dbx + 9, dby + dh - 5);
-    ctx.closePath();
-    ctx.fillStyle = done ? '#5588cc' : '#4477bb';
-    ctx.globalAlpha = 0.7;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.restore();
-    ctx.restore();
-
-    /* ── Bunsen burner under tripod ── */
-    this.drawBunsen(ctx, tLx, benchY, heating || done, '#4488ff', heating ? 70 : 35);
-
-    /* ── Steam rising ── */
-    if (heating) {
-      ctx.save();
-      ctx.globalAlpha = 0.25;
-      ctx.fillStyle = '#aaa';
-      for (var s = 0; s < 5; s++) {
-        var sy = dy - 10 - s * 14 - (Date.now() / 25 % 14);
-        var sx = tLx + Math.sin((Date.now() / 180) + s) * 7;
-        ctx.beginPath();
-        ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      ctx.restore();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - s * Math.cos(ang - 0.45), y - s * Math.sin(ang - 0.45));
+      ctx.lineTo(x - s * Math.cos(ang + 0.45), y - s * Math.sin(ang + 0.45));
+      ctx.closePath();
+      ctx.fill();
     }
 
-    /* ── Bunsen burner stand — RIGHT SIDE ── */
-    var rBx = cx + 80, rBy = benchY;
-    ctx.save();
-    /* tripod stand for funnel */
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(rBx + 25, rBy);
-    ctx.lineTo(rBx + 25, rBy - 140);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(rBx + 15, rBy);
-    ctx.lineTo(rBx + 35, rBy);
-    ctx.stroke();
-    /* clamp */
-    ctx.strokeStyle = '#777';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(rBx + 25, rBy - 130);
-    ctx.lineTo(rBx + 5, rBy - 130);
-    ctx.stroke();
-    ctx.restore();
-
-    /* ── Funnel with filter paper ── */
-    var fx = rBx + 5, fy = rBy - 125;
-    ctx.save();
-    /* funnel glass */
-    var fGrad = ctx.createLinearGradient(fx - 28, 0, fx + 28, 0);
-    fGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
-    fGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
-    fGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
-    fGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
-    ctx.fillStyle = fGrad;
-    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
-    ctx.lineWidth = 1.5;
-    /* cone */
-    ctx.beginPath();
-    ctx.moveTo(fx - 28, fy);
-    ctx.lineTo(fx + 28, fy);
-    ctx.lineTo(fx + 4, fy + 35);
-    ctx.lineTo(fx - 4, fy + 35);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    /* stem */
-    ctx.fillStyle = 'rgba(180,200,220,0.3)';
-    ctx.fillRect(fx - 3, fy + 35, 6, 25);
-    ctx.strokeRect(fx - 3, fy + 35, 6, 25);
-    /* filter paper */
-    ctx.fillStyle = 'rgba(255,255,255,0.78)';
-    ctx.strokeStyle = 'rgba(170,170,170,0.55)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(fx - 26, fy + 1);
-    ctx.lineTo(fx + 26, fy + 1);
-    ctx.lineTo(fx + 3, fy + 32);
-    ctx.lineTo(fx - 3, fy + 32);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    /* blue crystals in funnel */
-    if (done) {
-      ctx.fillStyle = '#3366cc';
-      for (var ci = 0; ci < 7; ci++) {
-        var crx = fx - 15 + (ci % 4) * 10;
-        var cry = fy + 8 + Math.floor(ci / 4) * 7;
-        ctx.fillRect(crx, cry, 7, 5);
-      }
-    }
-    ctx.restore();
-
-    /* ── Beaker below funnel collecting filtrate ── */
-    this.drawBeaker(ctx, fx, rBy - 25, 45, 45, done ? '#5588cc' : '#4477bb', 0.4);
-
-    /* ── Blue background labels with leader lines ── */
-    ctx.save();
-    function drawLabel(text, lx, ly, tw) {
-      ctx.fillStyle = '#1a3a6a';
-      ctx.fillRect(lx, ly, tw, 18);
-      ctx.fillStyle = '#fff';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(text, lx + tw / 2, ly + 13);
-    }
-    function drawLine(x1, y1, x2, y2) {
-      ctx.strokeStyle = '#1a3a6a';
-      ctx.lineWidth = 1.5;
+    function arrow(x1, y1, cx, cy, x2, y2) {
+      ctx.strokeStyle = '#16457e';
+      ctx.lineWidth = 1.8;
+      ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
+      ctx.quadraticCurveTo(cx, cy, x2, y2);
+      ctx.stroke();
+      head(x2, y2, Math.atan2(y2 - cy, x2 - cx), 8, '#16457e');
+      ctx.lineCap = 'butt';
+    }
+
+    function callout(x, y, w, lines) {
+      var h = lines.length * 15 + 14;
+      ctx.fillStyle = '#ffffff';
+      rr(x, y, w, h, 8);
+      ctx.fill();
+      ctx.strokeStyle = '#dbe4ec';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#16457e';
+      ctx.font = 'bold 9.5px sans-serif';
+      ctx.textAlign = 'center';
+      for (var i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], x + w / 2, y + 20 + i * 15);
+      }
+      ctx.textAlign = 'left';
+      return h;
+    }
+
+    function header(bx, py, num, text, pw) {
+      ctx.fillStyle = '#cfe7fa';
+      rr(bx + 34, py, pw, 30, 15);
+      ctx.fill();
+      ctx.fillStyle = '#16457e';
+      ctx.font = 'bold 12.5px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(text, bx + 46, py + 20);
+      ctx.fillStyle = '#17457e';
+      ctx.beginPath();
+      ctx.arc(bx + 24, py + 15, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(String(num), bx + 24, py + 21);
+      ctx.textAlign = 'left';
+    }
+
+    function panelBg(x, y, w, h, top, bottom) {
+      var g = ctx.createLinearGradient(0, y, 0, y + h);
+      g.addColorStop(0, top);
+      g.addColorStop(1, bottom);
+      ctx.fillStyle = g;
+      ctx.fillRect(x, y, w, h);
+    }
+
+    function clipPanel(x, y, w, h) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.clip();
+    }
+
+    ctx.save();
+
+    /* title banner */
+    ctx.fillStyle = '#1d3f77';
+    rr(140, 6, 680, 52, 26);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    for (var q = 0; q < 3; q++) {
+      ctx.beginPath();
+      ctx.moveTo(166 + q * 9, 22);
+      ctx.lineTo(158 + q * 9, 42);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(776 + q * 9, 22);
+      ctx.lineTo(768 + q * 9, 42);
       ctx.stroke();
     }
-    /* Tripod label */
-    drawLine(tLx - tLhw, tLy - 20, tLx - tLhw - 30, tLy - 5);
-    drawLabel('Tripod stand', tLx - tLhw - 100, tLy - 13, 80);
-    /* Wire gauze label */
-    drawLine(gx - ghw, gy, gx - ghw - 25, gy - 10);
-    drawLabel('Wire gauze', gx - ghw - 90, gy - 18, 70);
-    /* China dish label */
-    drawLine(dbx, dby, dbx - 20, dby - 15);
-    drawLabel('China dish', dbx - 80, dby - 23, 65);
-    /* Bunsen label */
-    drawLine(tLx - 10, benchY - 25, tLx - 50, benchY - 5);
-    drawLabel('Bunsen burner', tLx - 130, benchY - 13, 85);
-    /* Funnel label */
-    drawLine(fx + 28, fy + 10, fx + 55, fy - 5);
-    drawLabel('Funnel', fx + 35, fy - 23, 50);
-    /* Filter paper label */
-    drawLine(fx - 20, fy + 15, fx - 45, fy + 5);
-    drawLabel('Filter paper', fx - 110, fy - 3, 70);
-    ctx.restore();
-
-    /* ── Result display ── */
-    ctx.save();
+    ctx.lineCap = 'butt';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 21px sans-serif';
     ctx.textAlign = 'center';
-    if (done) {
-      ctx.fillStyle = '#1a3a6a';
-      ctx.fillRect(cx - 80, 50, 160, 30);
-      ctx.fillStyle = '#5588cc';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText('Blue crystals formed', cx, 70);
+    ctx.fillText('Preparation of Pure CuSO\u2084\u00b75H\u2082O Crystals', 480, 40);
+    ctx.textAlign = 'left';
+
+    /* ── Panel 1: dissolve ── */
+    clipPanel(0, 64, 316, 284);
+    panelBg(0, 64, 316, 284, '#f1f4f7', '#e6eaef');
+    ctx.fillStyle = '#bb9064';
+    ctx.fillRect(0, 316, 316, 32);
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    ctx.fillRect(0, 316, 316, 3);
+    /* hot plate stirrer */
+    ctx.fillStyle = '#f4f6f8';
+    rr(64, 286, 190, 16, 5);
+    ctx.fill();
+    ctx.strokeStyle = '#c9ced4';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    var hp = ctx.createLinearGradient(0, 300, 0, 344);
+    hp.addColorStop(0, '#2c4180');
+    hp.addColorStop(1, '#1c2c5e');
+    ctx.fillStyle = hp;
+    rr(70, 300, 178, 44, 6);
+    ctx.fill();
+    ctx.fillStyle = '#12172b';
+    ctx.beginPath();
+    ctx.arc(215, 322, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#3a4468';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(215, 322);
+    ctx.lineTo(220, 315);
+    ctx.stroke();
+    ctx.fillStyle = simRun ? '#ffb14d' : '#ff8c1a';
+    ctx.beginPath();
+    ctx.arc(240, 322, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    /* beaker on hot plate */
+    var bgd = ctx.createLinearGradient(108, 0, 208, 0);
+    bgd.addColorStop(0, 'rgba(255,255,255,0.34)');
+    bgd.addColorStop(0.5, 'rgba(235,245,255,0.16)');
+    bgd.addColorStop(1, 'rgba(255,255,255,0.30)');
+    ctx.fillStyle = bgd;
+    rr(108, 146, 100, 142, 8);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(118,150,182,0.9)';
+    ctx.lineWidth = 2;
+    rr(108, 146, 100, 142, 8);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(210,230,248,0.5)';
+    ctx.beginPath();
+    ctx.moveTo(112, 150);
+    ctx.lineTo(98, 140);
+    ctx.lineTo(122, 147);
+    ctx.closePath();
+    ctx.fill();
+    var lq = ctx.createLinearGradient(0, 196, 0, 284);
+    lq.addColorStop(0, '#38b6ee');
+    lq.addColorStop(1, '#1683cf');
+    ctx.fillStyle = lq;
+    ctx.beginPath();
+    ctx.moveTo(111, 200);
+    ctx.lineTo(205, 200);
+    ctx.lineTo(205, 278);
+    ctx.quadraticCurveTo(205, 284, 197, 284);
+    ctx.lineTo(119, 284);
+    ctx.quadraticCurveTo(111, 284, 111, 278);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(160,226,252,0.9)';
+    ctx.fillRect(111, 198, 94, 4);
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = '7px sans-serif';
+    ctx.textAlign = 'right';
+    for (var gi = 0; gi < 4; gi++) {
+      var ggy = 216 + gi * 20;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(184, ggy);
+      ctx.lineTo(200, ggy);
+      ctx.stroke();
+      ctx.fillText(String(250 - gi * 50), 181, ggy + 2.5);
     }
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#888';
+    /* pouring spoon */
+    ctx.save();
+    ctx.strokeStyle = '#9aa4ad';
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(242, 146);
+    ctx.lineTo(196, 134);
+    ctx.stroke();
+    ctx.strokeStyle = '#cfd6dc';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(242, 145);
+    ctx.lineTo(196, 133);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+    ctx.translate(188, 131);
+    ctx.rotate(-0.35);
+    var sgr = ctx.createLinearGradient(0, -11, 0, 11);
+    sgr.addColorStop(0, '#e9edf1');
+    sgr.addColorStop(1, '#97a1aa');
+    ctx.fillStyle = sgr;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 17, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#7f8992';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#1e88e5';
+    ctx.beginPath();
+    ctx.ellipse(0, -1, 11, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    /* falling grains */
+    if (!simDone) {
+      var fall = simRun ? (t / 9) % 52 : 0;
+      for (var gr = 0; gr < 5; gr++) {
+        var grx = 180 + Math.sin(gr * 1.8 + (simRun ? t / 160 : 0)) * 5;
+        var gry = 146 + ((gr * 11 + fall) % 52);
+        ctx.save();
+        ctx.translate(grx, gry);
+        ctx.rotate(gr);
+        ctx.fillStyle = gr % 2 ? '#1976d2' : '#2fa4ec';
+        ctx.fillRect(-2.5, -2.5, 5, 5);
+        ctx.restore();
+      }
+    }
+    if (!simRun && !simDone) {
+      ctx.fillStyle = 'rgba(21,105,180,0.85)';
+      ctx.beginPath();
+      ctx.ellipse(140, 278, 14, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(172, 280, 10, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (simRun) {
+      ctx.fillStyle = 'rgba(200,236,252,0.7)';
+      for (var sw = 0; sw < 5; sw++) {
+        var swx = 158 + Math.sin(t / 260 + sw * 1.5) * 32;
+        var swy = 240 + Math.cos(t / 300 + sw * 2.1) * 30;
+        ctx.beginPath();
+        ctx.arc(swx, swy, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    callout(236, 150, 76, ['Impure', 'CuSO\u2084\u00b75H\u2082O', '(solid)']);
+    arrow(234, 166, 218, 150, 205, 139);
+    callout(6, 196, 96, ['Dissolve in', 'warm distilled', 'water']);
+    arrow(104, 226, 114, 232, 111, 244);
+    header(0, 70, 1, 'Dissolve the impure sample', 214);
+    ctx.restore();
+
+    /* ── Panel 2: filter ── */
+    clipPanel(322, 64, 310, 284);
+    panelBg(322, 64, 310, 284, '#eef1f5', '#e4e8ed');
+    ctx.fillStyle = '#d5d9de';
+    ctx.fillRect(322, 316, 310, 32);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillRect(322, 316, 310, 2);
+    /* retort stand */
+    ctx.fillStyle = '#202329';
+    rr(372, 316, 180, 18, 4);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    ctx.fillRect(374, 318, 176, 3);
+    var rodg = ctx.createLinearGradient(398, 0, 408, 0);
+    rodg.addColorStop(0, '#6d757d');
+    rodg.addColorStop(0.4, '#4a5158');
+    rodg.addColorStop(1, '#333940');
+    ctx.fillStyle = rodg;
+    ctx.fillRect(398, 96, 10, 222);
+    ctx.fillStyle = '#34383e';
+    rr(420, 134, 14, 12, 3);
+    ctx.fill();
+    rr(438, 134, 14, 12, 3);
+    ctx.fill();
+    ctx.fillStyle = '#25282d';
+    rr(408, 142, 66, 16, 4);
+    ctx.fill();
+    ctx.fillStyle = '#1a1d21';
+    rr(458, 132, 26, 36, 5);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fillRect(460, 135, 22, 3);
+    /* funnel + stem */
+    ctx.fillStyle = 'rgba(218,234,248,0.4)';
+    ctx.strokeStyle = 'rgba(108,148,184,0.95)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(438, 100);
+    ctx.lineTo(504, 100);
+    ctx.lineTo(474, 152);
+    ctx.lineTo(468, 152);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(218,234,248,0.32)';
+    ctx.fillRect(466, 150, 10, 66);
+    ctx.strokeRect(466, 150, 10, 66);
+    /* filter paper with impurities */
+    ctx.fillStyle = '#f7f9fa';
+    ctx.strokeStyle = '#d4dae0';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(443, 104);
+    ctx.lineTo(499, 104);
+    ctx.lineTo(473, 148);
+    ctx.lineTo(469, 148);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    var imp = [[460, 110], [474, 113], [466, 118], [481, 108], [455, 115]];
+    for (var ii = 0; ii < imp.length; ii++) {
+      ctx.fillStyle = '#7a5a3a';
+      ctx.beginPath();
+      ctx.arc(imp[ii][0], imp[ii][1], 3.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#5f442a';
+    ctx.beginPath();
+    ctx.arc(470, 111, 2.6, 0, Math.PI * 2);
+    ctx.fill();
+    /* conical flask */
+    ctx.fillStyle = 'rgba(255,255,255,0.26)';
+    ctx.strokeStyle = 'rgba(108,148,184,0.95)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(461, 242);
+    ctx.lineTo(431, 306);
+    ctx.quadraticCurveTo(429, 316, 439, 316);
+    ctx.lineTo(503, 316);
+    ctx.quadraticCurveTo(513, 316, 511, 306);
+    ctx.lineTo(481, 242);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(218,234,248,0.4)';
+    ctx.fillRect(461, 210, 20, 34);
+    ctx.strokeRect(461, 210, 20, 34);
+    var flq = ctx.createLinearGradient(0, 272, 0, 314);
+    flq.addColorStop(0, '#3ab4ea');
+    flq.addColorStop(1, '#1a8fd0');
+    ctx.fillStyle = flq;
+    ctx.beginPath();
+    ctx.moveTo(443, 274);
+    ctx.lineTo(499, 274);
+    ctx.lineTo(507, 310);
+    ctx.quadraticCurveTo(509, 314, 503, 314);
+    ctx.lineTo(439, 314);
+    ctx.quadraticCurveTo(433, 314, 435, 310);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(170,230,252,0.95)';
+    ctx.fillRect(443, 272, 56, 4);
+    callout(536, 96, 94, ['Filter paper', '(with impurities)']);
+    arrow(534, 124, 520, 118, 503, 119);
+    callout(544, 256, 86, ['Clear blue', 'filtrate']);
+    arrow(542, 278, 530, 284, 516, 289);
+    header(322, 70, 2, 'Filter the solution', 168);
+    ctx.restore();
+
+    /* ── Panel 3: evaporate ── */
+    clipPanel(638, 64, 322, 284);
+    panelBg(638, 64, 322, 284, '#eef1f5', '#e5e9ee');
+    var b3g = ctx.createLinearGradient(0, 296, 0, 348);
+    b3g.addColorStop(0, '#31363c');
+    b3g.addColorStop(1, '#24272c');
+    ctx.fillStyle = b3g;
+    ctx.fillRect(638, 296, 322, 52);
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    ctx.fillRect(638, 296, 322, 3);
+    /* tripod legs */
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#0e0f12';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(766, 286);
+    ctx.lineTo(756, 330);
+    ctx.stroke();
+    ctx.strokeStyle = '#17181b';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(732, 286);
+    ctx.lineTo(708, 344);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(868, 286);
+    ctx.lineTo(892, 344);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+    /* bunsen burner */
+    var bur = ctx.createLinearGradient(788, 0, 812, 0);
+    bur.addColorStop(0, '#7e858c');
+    bur.addColorStop(0.35, '#dfe4e8');
+    bur.addColorStop(0.7, '#a8afb6');
+    bur.addColorStop(1, '#6d747b');
+    ctx.fillStyle = bur;
+    ctx.fillRect(788, 324, 24, 12);
+    ctx.strokeStyle = '#565c63';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(788, 324, 24, 12);
+    ctx.fillStyle = '#6a7178';
+    rr(784, 314, 32, 10, 3);
+    ctx.fill();
+    ctx.fillStyle = '#3a3f45';
+    ctx.beginPath();
+    ctx.arc(792, 319, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(800, 319, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(808, 319, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = bur;
+    ctx.fillRect(794, 304, 12, 12);
+    var bbase = ctx.createLinearGradient(0, 334, 0, 348);
+    bbase.addColorStop(0, '#c2c8ce');
+    bbase.addColorStop(1, '#767d84');
+    ctx.fillStyle = bbase;
+    rr(778, 334, 44, 14, 5);
+    ctx.fill();
+    ctx.strokeStyle = '#565c63';
+    ctx.stroke();
+    /* blue flame */
+    var fs = simRun ? 1 + Math.sin(t / 70) * 0.08 : 1;
+    var sway = simRun ? Math.sin(t / 90) * 1.6 : 0;
+    ctx.save();
+    ctx.translate(800, 304);
+    ctx.scale(1, fs);
+    ctx.fillStyle = 'rgba(47,127,255,0.85)';
+    ctx.beginPath();
+    ctx.moveTo(-8, 0);
+    ctx.quadraticCurveTo(-7, -10 + sway, sway, -18);
+    ctx.quadraticCurveTo(7, -10 + sway, 8, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(207,234,255,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(-3.5, 0);
+    ctx.quadraticCurveTo(-3, -6, sway, -11);
+    ctx.quadraticCurveTo(3, -6, 3.5, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    /* wire gauze */
+    ctx.fillStyle = '#33373d';
+    rr(716, 277, 168, 10, 2);
+    ctx.fill();
+    ctx.strokeStyle = '#565c64';
+    ctx.lineWidth = 0.8;
+    for (var mx = 724; mx < 884; mx += 9) {
+      ctx.beginPath();
+      ctx.moveTo(mx, 278);
+      ctx.lineTo(mx, 286);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(717, 281);
+    ctx.lineTo(883, 281);
+    ctx.stroke();
+    ctx.strokeStyle = '#474c54';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(716, 277, 168, 10);
+    /* evaporating dish */
+    ctx.fillStyle = 'rgba(220,235,248,0.4)';
+    ctx.strokeStyle = 'rgba(140,175,205,0.95)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(714, 244);
+    ctx.quadraticCurveTo(720, 270, 748, 276);
+    ctx.lineTo(852, 276);
+    ctx.quadraticCurveTo(880, 270, 886, 244);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(714, 244);
+    ctx.quadraticCurveTo(720, 270, 748, 276);
+    ctx.lineTo(852, 276);
+    ctx.quadraticCurveTo(880, 270, 886, 244);
+    ctx.closePath();
+    ctx.clip();
+    var dliq = ctx.createLinearGradient(0, 250, 0, 276);
+    dliq.addColorStop(0, '#38b4ec');
+    dliq.addColorStop(1, '#1c8fd2');
+    ctx.fillStyle = dliq;
+    ctx.fillRect(700, 250, 200, 30);
+    ctx.fillStyle = 'rgba(160,226,252,0.95)';
+    ctx.fillRect(714, 250, 172, 4);
+    ctx.restore();
+    ctx.fillStyle = 'rgba(224,238,250,0.55)';
+    ctx.strokeStyle = 'rgba(140,175,205,0.95)';
+    ctx.beginPath();
+    ctx.ellipse(800, 244, 86, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(56,176,232,0.8)';
+    ctx.beginPath();
+    ctx.ellipse(800, 246, 72, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    /* steam */
+    for (var sm = 0; sm < 6; sm++) {
+      var smy = 236 - (((simRun ? t / 10 : 0) + sm * 16) % 58);
+      var smx = 800 + Math.sin((simRun ? t / 200 : 0) + sm * 1.4) * 14;
+      var sma = 0.3 * (1 - (236 - smy) / 58);
+      if (sma < 0.05) sma = 0.05;
+      ctx.fillStyle = 'rgba(214,222,230,' + sma.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(smx, smy, 3.5 + (sm % 3), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    callout(854, 130, 100, ['Slowly evaporate', '(leave to cool)']);
+    arrow(874, 176, 866, 208, 857, 238);
+    header(638, 70, 3, 'Evaporate the filtrate', 192);
+    ctx.restore();
+
+    /* ── Panel 4: crystallisation ── */
+    clipPanel(0, 354, 316, 286);
+    panelBg(0, 354, 316, 286, '#eff2f6', '#e6eaef');
+    ctx.fillStyle = 'rgba(50,66,80,0.16)';
+    ctx.fillRect(10, 384, 46, 120);
+    ctx.fillStyle = '#cfd4da';
+    ctx.fillRect(0, 566, 316, 74);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillRect(0, 566, 316, 3);
+    /* beaker */
+    var cbg = ctx.createLinearGradient(76, 0, 204, 0);
+    cbg.addColorStop(0, 'rgba(255,255,255,0.36)');
+    cbg.addColorStop(0.5, 'rgba(235,245,255,0.15)');
+    cbg.addColorStop(1, 'rgba(255,255,255,0.30)');
+    ctx.fillStyle = cbg;
+    rr(76, 386, 128, 180, 10);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(118,150,182,0.9)';
+    ctx.lineWidth = 2.2;
+    rr(76, 386, 128, 180, 10);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(225,238,250,0.55)';
+    rr(72, 384, 136, 9, 4);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(118,150,182,0.85)';
+    ctx.lineWidth = 1.4;
+    rr(72, 384, 136, 9, 4);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(215,232,248,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(78, 386);
+    ctx.lineTo(66, 378);
+    ctx.lineTo(88, 384);
+    ctx.closePath();
+    ctx.fill();
+    var sol = ctx.createLinearGradient(0, 442, 0, 562);
+    sol.addColorStop(0, '#2b93d8');
+    sol.addColorStop(1, '#1465ad');
+    ctx.fillStyle = sol;
+    ctx.beginPath();
+    ctx.moveTo(80, 442);
+    ctx.lineTo(200, 442);
+    ctx.lineTo(200, 554);
+    ctx.quadraticCurveTo(200, 562, 190, 562);
+    ctx.lineTo(90, 562);
+    ctx.quadraticCurveTo(80, 562, 80, 554);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(120,200,240,0.9)';
+    ctx.fillRect(80, 440, 120, 4);
+    ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(176, 476);
+    ctx.lineTo(196, 476);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(176, 508);
+    ctx.lineTo(196, 508);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(176, 540);
+    ctx.lineTo(196, 540);
+    ctx.stroke();
+    callout(230, 470, 84, ['Allow to cool', 'undisturbed']);
+    arrow(228, 486, 214, 494, 206, 506);
+    header(0, 360, 4, 'Crystallisation', 150);
+    ctx.restore();
+
+    /* ── Panel 5: pure crystals ── */
+    clipPanel(322, 354, 638, 286);
+    panelBg(322, 354, 638, 76, '#edf0f4', '#e7ebef');
+    var p5b = ctx.createLinearGradient(0, 430, 0, 640);
+    p5b.addColorStop(0, '#3a4046');
+    p5b.addColorStop(1, '#2a2f35');
+    ctx.fillStyle = p5b;
+    ctx.fillRect(322, 430, 638, 210);
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    ctx.fillRect(322, 430, 638, 3);
+    /* watch glass */
+    ctx.fillStyle = 'rgba(16,18,22,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(519, 560, 163, 26, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(226,238,250,0.20)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.62)';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.ellipse(519, 505, 165, 55, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.ellipse(519, 505, 143, 46, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    /* crystal heap */
+    var cc = ['#1e6fd8', '#2f8fe8', '#42a5f0', '#155cb5'];
+    for (var ci = 0; ci < 16; ci++) {
+      var cang = ci * 2.399;
+      var crad = 16 + (ci % 4) * 27;
+      var cpx = 519 + Math.cos(cang) * crad * 1.3;
+      var cpy = 501 + Math.sin(cang * 1.31) * crad * 0.44;
+      var csz = 11 + (ci % 3) * 6;
+      ctx.save();
+      ctx.translate(cpx, cpy);
+      ctx.rotate(ci * 0.7);
+      ctx.fillStyle = cc[ci % 4];
+      ctx.beginPath();
+      ctx.moveTo(-csz, -csz * 0.5);
+      ctx.lineTo(csz * 0.4, -csz);
+      ctx.lineTo(csz, csz * 0.4);
+      ctx.lineTo(-csz * 0.4, csz);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-csz * 0.6, -csz * 0.2);
+      ctx.lineTo(csz * 0.5, -csz * 0.55);
+      ctx.stroke();
+      ctx.restore();
+    }
+    /* arrow to inset */
+    ctx.strokeStyle = '#16457e';
+    ctx.lineWidth = 2.4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(648, 468);
+    ctx.quadraticCurveTo(700, 410, 726, 396);
+    ctx.stroke();
+    head(726, 396, Math.atan2(396 - 410, 726 - 700), 9, '#16457e');
+    ctx.lineCap = 'butt';
+    /* circular inset */
+    var ins = ctx.createRadialGradient(814, 434, 12, 814, 442, 102);
+    ins.addColorStop(0, '#131a29');
+    ins.addColorStop(1, '#05070c');
+    ctx.fillStyle = ins;
+    ctx.beginPath();
+    ctx.arc(814, 442, 100, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.save();
+    ctx.translate(814, 448);
+    ctx.scale(1.3, 1.3);
+    ctx.beginPath();
+    ctx.moveTo(-38, -6);
+    ctx.lineTo(-16, -30);
+    ctx.lineTo(18, -28);
+    ctx.lineTo(40, -2);
+    ctx.lineTo(26, 26);
+    ctx.lineTo(-8, 34);
+    ctx.lineTo(-32, 18);
+    ctx.closePath();
+    var gemg = ctx.createLinearGradient(-38, -30, 40, 34);
+    gemg.addColorStop(0, '#5fb4f5');
+    gemg.addColorStop(0.45, '#2578dc');
+    gemg.addColorStop(1, '#0e4794');
+    ctx.fillStyle = gemg;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.66)';
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.moveTo(-38, -6);
+    ctx.lineTo(2, 4);
+    ctx.lineTo(18, -28);
+    ctx.moveTo(2, 4);
+    ctx.lineTo(40, -2);
+    ctx.moveTo(2, 4);
+    ctx.lineTo(-8, 34);
+    ctx.moveTo(2, 4);
+    ctx.lineTo(-32, 18);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(-16, -30);
+    ctx.lineTo(18, -28);
+    ctx.lineTo(4, -12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    /* caption */
+    ctx.fillStyle = '#ffffff';
+    rr(744, 556, 208, 74, 8);
+    ctx.fill();
+    ctx.strokeStyle = '#d8e2ec';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#16457e';
+    ctx.font = 'bold 10.5px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Pure copper(II) sulfate', 848, 578);
+    ctx.fillText('pentahydrate crystals', 848, 598);
+    ctx.fillText('(CuSO\u2084\u00b75H\u2082O)', 848, 618);
+    ctx.textAlign = 'left';
+    header(322, 360, 5, 'Pure CuSO\u2084\u00b75H\u2082O crystals', 210);
+    ctx.restore();
+
+    ctx.fillStyle = '#8a919a';
     ctx.font = '9px sans-serif';
+    ctx.textAlign = 'left';
     ctx.fillText('(simulated)', 10, ch - 10);
     ctx.restore();
   },
 
-  /* ── M7.4 Melting Point (Naphthalene) — realistic oil bath setup ── */
+  /* ── M7.4 Melting Point (Naphthalene) — infographic poster (reference image) ── */
   drawM7_4: function(ctx, cw, ch, state) {
-    var sim = SIMULATION_CONFIG['M7_4'];
-    var cx = cw / 2;
-    var benchY = 540;
-    var done = state.m7ActionDone && state.simulation && state.m7ObservationDone;
-    var heating = state.m7ActionDone && state.simulation && !state.simulation.done;
-    var temp = done ? sim.expectedMeltingPoint : (heating ? 60 : 25);
+    var simRun = !!(state.simulation && !state.simulation.done);
+    var t = Date.now();
 
-    /* ── Large beaker (oil bath) — CENTER ── */
-    var bx = cx - 10, by = benchY - 60, bw = 130, bh = 110;
-    ctx.save();
-    var bGrad = ctx.createLinearGradient(bx - bw/2, 0, bx + bw/2, 0);
-    bGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
-    bGrad.addColorStop(0.12, 'rgba(220,238,252,0.15)');
-    bGrad.addColorStop(0.88, 'rgba(220,238,252,0.12)');
-    bGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
-    ctx.fillStyle = bGrad;
-    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
-    ctx.lineWidth = 2.2;
-    ctx.beginPath();
-    ctx.moveTo(bx - bw/2, by - bh/2);
-    ctx.lineTo(bx - bw/2, by + bh/2 - 5);
-    ctx.quadraticCurveTo(bx - bw/2, by + bh/2, bx - bw/2 + 5, by + bh/2);
-    ctx.lineTo(bx + bw/2 - 5, by + bh/2);
-    ctx.quadraticCurveTo(bx + bw/2, by + bh/2, bx + bw/2, by + bh/2 - 5);
-    ctx.lineTo(bx + bw/2, by - bh/2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    /* pour spout */
-    ctx.beginPath();
-    ctx.moveTo(bx - bw/2, by - bh/2);
-    ctx.lineTo(bx - bw/2 - 8, by - bh/2 - 6);
-    ctx.lineTo(bx - bw/2 + 2, by - bh/2);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(200,220,240,0.3)';
-    ctx.fill();
-    ctx.stroke();
-    /* oil liquid */
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(bx - bw/2 + 3, by - bh/2 + 8);
-    ctx.lineTo(bx + bw/2 - 3, by - bh/2 + 8);
-    ctx.lineTo(bx + bw/2 - 3, by + bh/2 - 5);
-    ctx.lineTo(bx - bw/2 + 3, by + bh/2 - 5);
-    ctx.closePath();
-    ctx.fillStyle = '#e8d090';
-    ctx.globalAlpha = 0.65;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.restore();
-    /* graduation marks */
-    ctx.strokeStyle = 'rgba(120,140,160,0.4)';
-    ctx.lineWidth = 1;
-    for (var gm = 1; gm < 6; gm++) {
-      var gy = by - bh/2 + gm * (bh/6);
+    function rr(x, y, w, h, r) {
       ctx.beginPath();
-      ctx.moveTo(bx - bw/2 + 2, gy);
-      ctx.lineTo(bx - bw/2 + 12, gy);
-      ctx.stroke();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
     }
-    ctx.restore();
 
-    /* ── Thermometer in oil bath ── */
-    var tx = bx + 10, ty = by - 70, th = 130;
+    function head(x, y, ang, s, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - s * Math.cos(ang - 0.45), y - s * Math.sin(ang - 0.45));
+      ctx.lineTo(x - s * Math.cos(ang + 0.45), y - s * Math.sin(ang + 0.45));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function arrow(x1, y1, cx, cy, x2, y2) {
+      ctx.strokeStyle = '#2a63ad';
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.quadraticCurveTo(cx, cy, x2, y2);
+      ctx.stroke();
+      head(x2, y2, Math.atan2(y2 - cy, x2 - cx), 9, '#2a63ad');
+      ctx.lineCap = 'butt';
+    }
+
+    function callout(x, y, w, lines) {
+      var h = lines.length * 17 + 16;
+      ctx.fillStyle = '#dcedfd';
+      rr(x, y, w, h, 10);
+      ctx.fill();
+      ctx.strokeStyle = '#2a63ad';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+      ctx.fillStyle = '#16345e';
+      ctx.font = 'bold 11.5px sans-serif';
+      ctx.textAlign = 'center';
+      for (var i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], x + w / 2, y + 22 + i * 17);
+      }
+      ctx.textAlign = 'left';
+      return h;
+    }
+
     ctx.save();
-    /* thermometer bulb */
-    ctx.fillStyle = '#cc3333';
-    ctx.beginPath();
-    ctx.arc(tx, by + 30, 6, 0, Math.PI * 2);
+
+    /* background */
+    var wallg = ctx.createLinearGradient(0, 0, 0, 431);
+    wallg.addColorStop(0, '#f6f8fa');
+    wallg.addColorStop(1, '#e7ebef');
+    ctx.fillStyle = wallg;
+    ctx.fillRect(0, 0, cw, 431);
+    ctx.fillStyle = 'rgba(56,70,86,0.14)';
+    ctx.fillRect(10, 128, 52, 196);
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fillRect(470, 182, 44, 50);
+    ctx.strokeStyle = 'rgba(150,160,172,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(470, 182, 44, 50);
+    var benchg = ctx.createLinearGradient(0, 431, 0, 640);
+    benchg.addColorStop(0, '#787e86');
+    benchg.addColorStop(1, '#545a61');
+    ctx.fillStyle = benchg;
+    ctx.fillRect(0, 431, cw, 209);
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    ctx.fillRect(0, 431, cw, 3);
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.fillRect(0, 470, cw, 2);
+    ctx.fillRect(0, 540, cw, 2);
+
+    /* title banner */
+    ctx.fillStyle = '#bfdcfb';
+    rr(26, 16, 578, 88, 18);
     ctx.fill();
-    /* glass tube */
-    var tGrad = ctx.createLinearGradient(tx - 4, 0, tx + 4, 0);
-    tGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
-    tGrad.addColorStop(0.3, 'rgba(240,248,255,0.15)');
-    tGrad.addColorStop(0.7, 'rgba(240,248,255,0.12)');
-    tGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
-    ctx.fillStyle = tGrad;
-    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
+    ctx.fillStyle = '#16345e';
+    ctx.font = 'bold 25px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Determining the Melting Point', 315, 54);
+    ctx.fillText('of Naphthalene', 315, 86);
+    ctx.textAlign = 'left';
+
+    /* retort stand */
+    ctx.fillStyle = 'rgba(24,26,30,0.4)';
+    ctx.beginPath();
+    ctx.ellipse(126, 634, 92, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    var footg = ctx.createLinearGradient(0, 612, 0, 632);
+    footg.addColorStop(0, '#eef1f4');
+    footg.addColorStop(0.45, '#aab2ba');
+    footg.addColorStop(1, '#6f777f');
+    ctx.fillStyle = footg;
+    rr(40, 612, 170, 20, 8);
+    ctx.fill();
+    ctx.strokeStyle = '#5a6169';
     ctx.lineWidth = 1.2;
-    ctx.fillRect(tx - 4, by - 70, 8, 100);
-    ctx.strokeRect(tx - 4, by - 70, 8, 100);
-    /* mercury column */
-    var mercuryH = done ? 80 : (heating ? 50 : 20);
-    ctx.fillStyle = '#cc3333';
-    ctx.fillRect(tx - 1.5, by + 30 - mercuryH, 3, mercuryH);
-    /* graduations */
-    ctx.strokeStyle = 'rgba(80,80,80,0.5)';
-    ctx.lineWidth = 0.8;
-    for (var tg = 0; tg < 8; tg++) {
-      var gyy = by + 25 - tg * 12;
-      ctx.beginPath();
-      ctx.moveTo(tx + 4, gyy);
-      ctx.lineTo(tx + (tg % 2 === 0 ? 10 : 7), gyy);
-      ctx.stroke();
-    }
-    /* top */
-    ctx.fillStyle = '#aaa';
-    ctx.fillRect(tx - 5, by - 78, 10, 10);
-    ctx.strokeStyle = '#888';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(tx - 5, by - 78, 10, 10);
-    ctx.restore();
-
-    /* ── Capillary tube tied to thermometer ── */
-    ctx.save();
-    ctx.strokeStyle = 'rgba(140,175,205,0.65)';
-    ctx.lineWidth = 3.5;
-    ctx.beginPath();
-    ctx.moveTo(tx + 18, by - 55);
-    ctx.lineTo(tx + 18, by + 15);
     ctx.stroke();
-    /* naphthalene in capillary */
-    ctx.fillStyle = done ? '#e8d0c0' : '#f0e8e0';
-    ctx.fillRect(tx + 16.5, by - 5, 3, 18);
-    /* rubber band */
-    ctx.strokeStyle = '#cc8844';
+    var rodG = ctx.createLinearGradient(126, 0, 137, 0);
+    rodG.addColorStop(0, '#f2f4f6');
+    rodG.addColorStop(0.4, '#b0b8c0');
+    rodG.addColorStop(1, '#6e767e');
+    ctx.fillStyle = rodG;
+    ctx.fillRect(126, 112, 11, 504);
+    ctx.strokeStyle = 'rgba(70,78,86,0.7)';
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(126, 112, 11, 504);
+    /* blue clamp knob */
+    ctx.fillStyle = '#1e2024';
+    rr(100, 220, 30, 22, 4);
+    ctx.fill();
+    var knock = ctx.createLinearGradient(64, 210, 64, 250);
+    knock.addColorStop(0, '#3f7bee');
+    knock.addColorStop(1, '#16389c');
+    ctx.fillStyle = knock;
+    rr(64, 210, 46, 40, 10);
+    ctx.fill();
+    ctx.strokeStyle = '#10286e';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.fillStyle = '#dfe6ee';
+    ctx.beginPath();
+    ctx.arc(87, 230, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#8f98a2';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    /* clamp arm + jaw */
+    var clampG = ctx.createLinearGradient(0, 204, 0, 238);
+    clampG.addColorStop(0, '#2e3237');
+    clampG.addColorStop(1, '#1a1d21');
+    ctx.fillStyle = clampG;
+    rr(140, 204, 166, 34, 6);
+    ctx.fill();
+    ctx.fillStyle = '#34383e';
+    rr(168, 196, 16, 14, 3);
+    ctx.fill();
+    rr(190, 196, 16, 14, 3);
+    ctx.fill();
+    ctx.fillStyle = '#14161a';
+    rr(262, 192, 48, 58, 6);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fillRect(266, 196, 40, 4);
+
+    /* capillary tube */
+    var tubeG = ctx.createLinearGradient(278, 0, 296, 0);
+    tubeG.addColorStop(0, 'rgba(245,250,255,0.5)');
+    tubeG.addColorStop(0.5, 'rgba(215,230,245,0.32)');
+    tubeG.addColorStop(1, 'rgba(205,222,240,0.45)');
+    ctx.fillStyle = tubeG;
+    rr(278, 126, 18, 266, 9);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(130,160,190,0.9)';
+    ctx.lineWidth = 1.6;
+    rr(278, 126, 18, 266, 9);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(130,160,190,0.9)';
+    ctx.beginPath();
+    ctx.ellipse(287, 127, 8, 2.6, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(224,123,42,0.9)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(tx + 4, by - 55);
-    ctx.lineTo(tx + 18, by - 55);
+    ctx.moveTo(289, 172);
+    ctx.lineTo(289, 280);
     ctx.stroke();
-    ctx.restore();
+    ctx.lineWidth = 1.2;
+    for (var tk = 0; tk < 11; tk++) {
+      var tky = 172 + tk * 10.8;
+      ctx.beginPath();
+      ctx.moveTo(290, tky);
+      ctx.lineTo(tk % 3 === 0 ? 296 : 293, tky);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#f6f8fa';
+    ctx.strokeStyle = '#dfe4ea';
+    ctx.lineWidth = 1;
+    var crt = [[283, 358], [291, 364], [285, 372], [292, 378], [286, 385]];
+    for (var cr = 0; cr < crt.length; cr++) {
+      ctx.beginPath();
+      ctx.arc(crt[cr][0], crt[cr][1], 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
 
-    /* ── Bunsen burner under beaker ── */
-    this.drawBunsen(ctx, bx, benchY, heating || done, '#4488ff', heating ? 65 : 35);
-
-    /* ── Boiling bubbles in oil ── */
-    if (heating) {
-      ctx.save();
-      ctx.fillStyle = 'rgba(200,180,120,0.4)';
-      for (var b = 0; b < 6; b++) {
-        var bubx = bx - 30 + b * 12;
-        var baby = by + 30 - ((Date.now() / 15 + b * 8) % 35);
+    /* oil bath beaker */
+    var bodyG = ctx.createLinearGradient(190, 0, 372, 0);
+    bodyG.addColorStop(0, 'rgba(255,255,255,0.32)');
+    bodyG.addColorStop(0.5, 'rgba(235,245,255,0.14)');
+    bodyG.addColorStop(1, 'rgba(255,255,255,0.28)');
+    ctx.fillStyle = bodyG;
+    ctx.beginPath();
+    ctx.moveTo(190, 258);
+    ctx.lineTo(190, 428);
+    ctx.quadraticCurveTo(190, 440, 202, 440);
+    ctx.lineTo(360, 440);
+    ctx.quadraticCurveTo(372, 440, 372, 428);
+    ctx.lineTo(372, 258);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(125,155,185,0.95)';
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+    /* oil */
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(190, 258);
+    ctx.lineTo(190, 428);
+    ctx.quadraticCurveTo(190, 440, 202, 440);
+    ctx.lineTo(360, 440);
+    ctx.quadraticCurveTo(372, 440, 372, 428);
+    ctx.lineTo(372, 258);
+    ctx.closePath();
+    ctx.clip();
+    var oilG = ctx.createLinearGradient(0, 274, 0, 436);
+    oilG.addColorStop(0, 'rgba(235,226,176,0.88)');
+    oilG.addColorStop(1, 'rgba(212,197,130,0.9)');
+    ctx.fillStyle = oilG;
+    ctx.fillRect(186, 274, 190, 168);
+    ctx.fillStyle = 'rgba(246,241,214,0.95)';
+    ctx.fillRect(192, 272, 178, 5);
+    if (simRun) {
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+      ctx.lineWidth = 1;
+      for (var bub = 0; bub < 5; bub++) {
+        var bubx = 212 + bub * 32 + Math.sin(t / 200 + bub) * 4;
+        var baby = 428 - (((t / 10) + bub * 26) % 140);
         ctx.beginPath();
         ctx.arc(bubx, baby, 2.5, 0, Math.PI * 2);
         ctx.fill();
+        ctx.stroke();
       }
+    }
+    ctx.restore();
+    /* rim + spout */
+    ctx.fillStyle = 'rgba(228,240,252,0.55)';
+    rr(186, 250, 190, 10, 4);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(125,155,185,0.95)';
+    ctx.lineWidth = 1.6;
+    rr(186, 250, 190, 10, 4);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(215,232,248,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(192, 252);
+    ctx.lineTo(178, 242);
+    ctx.lineTo(204, 250);
+    ctx.closePath();
+    ctx.fill();
+    /* oil bath label */
+    ctx.fillStyle = '#fdfdfd';
+    rr(234, 356, 76, 40, 6);
+    ctx.fill();
+    ctx.strokeStyle = '#c9ced4';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#16345e';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Oil bath', 272, 381);
+    ctx.textAlign = 'left';
+
+    /* wire gauze */
+    ctx.fillStyle = '#2e3238';
+    rr(156, 430, 258, 12, 3);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(120,128,138,0.5)';
+    ctx.lineWidth = 0.8;
+    for (var gx = 162; gx < 412; gx += 9) {
+      ctx.beginPath();
+      ctx.moveTo(gx, 431);
+      ctx.lineTo(gx, 441);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(157, 434);
+    ctx.lineTo(413, 434);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(157, 438);
+    ctx.lineTo(413, 438);
+    ctx.stroke();
+    ctx.strokeStyle = '#494f56';
+    ctx.lineWidth = 1.2;
+    rr(156, 430, 258, 12, 3);
+    ctx.stroke();
+
+    /* tripod legs */
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#0f1013';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(300, 440);
+    ctx.lineTo(330, 566);
+    ctx.stroke();
+    ctx.strokeStyle = '#16171a';
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(172, 440);
+    ctx.lineTo(146, 624);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(398, 440);
+    ctx.lineTo(426, 624);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    /* bunsen burner */
+    ctx.strokeStyle = '#22252a';
+    ctx.lineWidth = 9;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(302, 604);
+    ctx.quadraticCurveTo(344, 616, 374, 606);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+    var bunsG = ctx.createRadialGradient(256, 600, 4, 270, 610, 46);
+    bunsG.addColorStop(0, '#d8dde2');
+    bunsG.addColorStop(0.6, '#9aa1a8');
+    bunsG.addColorStop(1, '#5e656c');
+    ctx.fillStyle = bunsG;
+    ctx.beginPath();
+    ctx.ellipse(270, 610, 42, 13, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#4c5259';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    var colG = ctx.createLinearGradient(250, 0, 290, 0);
+    colG.addColorStop(0, '#767d84');
+    colG.addColorStop(0.3, '#e8ecef');
+    colG.addColorStop(0.65, '#a2a9b0');
+    colG.addColorStop(1, '#61686f');
+    ctx.fillStyle = colG;
+    rr(250, 548, 40, 58, 2);
+    ctx.fill();
+    ctx.strokeStyle = '#4c5259';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#7b828a';
+    rr(244, 534, 52, 16, 3);
+    ctx.fill();
+    ctx.strokeStyle = '#565c63';
+    ctx.stroke();
+    ctx.fillStyle = '#3a3f45';
+    var holes = [252, 262, 272, 282];
+    for (var hl = 0; hl < holes.length; hl++) {
+      ctx.beginPath();
+      ctx.arc(holes[hl], 542, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = colG;
+    rr(256, 504, 28, 30, 2);
+    ctx.fill();
+    ctx.strokeStyle = '#4c5259';
+    ctx.stroke();
+    ctx.fillStyle = '#9aa1a8';
+    ctx.beginPath();
+    ctx.ellipse(270, 504, 14, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    /* blue flame */
+    var fs = simRun ? 1 + Math.sin(t / 70) * 0.07 : 1;
+    var sway = simRun ? Math.sin(t / 95) * 2 : 0;
+    ctx.save();
+    ctx.translate(270, 506);
+    ctx.scale(1, fs);
+    var flg = ctx.createLinearGradient(0, -64, 0, 0);
+    flg.addColorStop(0, '#4c96ff');
+    flg.addColorStop(0.6, '#2a6ff0');
+    flg.addColorStop(1, '#1a55c8');
+    ctx.fillStyle = flg;
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    ctx.moveTo(-12, 0);
+    ctx.quadraticCurveTo(-11, -30 + sway * 0.6, sway, -64);
+    ctx.quadraticCurveTo(11, -30 + sway * 0.6, 12, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(190,228,255,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(-5, 0);
+    ctx.quadraticCurveTo(-4, -20, sway * 0.7, -38);
+    ctx.quadraticCurveTo(4, -20, 5, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.beginPath();
+    ctx.ellipse(0, -2, 6, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    /* watch glass with naphthalene */
+    ctx.fillStyle = 'rgba(20,22,26,0.4)';
+    ctx.beginPath();
+    ctx.ellipse(66, 578, 126, 24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(225,235,245,0.22)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.ellipse(66, 566, 130, 44, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.ellipse(66, 566, 108, 35, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    var wcr = ['#f4f7fa', '#ffffff', '#e3e9ef'];
+    for (var wc = 0; wc < 12; wc++) {
+      var wcx = 66 + Math.cos(wc * 1.9) * (20 + (wc % 3) * 26);
+      var wcy = 562 + Math.sin(wc * 2.28) * (6 + (wc % 2) * 10);
+      var wcs = 7 + (wc % 4) * 3;
+      ctx.save();
+      ctx.translate(wcx, wcy);
+      ctx.rotate(wc * 0.9);
+      ctx.fillStyle = wcr[wc % 3];
+      ctx.beginPath();
+      ctx.moveTo(-wcs, -wcs * 0.5);
+      ctx.lineTo(wcs * 0.3, -wcs);
+      ctx.lineTo(wcs, wcs * 0.4);
+      ctx.lineTo(-wcs * 0.4, wcs);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(150,162,174,0.7)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
       ctx.restore();
     }
 
-    /* ── Digital temperature readout — RIGHT SIDE ── */
-    ctx.save();
-    var rx = cw - 120, ry = 100;
-    ctx.fillStyle = '#2a2a2a';
-    ctx.strokeStyle = '#444';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(rx - 50, ry - 25, 100, 50, 5);
+    /* sample label card */
+    ctx.fillStyle = '#ffffff';
+    rr(76, 586, 164, 48, 6);
     ctx.fill();
+    ctx.strokeStyle = '#b9c0c8';
+    ctx.lineWidth = 1.2;
     ctx.stroke();
-    ctx.fillStyle = done ? '#ff4444' : '#44ff44';
-    ctx.font = 'bold 22px monospace';
+    ctx.fillStyle = '#16345e';
     ctx.textAlign = 'center';
-    ctx.fillText(temp.toFixed(1) + '°C', rx, ry + 8);
-    ctx.restore();
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('Naphthalene', 158, 608);
+    ctx.font = '12px sans-serif';
+    ctx.fillText('(sample)', 158, 626);
+    ctx.textAlign = 'left';
 
-    /* ── Blue background labels with leader lines ── */
+    /* callouts */
+    callout(390, 126, 196, ['Capillary tube', '(with naphthalene)']);
+    arrow(388, 150, 344, 140, 306, 146);
+    callout(436, 288, 170, ['Oil bath', '(gradual heating)']);
+    arrow(434, 314, 398, 306, 376, 300);
+    callout(836, 84, 120, ['Naphthalene', '(white crystals)']);
+    arrow(834, 112, 796, 142, 750, 174);
+    callout(830, 196, 126, ['Capillary tube', '(close-up view)']);
+    arrow(828, 222, 792, 212, 758, 200);
+
+    /* circular close-up inset */
+    var insg = ctx.createRadialGradient(720, 130, 14, 720, 138, 110);
+    insg.addColorStop(0, '#161d2b');
+    insg.addColorStop(1, '#06080d');
+    ctx.fillStyle = insg;
+    ctx.beginPath();
+    ctx.arc(720, 138, 108, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.stroke();
     ctx.save();
-    function drawLabel(text, lx, ly, tw) {
-      ctx.fillStyle = '#1a3a6a';
-      ctx.fillRect(lx, ly, tw, 18);
-      ctx.fillStyle = '#fff';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(text, lx + tw / 2, ly + 13);
-    }
-    function drawLine(x1, y1, x2, y2) {
-      ctx.strokeStyle = '#1a3a6a';
-      ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    rr(700, 44, 48, 170, 20);
+    ctx.clip();
+    ctx.fillStyle = '#0a0d13';
+    ctx.fillRect(700, 44, 48, 170);
+    var insTube = ctx.createLinearGradient(700, 0, 748, 0);
+    insTube.addColorStop(0, 'rgba(220,228,238,0.30)');
+    insTube.addColorStop(0.5, 'rgba(150,165,185,0.16)');
+    insTube.addColorStop(1, 'rgba(210,220,235,0.28)');
+    ctx.fillStyle = insTube;
+    ctx.fillRect(700, 44, 48, 170);
+    var icr = [[712, 172, 7], [730, 168, 6], [722, 186, 8], [736, 190, 6], [710, 194, 6], [724, 202, 7]];
+    for (var ic = 0; ic < icr.length; ic++) {
+      ctx.fillStyle = '#f2f5f8';
+      ctx.strokeStyle = '#d6dde4';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
+      ctx.arc(icr[ic][0], icr[ic][1], icr[ic][2], 0, Math.PI * 2);
+      ctx.fill();
       ctx.stroke();
     }
-    /* Oil bath beaker label */
-    drawLine(bx - bw/2, by, bx - bw/2 - 30, by + 10);
-    drawLabel('Oil bath beaker', bx - bw/2 - 130, by + 2, 95);
-    /* Thermometer label */
-    drawLine(tx + 4, by - 40, tx + 40, by - 55);
-    drawLabel('Thermometer', tx + 20, by - 73, 80);
-    /* Capillary tube label */
-    drawLine(tx + 18, by - 20, tx + 50, by - 10);
-    drawLabel('Capillary tube', tx + 30, by - 28, 90);
-    /* Bunsen label */
-    drawLine(bx - 10, benchY - 25, bx - 50, benchY - 5);
-    drawLabel('Bunsen burner', bx - 130, benchY - 13, 85);
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    rr(708, 60, 5, 80, 2.5);
+    ctx.fill();
     ctx.restore();
+    ctx.strokeStyle = 'rgba(200,210,225,0.75)';
+    ctx.lineWidth = 2.5;
+    rr(700, 44, 48, 170, 20);
+    ctx.stroke();
 
-    /* ── Result display ── */
-    ctx.save();
-    ctx.textAlign = 'center';
-    if (done) {
-      ctx.fillStyle = '#1a3a6a';
-      ctx.fillRect(cx - 90, 50, 180, 40);
-      ctx.fillStyle = '#ff4444';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillText('Melting Point', cx, 68);
-      ctx.fillStyle = '#fff';
-      ctx.font = '12px sans-serif';
-      ctx.fillText('80.26°C', cx, 84);
-    }
+    /* observation box */
+    ctx.fillStyle = '#fdf7dc';
+    rr(552, 256, 392, 186, 14);
+    ctx.fill();
+    ctx.strokeStyle = '#f0e6bd';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#16345e';
+    ctx.font = 'bold 17px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#888';
+    ctx.fillText('Observation', 572, 286);
+    ctx.font = '11.5px sans-serif';
+    ctx.beginPath();
+    ctx.arc(576, 314, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText('The naphthalene starts to melt at', 586, 318);
+    ctx.fillText('about 80 \u00b0C.', 586, 336);
+    ctx.beginPath();
+    ctx.arc(576, 360, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText('It is completely liquid at about', 586, 364);
+    ctx.fillText('80\u201382 \u00b0C.', 586, 382);
+    ctx.fillStyle = '#cfc0f0';
+    rr(586, 394, 324, 44, 12);
+    ctx.fill();
+    ctx.fillStyle = '#16345e';
+    ctx.font = 'bold 13.5px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Melting point of naphthalene', 748, 412);
+    ctx.fillText('= 80\u201382 \u00b0C', 748, 430);
+    ctx.textAlign = 'left';
+
+    /* temperature vs time graph */
+    ctx.fillStyle = '#d4e8fb';
+    rr(576, 462, 384, 172, 14);
+    ctx.fill();
+    ctx.strokeStyle = '#b9d6f2';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#16345e';
+    ctx.font = 'bold 13.5px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Temperature vs Time', 768, 486);
+    ctx.textAlign = 'left';
+    ctx.strokeStyle = '#16345e';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(640, 604);
+    ctx.lineTo(640, 502);
+    ctx.stroke();
+    head(640, 502, -Math.PI / 2, 8, '#16345e');
+    ctx.beginPath();
+    ctx.moveTo(640, 604);
+    ctx.lineTo(946, 604);
+    ctx.stroke();
+    head(946, 604, 0, 8, '#16345e');
+    var yt = [60, 70, 80, 90];
+    ctx.font = '10px sans-serif';
+    for (var yt2 = 0; yt2 < yt.length; yt2++) {
+      var yy = 604 - (yt[yt2] - 60) * 3.133;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(636, yy);
+      ctx.lineTo(644, yy);
+      ctx.stroke();
+      ctx.fillStyle = '#16345e';
+      ctx.textAlign = 'right';
+      ctx.fillText(String(yt[yt2]), 632, yy + 3.5);
+    }
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 9.5px sans-serif';
+    ctx.fillText('Temperature (\u00b0C)', 600, 557);
+    ctx.save();
+    ctx.translate(600, 557);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Temperature (\u00b0C)', 0, 0);
+    ctx.restore();
+    ctx.fillText('Time (min)', 790, 628);
+    ctx.strokeStyle = '#1b3c8a';
+    ctx.lineWidth = 2.6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(654, 590);
+    ctx.quadraticCurveTo(690, 556, 722, 542);
+    ctx.quadraticCurveTo(766, 537, 812, 536);
+    ctx.quadraticCurveTo(860, 532, 930, 505);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+    ctx.strokeStyle = '#8a94ab';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(722, 542);
+    ctx.lineTo(722, 604);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(812, 536);
+    ctx.lineTo(812, 604);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#cfc0f0';
+    rr(700, 496, 150, 40, 10);
+    ctx.fill();
+    ctx.fillStyle = '#16345e';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Melting point range', 775, 512);
+    ctx.fillText('(80\u201382 \u00b0C)', 775, 527);
+    ctx.textAlign = 'left';
+
+    ctx.fillStyle = '#b9c0c8';
     ctx.font = '9px sans-serif';
     ctx.fillText('(simulated)', 10, ch - 10);
     ctx.restore();
