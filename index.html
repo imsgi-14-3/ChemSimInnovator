@@ -4,8 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChemSim — Interactive Virtual Chemistry Laboratory</title>
+
+  <!-- App-like install (opens standalone like YouTube / WhatsApp) -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#16a34a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ChemSim">
+  <link rel="apple-touch-icon" href="frontend/assets/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="frontend/assets/icon.svg">
   
   <!-- Design System & Styles -->
+  <link rel="stylesheet" href="frontend/styles/landing.css">
   <link rel="stylesheet" href="frontend/styles/design-system.css">
   <link rel="stylesheet" href="frontend/styles/layout.css">
   <link rel="stylesheet" href="frontend/styles/components.css">
@@ -13,6 +22,8 @@
   <link rel="stylesheet" href="frontend/styles/responsive.css">
 </head>
 <body>
+  <!-- Landing page (shown in front of the app) -->
+  <div id="landing"></div>
   <div id="app">
     <!-- Header -->
     <header class="app-header" id="app-header">
@@ -161,5 +172,8 @@
   <script src="frontend/renderers/TitrationRenderer.js?v=a4stop1"></script>
   <script src="frontend/renderers/GasRenderer.js"></script>
   <script src="frontend/renderers/MinorExperimentRenderer.js?v=m734w1"></script>
+
+  <!-- Landing page (front page) -->
+  <script src="frontend/landing.js"></script>
 </body>
 </html>
