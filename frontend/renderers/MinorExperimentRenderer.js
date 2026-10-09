@@ -12,7 +12,7 @@ var MinorExperimentRenderer = {
     else if (id === 'M7_8') html = this.renderM7_8(stage, exp, state);
     else html = '<p>Unknown experiment: ' + id + '</p>';
     var canvasW = id === 'M7_1' ? 900 : 550;
-    if (id === 'M7_3' || id === 'M7_4') canvasW = 960;
+    if (id === 'M7_3' || id === 'M7_4' || id === 'M7_5') canvasW = 960;
     var canvasHtml = LaboratoryWorkspace.renderCanvas(canvasW, 640);
     if (id === 'M7_4' && (stage === 'prepare' || stage === 'heat' || stage === 'monitor')) {
       html += '<div class="m74-stage-row"><div class="m74-canvas-cell">' + canvasHtml + '</div>' + this.renderM7_4Side(state) + '</div>';
@@ -3259,262 +3259,706 @@ var MinorExperimentRenderer = {
   /* ── M7.5 Boiling Point (Ethyl Alcohol) — distillation setup ── */
   drawM7_5: function(ctx, cw, ch, state) {
     var sim = SIMULATION_CONFIG['M7_5'];
-    var cx = cw / 2;
-    var benchY = 540;
     var done = state.m7ActionDone && state.simulation && state.m7ObservationDone;
     var heating = state.m7ActionDone && state.simulation && !state.simulation.done;
     var temp = done ? sim.expectedBoilingPoint : (heating ? 60 : 25);
 
-    /* ── Round-bottom flask — LEFT ── */
-    var fx = cx - 100, fy = benchY - 50;
+    /* ---- Backdrop: light wall + dark bench ---- */
     ctx.save();
-    /* flask body */
-    var flaskGrad = ctx.createRadialGradient(fx, fy + 15, 5, fx, fy + 15, 42);
-    flaskGrad.addColorStop(0, 'rgba(240,248,255,0.05)');
-    flaskGrad.addColorStop(0.5, 'rgba(180,210,240,0.2)');
-    flaskGrad.addColorStop(1, 'rgba(140,180,220,0.5)');
-    ctx.fillStyle = flaskGrad;
-    ctx.strokeStyle = 'rgba(80,120,160,0.6)';
-    ctx.lineWidth = 2.2;
+    var wall = ctx.createLinearGradient(0, 0, 0, 311);
+    wall.addColorStop(0, '#e8e6e1');
+    wall.addColorStop(1, '#cdcbc5');
+    ctx.fillStyle = wall;
+    ctx.fillRect(0, 0, cw, 311);
+    var bench = ctx.createLinearGradient(0, 311, 0, ch);
+    bench.addColorStop(0, '#282c32');
+    bench.addColorStop(1, '#15171b');
+    ctx.fillStyle = bench;
+    ctx.fillRect(0, 311, cw, ch - 311);
+    ctx.fillStyle = '#5a626c';
+    ctx.fillRect(0, 311, cw, 3);
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.fillRect(0, 316, cw, 8);
+    ctx.restore();
+
+    /* ---- Wall fixtures: gas valve (left) + green tap (right) ---- */
+    ctx.save();
+    ctx.fillStyle = '#f4f5f6';
+    ctx.strokeStyle = '#c8ccd2';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(fx, fy + 15, 40, 0, Math.PI * 2);
+    ctx.roundRect(0, 274, 54, 36, 4);
     ctx.fill();
     ctx.stroke();
-    /* neck */
-    ctx.fillStyle = 'rgba(180,210,240,0.25)';
-    ctx.fillRect(fx - 10, fy - 50, 20, 55);
-    ctx.strokeStyle = 'rgba(80,120,160,0.5)';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(fx - 10, fy - 50, 20, 55);
-    /* liquid inside */
+    ctx.fillStyle = '#8d949c';
+    ctx.fillRect(10, 282, 22, 20);
+    ctx.fillStyle = '#cc3333';
+    ctx.beginPath();
+    ctx.arc(40, 292, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#7d858e';
+    ctx.fillRect(934, 244, 12, 67);
+    ctx.fillStyle = '#2e9e4b';
+    ctx.beginPath();
+    ctx.roundRect(902, 240, 36, 12, 4);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(940, 250, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#237a3a';
+    ctx.beginPath();
+    ctx.arc(940, 250, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    /* ---- Sink inset in bench (right) ---- */
+    ctx.save();
+    ctx.fillStyle = '#101317';
+    ctx.strokeStyle = '#4d565f';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(861, 314, 101, 110, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#0a0c0f';
+    ctx.beginPath();
+    ctx.roundRect(871, 324, 81, 90, 4);
+    ctx.fill();
+    ctx.restore();
+
+    /* ---- Left retort stand ---- */
+    ctx.save();
+    var standGrad = ctx.createLinearGradient(35, 0, 49, 0);
+    standGrad.addColorStop(0, '#7a828c');
+    standGrad.addColorStop(0.4, '#c9ced4');
+    standGrad.addColorStop(1, '#6d747d');
+    ctx.fillStyle = standGrad;
+    ctx.fillRect(35, 24, 14, 554);
+    ctx.fillStyle = '#4a5058';
+    ctx.fillRect(31, 18, 22, 8);
+    ctx.fillStyle = '#2b313a';
+    ctx.beginPath();
+    ctx.roundRect(18, 576, 312, 24, 5);
+    ctx.fill();
+    ctx.fillStyle = '#3a414b';
+    ctx.beginPath();
+    ctx.roundRect(18, 576, 312, 8, 5);
+    ctx.fill();
+    var armGrad = ctx.createLinearGradient(0, 145, 0, 156);
+    armGrad.addColorStop(0, '#aeb4bb');
+    armGrad.addColorStop(1, '#5d646d');
+    ctx.fillStyle = armGrad;
+    ctx.fillRect(42, 145, 167, 11);
+    ctx.restore();
+
+    /* ---- Red gas hose to Bunsen ---- */
+    ctx.save();
+    ctx.strokeStyle = '#c1481f';
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(206, 545);
+    ctx.bezierCurveTo(150, 560, 70, 554, 0, 528);
+    ctx.stroke();
+    ctx.strokeStyle = '#8f3315';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(208, 544);
+    ctx.lineTo(196, 548);
+    ctx.stroke();
+    ctx.restore();
+
+    /* ---- Tripod stand + wire gauze ---- */
+    ctx.save();
+    ctx.strokeStyle = '#0c0e11';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(118, 505);
+    ctx.lineTo(342, 505);
+    ctx.stroke();
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(155, 344);
+    ctx.lineTo(93, 574);
+    ctx.moveTo(325, 344);
+    ctx.lineTo(359, 574);
+    ctx.stroke();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#0a0b0d';
+    ctx.beginPath();
+    ctx.moveTo(242, 346);
+    ctx.lineTo(252, 542);
+    ctx.stroke();
+    ctx.fillStyle = '#8d9298';
+    ctx.fillRect(151, 331, 178, 11);
+    ctx.fillStyle = '#5f656c';
+    ctx.fillRect(151, 342, 178, 6);
     ctx.save();
     ctx.beginPath();
-    ctx.arc(fx, fy + 15, 37, 0, Math.PI * 2);
+    ctx.rect(151, 331, 178, 11);
     ctx.clip();
-    ctx.fillStyle = '#e8dcc8';
-    ctx.globalAlpha = 0.5;
-    ctx.fillRect(fx - 42, fy - 5, 84, 60);
-    ctx.globalAlpha = 1;
-    ctx.restore();
-    /* boiling chips */
-    ctx.fillStyle = '#aaa';
-    for (var bc = 0; bc < 4; bc++) {
+    ctx.strokeStyle = 'rgba(60,66,72,0.7)';
+    ctx.lineWidth = 1;
+    for (var gx = 151; gx <= 329; gx += 12) {
       ctx.beginPath();
-      ctx.arc(fx - 12 + bc * 8, fy + 40, 2, 0, Math.PI * 2);
+      ctx.moveTo(gx, 331);
+      ctx.lineTo(gx, 342);
+      ctx.stroke();
+    }
+    for (var gy = 333; gy <= 342; gy += 4) {
+      ctx.beginPath();
+      ctx.moveTo(151, gy);
+      ctx.lineTo(329, gy);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.strokeStyle = '#444a51';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(151, 331, 178, 17);
+    ctx.restore();
+
+    /* ---- Bunsen burner (low blue flame) ---- */
+    ctx.save();
+    var bGrad = ctx.createLinearGradient(173, 0, 261, 0);
+    bGrad.addColorStop(0, '#5a5f66');
+    bGrad.addColorStop(0.35, '#c2c7cd');
+    bGrad.addColorStop(0.6, '#e2e5e9');
+    bGrad.addColorStop(1, '#5a5f66');
+    ctx.fillStyle = bGrad;
+    ctx.beginPath();
+    ctx.ellipse(217, 570, 44, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#3c4147';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(184, 566);
+    ctx.lineTo(205, 528);
+    ctx.lineTo(229, 528);
+    ctx.lineTo(250, 566);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillRect(206, 500, 22, 30);
+    ctx.strokeRect(206, 500, 22, 30);
+    ctx.fillStyle = '#71787f';
+    ctx.fillRect(199, 490, 36, 12);
+    ctx.strokeStyle = '#3f444a';
+    ctx.strokeRect(199, 490, 36, 12);
+    ctx.fillStyle = '#26292d';
+    ctx.beginPath();
+    ctx.arc(207, 496, 3, 0, Math.PI * 2);
+    ctx.arc(227, 496, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = bGrad;
+    ctx.fillRect(208, 414, 18, 76);
+    ctx.strokeStyle = '#44494f';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(208, 414, 18, 76);
+    ctx.fillStyle = '#6b7178';
+    ctx.fillRect(205, 408, 24, 8);
+    ctx.strokeRect(205, 408, 24, 8);
+    if (heating || done) {
+      var fGrad = ctx.createRadialGradient(217, 384, 2, 217, 384, 34);
+      fGrad.addColorStop(0, '#7fb7ff');
+      fGrad.addColorStop(0.55, '#3f86f0');
+      fGrad.addColorStop(1, 'rgba(60,120,240,0)');
+      ctx.fillStyle = fGrad;
+      ctx.beginPath();
+      ctx.moveTo(200, 410);
+      ctx.quadraticCurveTo(204, 386, 217, 356);
+      ctx.quadraticCurveTo(230, 386, 234, 410);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.beginPath();
+      ctx.moveTo(210, 410);
+      ctx.quadraticCurveTo(212, 396, 217, 384);
+      ctx.quadraticCurveTo(222, 396, 224, 410);
+      ctx.closePath();
       ctx.fill();
     }
     ctx.restore();
 
-    /* ── Thermometer in flask neck ── */
-    var tx = fx, ty = fy - 80, th = 100;
+    /* ---- Boiling flask ---- */
     ctx.save();
-    /* bulb */
-    ctx.fillStyle = '#cc3333';
+    ctx.fillStyle = 'rgba(205,224,242,0.22)';
+    ctx.strokeStyle = 'rgba(90,130,170,0.6)';
+    ctx.lineWidth = 2;
+    ctx.fillRect(210, 197, 50, 52);
+    ctx.strokeRect(210, 197, 50, 52);
+    ctx.fillStyle = 'rgba(215,232,248,0.3)';
+    ctx.fillRect(205, 190, 60, 11);
+    ctx.strokeRect(205, 190, 60, 11);
+    ctx.strokeStyle = 'rgba(140,175,205,0.6)';
+    ctx.lineWidth = 12;
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.arc(tx, fy - 5, 5, 0, Math.PI * 2);
+    ctx.moveTo(256, 216);
+    ctx.lineTo(334, 201);
+    ctx.stroke();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(90,130,170,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(256, 210);
+    ctx.lineTo(334, 195);
+    ctx.moveTo(256, 222);
+    ctx.lineTo(334, 207);
+    ctx.stroke();
+    var fGrad2 = ctx.createRadialGradient(215, 262, 6, 235, 278, 70);
+    fGrad2.addColorStop(0, 'rgba(245,250,255,0.06)');
+    fGrad2.addColorStop(0.6, 'rgba(185,212,240,0.18)');
+    fGrad2.addColorStop(1, 'rgba(140,180,220,0.42)');
+    ctx.fillStyle = fGrad2;
+    ctx.strokeStyle = 'rgba(85,125,165,0.7)';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.ellipse(235, 278, 66, 53, 0, 0, Math.PI * 2);
     ctx.fill();
-    /* glass tube */
-    var tGrad = ctx.createLinearGradient(tx - 3.5, 0, tx + 3.5, 0);
-    tGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
-    tGrad.addColorStop(0.3, 'rgba(240,248,255,0.15)');
-    tGrad.addColorStop(0.7, 'rgba(240,248,255,0.12)');
-    tGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
-    ctx.fillStyle = tGrad;
-    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
-    ctx.lineWidth = 1.2;
-    ctx.fillRect(tx - 3.5, fy - 80, 7, 75);
-    ctx.strokeRect(tx - 3.5, fy - 80, 7, 75);
-    /* mercury */
-    var mercuryH = done ? 65 : (heating ? 40 : 18);
-    ctx.fillStyle = '#cc3333';
-    ctx.fillRect(tx - 1, fy - 5 - mercuryH, 2, mercuryH);
-    /* top */
-    ctx.fillStyle = '#aaa';
-    ctx.fillRect(tx - 4, fy - 88, 8, 10);
-    ctx.strokeStyle = '#888';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(tx - 4, fy - 88, 8, 10);
+    ctx.stroke();
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(235, 278, 64, 51, 0, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = 'rgba(233,239,245,0.45)';
+    ctx.fillRect(169, 262, 132, 71);
+    ctx.fillStyle = 'rgba(195,212,228,0.75)';
+    ctx.fillRect(169, 261, 132, 2);
+    ctx.fillStyle = 'rgba(120,125,130,0.9)';
+    var chips = [[214, 324], [231, 327], [248, 325], [263, 321]];
+    for (var ci = 0; ci < chips.length; ci++) {
+      ctx.beginPath();
+      ctx.arc(chips[ci][0], chips[ci][1], 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (heating) {
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      for (var b = 0; b < 6; b++) {
+        var bx = 200 + b * 14;
+        var by = 326 - ((Date.now() / 14 + b * 13) % 58);
+        ctx.beginPath();
+        ctx.arc(bx, by, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
     ctx.restore();
 
-    /* ── Side arm / delivery tube ── */
+    /* ---- Thermometer ---- */
     ctx.save();
-    ctx.strokeStyle = 'rgba(140,175,205,0.55)';
+    var tGrad = ctx.createLinearGradient(224, 0, 238, 0);
+    tGrad.addColorStop(0, 'rgba(175,198,220,0.5)');
+    tGrad.addColorStop(0.35, 'rgba(242,248,255,0.28)');
+    tGrad.addColorStop(1, 'rgba(175,198,220,0.45)');
+    ctx.fillStyle = tGrad;
+    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
+    ctx.lineWidth = 1.3;
+    ctx.fillRect(224, 17, 14, 256);
+    ctx.strokeRect(224, 17, 14, 256);
+    ctx.fillStyle = '#a8adb3';
+    ctx.fillRect(226, 8, 10, 12);
+    ctx.strokeStyle = '#7a8087';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(226, 8, 10, 12);
+    ctx.fillStyle = '#55606c';
+    ctx.font = '8px sans-serif';
+    ctx.textAlign = 'left';
+    for (var v = 0; v <= 100; v += 10) {
+      var vy = 270 - (v / 100) * 245;
+      ctx.fillRect(238, vy, v % 20 === 0 ? 8 : 5, 1);
+      if (v % 20 === 0 && v > 0) ctx.fillText(String(v), 248, vy + 3);
+    }
+    var merH = (temp / 100) * 245;
+    ctx.fillStyle = '#d43a3a';
+    ctx.fillRect(229, 270 - merH, 5, merH - 6);
+    ctx.beginPath();
+    ctx.arc(231.5, 268, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#a02828';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+
+    /* ---- Thermometer clamp ---- */
+    ctx.save();
+    ctx.fillStyle = '#17181a';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(207, 133, 66, 34, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#3d4147';
+    ctx.beginPath();
+    ctx.arc(218, 150, 6.5, 0, Math.PI * 2);
+    ctx.arc(262, 150, 6.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#22252a';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(213, 150);
+    ctx.lineTo(223, 150);
+    ctx.moveTo(257, 150);
+    ctx.lineTo(267, 150);
+    ctx.stroke();
+    ctx.restore();
+
+    /* ---- Second retort stand (behind condenser) ---- */
+    ctx.save();
+    var rodGrad = ctx.createLinearGradient(584, 0, 599, 0);
+    rodGrad.addColorStop(0, '#767e88');
+    rodGrad.addColorStop(0.4, '#c6cbd1');
+    rodGrad.addColorStop(1, '#697078');
+    ctx.fillStyle = rodGrad;
+    ctx.fillRect(584, 125, 15, 325);
+    ctx.fillStyle = '#4a5058';
+    ctx.fillRect(580, 118, 23, 8);
+    ctx.fillStyle = '#2b313a';
+    ctx.beginPath();
+    ctx.roundRect(529, 450, 140, 31, 5);
+    ctx.fill();
+    ctx.fillStyle = '#3a414b';
+    ctx.beginPath();
+    ctx.roundRect(529, 450, 140, 10, 5);
+    ctx.fill();
+    ctx.restore();
+
+    /* ---- Liebig condenser (angled) ---- */
+    var ax = 348, ay = 206;
+    var ang = Math.atan2(150, 441);
+    var ux = Math.cos(ang), uy = Math.sin(ang);
+    ctx.save();
+    ctx.translate(ax, ay);
+    ctx.rotate(ang);
+    var jGrad = ctx.createLinearGradient(0, -17, 0, 17);
+    jGrad.addColorStop(0, 'rgba(140,180,222,0.45)');
+    jGrad.addColorStop(0.35, 'rgba(228,242,252,0.14)');
+    jGrad.addColorStop(0.65, 'rgba(228,242,252,0.12)');
+    jGrad.addColorStop(1, 'rgba(140,180,222,0.42)');
+    ctx.fillStyle = jGrad;
+    ctx.strokeStyle = 'rgba(80,120,160,0.62)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(-10, -17, 480, 34, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(226,240,252,0.26)';
+    ctx.strokeStyle = 'rgba(90,130,170,0.5)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.roundRect(-6, -6.5, 486, 13, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(70,110,150,0.6)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(-10, -17);
+    ctx.lineTo(-10, 17);
+    ctx.moveTo(470, -17);
+    ctx.lineTo(470, 17);
+    ctx.stroke();
+    ctx.restore();
+
+    /* ---- Hose nipples + frosted adapter sleeve ---- */
+    ctx.save();
+    ctx.strokeStyle = 'rgba(150,185,215,0.75)';
+    ctx.lineWidth = 7;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(391, 206);
+    ctx.lineTo(401, 194);
+    ctx.moveTo(745, 359);
+    ctx.lineTo(741, 373);
+    ctx.stroke();
+    ctx.save();
+    ctx.translate(ax, ay);
+    ctx.rotate(ang);
+    ctx.fillStyle = 'rgba(246,248,251,0.92)';
+    ctx.strokeStyle = '#9aa2ab';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.roundRect(-16, -13.5, 30, 27, 3);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(150,158,168,0.8)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-8, -13);
+    ctx.lineTo(-8, 13);
+    ctx.moveTo(0, -13);
+    ctx.lineTo(0, 13);
+    ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+
+    /* ---- Condenser clamp on second stand ---- */
+    ctx.save();
+    ctx.fillStyle = '#17181a';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(565, 271, 58, 40, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#3d4147';
+    ctx.beginPath();
+    ctx.arc(574, 291, 6.5, 0, Math.PI * 2);
+    ctx.arc(614, 291, 6.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#22252a';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(569, 291);
+    ctx.lineTo(579, 291);
+    ctx.moveTo(609, 291);
+    ctx.lineTo(619, 291);
+    ctx.stroke();
+    ctx.restore();
+
+    /* ---- Water-in hose (blue loop to tap) ---- */
+    ctx.save();
+    ctx.strokeStyle = '#3f7fd0';
+    ctx.lineWidth = 13;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(401, 194);
+    ctx.bezierCurveTo(434, 154, 446, 126, 456, 114);
+    ctx.bezierCurveTo(468, 102, 468, 74, 464, 34);
+    ctx.stroke();
+    ctx.strokeStyle = '#79b8ea';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(401, 194);
+    ctx.bezierCurveTo(434, 154, 446, 126, 456, 114);
+    ctx.bezierCurveTo(468, 102, 468, 74, 464, 34);
+    ctx.stroke();
+    ctx.strokeStyle = '#2b5fa8';
     ctx.lineWidth = 5;
     ctx.beginPath();
-    ctx.moveTo(fx + 10, fy - 25);
-    ctx.lineTo(fx + 60, fy - 25);
-    ctx.lineTo(fx + 60, fy + 30);
+    ctx.moveTo(396, 202);
+    ctx.lineTo(404, 192);
     ctx.stroke();
     ctx.restore();
 
-    /* ── Condenser (Liebig) — CENTER RIGHT ── */
-    var conX = fx + 60;
+    /* ---- Vapour moving through condenser ---- */
+    if (heating || done) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      for (var v2 = 0; v2 < 4; v2++) {
+        var t2 = (Date.now() / 26 + v2 * 116) % 462;
+        var vx = ax + ux * t2 + uy * 5;
+        var vyy = ay + uy * t2 - ux * 5;
+        ctx.beginPath();
+        ctx.arc(vx, vyy, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    /* ---- Water-out hose (to sink) ---- */
     ctx.save();
-    /* water jacket */
-    var conGrad = ctx.createLinearGradient(conX - 14, 0, conX + 14, 0);
-    conGrad.addColorStop(0, 'rgba(140,180,220,0.45)');
-    conGrad.addColorStop(0.3, 'rgba(200,225,245,0.12)');
-    conGrad.addColorStop(0.7, 'rgba(200,225,245,0.1)');
-    conGrad.addColorStop(1, 'rgba(140,180,220,0.42)');
-    ctx.fillStyle = conGrad;
-    ctx.strokeStyle = 'rgba(80,120,160,0.5)';
-    ctx.lineWidth = 1.5;
-    ctx.fillRect(conX - 14, fy + 26, 28, 78);
-    ctx.strokeRect(conX - 14, fy + 26, 28, 78);
-    /* inner tube */
-    ctx.fillStyle = 'rgba(200,225,245,0.2)';
-    ctx.fillRect(conX - 5, fy + 30, 10, 70);
-    ctx.strokeStyle = 'rgba(80,120,160,0.4)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(conX - 5, fy + 30, 10, 70);
-    /* water inlet (bottom) */
-    ctx.strokeStyle = 'rgba(80,120,160,0.4)';
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#3f7fd0';
+    ctx.lineWidth = 13;
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(conX - 14, fy + 40);
-    ctx.lineTo(conX - 24, fy + 40);
+    ctx.moveTo(741, 373);
+    ctx.bezierCurveTo(752, 442, 772, 512, 812, 552);
+    ctx.bezierCurveTo(852, 590, 902, 600, 952, 604);
     ctx.stroke();
-    /* water outlet (top) */
+    ctx.strokeStyle = '#79b8ea';
+    ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(conX + 14, fy + 90);
-    ctx.lineTo(conX + 24, fy + 90);
+    ctx.moveTo(741, 373);
+    ctx.bezierCurveTo(752, 442, 772, 512, 812, 552);
+    ctx.bezierCurveTo(852, 590, 902, 600, 952, 604);
     ctx.stroke();
-    /* labels on jacket */
-    ctx.fillStyle = '#666';
-    ctx.font = '8px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('in', conX - 24, fy + 36);
-    ctx.fillText('out', conX + 24, fy + 86);
-    ctx.textAlign = 'left';
+    ctx.strokeStyle = '#2b5fa8';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(737, 366);
+    ctx.lineTo(745, 378);
+    ctx.stroke();
     ctx.restore();
 
-    /* ── Receiving flask (conical) — RIGHT ── */
-    var rx = conX, ry = fy + 130;
+    /* ---- Receiving flask on black slab ---- */
     ctx.save();
-    var rGrad = ctx.createLinearGradient(rx - 25, 0, rx + 25, 0);
-    rGrad.addColorStop(0, 'rgba(180,200,220,0.4)');
-    rGrad.addColorStop(0.15, 'rgba(220,238,252,0.15)');
-    rGrad.addColorStop(0.85, 'rgba(220,238,252,0.12)');
-    rGrad.addColorStop(1, 'rgba(180,200,220,0.38)');
-    ctx.fillStyle = rGrad;
-    ctx.strokeStyle = 'rgba(100,140,180,0.55)';
-    ctx.lineWidth = 1.8;
+    ctx.fillStyle = '#101318';
     ctx.beginPath();
-    ctx.moveTo(rx - 8, ry - 25);
-    ctx.lineTo(rx - 25, ry + 20);
-    ctx.lineTo(rx - 25, ry + 35);
-    ctx.lineTo(rx + 25, ry + 35);
-    ctx.lineTo(rx + 25, ry + 20);
-    ctx.lineTo(rx + 8, ry - 25);
+    ctx.roundRect(707, 476, 224, 32, 5);
+    ctx.fill();
+    ctx.fillStyle = '#1d222a';
+    ctx.beginPath();
+    ctx.roundRect(707, 476, 224, 10, 5);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(205,224,242,0.2)';
+    ctx.strokeStyle = 'rgba(90,130,170,0.65)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(797, 368);
+    ctx.lineTo(797, 400);
+    ctx.lineTo(747, 458);
+    ctx.lineTo(747, 470);
+    ctx.quadraticCurveTo(747, 476, 754, 476);
+    ctx.lineTo(860, 476);
+    ctx.quadraticCurveTo(867, 476, 867, 470);
+    ctx.lineTo(867, 458);
+    ctx.lineTo(815, 400);
+    ctx.lineTo(815, 368);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    /* collected alcohol */
-    ctx.fillStyle = '#e8dcc8';
-    ctx.globalAlpha = 0.5;
-    ctx.fillRect(rx - 22, ry + 5, 44, 28);
-    ctx.globalAlpha = 1;
-    ctx.restore();
-
-    /* ── Bunsen burner under flask ── */
-    this.drawBunsen(ctx, fx, benchY, heating || done, '#4488ff', heating ? 65 : 35);
-
-    /* ── Bubbles in flask ── */
-    if (heating) {
-      ctx.save();
-      ctx.fillStyle = 'rgba(255,255,255,0.4)';
-      for (var b = 0; b < 5; b++) {
-        var bubx = fx - 16 + b * 8;
-        var baby = fy + 30 - ((Date.now() / 15 + b * 8) % 25);
-        ctx.beginPath();
-        ctx.arc(bubx, baby, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-
-    /* ── Vapour moving through condenser ── */
-    if (heating || done) {
-      ctx.save();
-      ctx.globalAlpha = 0.3;
-      ctx.fillStyle = '#fff';
-      for (var v = 0; v < 3; v++) {
-        var vy = fy + 35 + ((Date.now() / 20 + v * 20) % 60);
-        ctx.beginPath();
-        ctx.arc(conX, vy, 3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      ctx.restore();
-    }
-
-    /* ── Digital temperature readout — TOP RIGHT ── */
-    ctx.save();
-    var dx = cw - 110, dy = 90;
-    ctx.fillStyle = '#2a2a2a';
-    ctx.strokeStyle = '#444';
-    ctx.lineWidth = 2;
+    ctx.fillStyle = 'rgba(215,232,248,0.3)';
     ctx.beginPath();
-    ctx.roundRect(dx - 50, dy - 25, 100, 50, 5);
+    ctx.roundRect(792, 357, 28, 11, 3);
     ctx.fill();
     ctx.stroke();
-    ctx.fillStyle = done ? '#ff4444' : '#44ff44';
-    ctx.font = 'bold 22px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(temp.toFixed(1) + '°C', dx, dy + 8);
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(797, 368);
+    ctx.lineTo(797, 400);
+    ctx.lineTo(747, 458);
+    ctx.lineTo(747, 470);
+    ctx.quadraticCurveTo(747, 476, 754, 476);
+    ctx.lineTo(860, 476);
+    ctx.quadraticCurveTo(867, 476, 867, 470);
+    ctx.lineTo(867, 458);
+    ctx.lineTo(815, 400);
+    ctx.lineTo(815, 368);
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle = 'rgba(205,224,245,0.5)';
+    ctx.fillRect(744, 446, 126, 32);
+    ctx.fillStyle = 'rgba(150,195,235,0.55)';
+    ctx.beginPath();
+    ctx.ellipse(806, 470, 30, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(150,185,215,0.75)';
+    ctx.lineWidth = 11;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(789, 356);
+    ctx.quadraticCurveTo(803, 372, 806, 396);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(90,130,170,0.5)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(789, 356);
+    ctx.quadraticCurveTo(803, 372, 806, 396);
+    ctx.stroke();
     ctx.restore();
 
-    /* ── Blue background labels with leader lines ── */
-    ctx.save();
-    function drawLabel(text, lx, ly, tw) {
-      ctx.fillStyle = '#1a3a6a';
-      ctx.fillRect(lx, ly, tw, 18);
-      ctx.fillStyle = '#fff';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(text, lx + tw / 2, ly + 13);
+    /* ---- Distillate drops ---- */
+    if (heating || done) {
+      ctx.save();
+      var dph = (Date.now() / 11) % 44;
+      ctx.fillStyle = 'rgba(170,205,240,0.85)';
+      ctx.beginPath();
+      ctx.ellipse(806, 400 + dph, 3, 4.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
-    function drawLine(x1, y1, x2, y2) {
-      ctx.strokeStyle = '#1a3a6a';
+
+    /* ---- Digital temperature readout ---- */
+    ctx.save();
+    var dx = cw - 110, dy = 90;
+    ctx.fillStyle = '#26282b';
+    ctx.strokeStyle = '#45484c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(dx - 54, dy - 25, 108, 50, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = done ? '#ff5555' : '#4ade4a';
+    ctx.font = 'bold 21px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(temp.toFixed(1) + '\u00b0C', dx, dy + 8);
+    ctx.restore();
+
+    /* ---- Result banner (when complete) ---- */
+    if (done) {
+      ctx.save();
+      ctx.fillStyle = '#1a3a6a';
+      ctx.beginPath();
+      ctx.roundRect(395, 32, 170, 42, 6);
+      ctx.fill();
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ff5555';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('Boiling Point', 480, 50);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '13px sans-serif';
+      ctx.fillText('78.37\u00b0C', 480, 68);
+      ctx.textAlign = 'left';
+      ctx.restore();
+    }
+
+    /* ---- Photo-style labels ---- */
+    ctx.save();
+    function sticker(x, y, w, h, lines) {
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#14171a';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
+      ctx.roundRect(x, y, w, h, 6);
+      ctx.fill();
       ctx.stroke();
+      ctx.fillStyle = '#14171a';
+      ctx.textAlign = 'center';
+      if (lines.length === 1) {
+        ctx.font = '12px sans-serif';
+        ctx.fillText(lines[0], x + w / 2, y + h / 2 + 4);
+      } else {
+        ctx.font = '11.5px sans-serif';
+        ctx.fillText(lines[0], x + w / 2, y + 18);
+        ctx.fillText(lines[1], x + w / 2, y + 35);
+      }
+      ctx.textAlign = 'left';
     }
-    /* Flask label */
-    drawLine(fx - 40, fy + 15, fx - 70, fy + 5);
-    drawLabel('Round-bottom flask', fx - 165, fy - 3, 100);
-    /* Thermometer label */
-    drawLine(tx + 3, fy - 50, tx + 35, fy - 60);
-    drawLabel('Thermometer', tx + 15, fy - 78, 75);
-    /* Condenser label */
-    drawLine(conX + 14, fy + 50, conX + 45, fy + 40);
-    drawLabel('Condenser', conX + 25, fy + 22, 65);
-    /* Receiving flask label */
-    drawLine(rx + 25, ry + 20, rx + 50, ry + 10);
-    drawLabel('Receiving flask', rx + 30, ry - 8, 90);
-    /* Bunsen label */
-    drawLine(fx - 10, benchY - 25, fx - 45, benchY - 5);
-    drawLabel('Bunsen burner', fx - 125, benchY - 13, 85);
+    function arrow(x1, y1, cx2, cy2, x2, y2) {
+      ctx.strokeStyle = '#14171a';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.quadraticCurveTo(cx2, cy2, x2, y2);
+      ctx.stroke();
+      var a = Math.atan2(y2 - cy2, x2 - cx2);
+      ctx.fillStyle = '#14171a';
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - 9 * Math.cos(a - 0.4), y2 - 9 * Math.sin(a - 0.4));
+      ctx.lineTo(x2 - 9 * Math.cos(a + 0.4), y2 - 9 * Math.sin(a + 0.4));
+      ctx.closePath();
+      ctx.fill();
+    }
+    sticker(256, 34, 116, 26, ['Thermometer']);
+    arrow(255, 50, 247, 57, 239, 63);
+    sticker(287, 116, 148, 26, ['Thermometer clamp']);
+    arrow(286, 133, 279, 142, 272, 150);
+    sticker(470, 78, 136, 46, ['Water in', '(from tap)']);
+    arrow(469, 112, 456, 114, 446, 111);
+    sticker(6, 225, 158, 46, ['Boiling flask', '(with ethyl alcohol)']);
+    arrow(165, 249, 171, 256, 176, 262);
+    sticker(30, 330, 100, 26, ['Wire gauze']);
+    arrow(131, 344, 142, 342, 152, 339);
+    sticker(26, 424, 110, 26, ['Tripod stand']);
+    arrow(137, 442, 131, 448, 125, 454);
+    sticker(283, 442, 160, 46, ['Bunsen burner', '(low flame)']);
+    arrow(282, 468, 257, 474, 234, 478);
+    sticker(662, 189, 140, 26, ['Liebig condenser']);
+    arrow(687, 215, 676, 258, 668, 300);
+    sticker(742, 246, 130, 46, ['Water out', '(to sink)']);
+    arrow(748, 293, 745, 325, 742, 356);
+    sticker(712, 540, 236, 46, ['Receiving flask', '(for distilled ethyl alcohol)']);
+    arrow(800, 540, 799, 510, 798, 478);
     ctx.restore();
 
-    /* ── Result display ── */
+    /* ---- Footer ---- */
     ctx.save();
-    ctx.textAlign = 'center';
-    if (done) {
-      ctx.fillStyle = '#1a3a6a';
-      ctx.fillRect(cx - 90, 50, 180, 40);
-      ctx.fillStyle = '#ff4444';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillText('Boiling Point', cx, 68);
-      ctx.fillStyle = '#fff';
-      ctx.font = '12px sans-serif';
-      ctx.fillText('78.37°C', cx, 84);
-    }
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#888';
+    ctx.fillStyle = '#888888';
     ctx.font = '9px sans-serif';
+    ctx.textAlign = 'left';
     ctx.fillText('(simulated)', 10, ch - 10);
     ctx.restore();
   },
