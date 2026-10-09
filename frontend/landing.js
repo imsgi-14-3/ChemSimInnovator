@@ -243,6 +243,8 @@ var ChemSimLanding = (function() {
     window.setTimeout(function() { m.hidden = true; }, 300);
   }
 
+  var escBound = false;
+
   function wire(el) {
     var nodes = el.querySelectorAll('[data-lg]');
     for (var i = 0; i < nodes.length; i++) {
@@ -263,9 +265,12 @@ var ChemSimLanding = (function() {
         if (ev.target === modal) closeSafeModal();
       });
     }
-    document.addEventListener('keydown', function(ev) {
-      if (ev.keyCode === 27) closeSafeModal();
-    });
+    if (!escBound) {
+      escBound = true;
+      document.addEventListener('keydown', function(ev) {
+        if (ev.keyCode === 27) closeSafeModal();
+      });
+    }
   }
 
   function registerSW() {
@@ -278,16 +283,33 @@ var ChemSimLanding = (function() {
     } catch (e) { /* older browsers */ }
   }
 
+  function showLanding() {
+    var host = document.getElementById('landing');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'landing';
+      document.body.insertBefore(host, document.body.firstChild);
+    }
+    init();
+  }
+
   function init() {
     var host = document.getElementById('landing');
-    if (!host) return;
-    host.innerHTML = markup();
-    document.body.style.overflow = 'hidden';
-    wire(host);
+    if (host && host.getAttribute('data-lg-ready') !== '1') {
+      host.innerHTML = markup();
+      host.setAttribute('data-lg-ready', '1');
+      document.body.style.overflow = 'hidden';
+      wire(host);
+    }
+    var backBtn = document.getElementById('btn-landing');
+    if (backBtn && backBtn.getAttribute('data-lg-bound') !== '1') {
+      backBtn.setAttribute('data-lg-bound', '1');
+      backBtn.addEventListener('click', showLanding);
+    }
     registerSW();
   }
 
-  return { init: init };
+  return { init: init, show: showLanding };
 })();
 
 if (document.readyState === 'loading') {

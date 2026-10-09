@@ -377,3 +377,25 @@
   font-size: var(--text-sm);
   font-weight: 600;
 }
+
+/* ===== Header — Back button to first page (landing) ===== */
+.app-header .header-landing-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #15803d;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  border: 0;
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.app-header .header-landing-btn:hover {
+  background: #dcfce7;
+  transform: translateX(-2px);
+}
