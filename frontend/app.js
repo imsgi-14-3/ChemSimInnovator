@@ -942,6 +942,17 @@ var ChemSim = (function() {
 
   function handleM7Start() {
     var st = appState.state;
+    var simCfg = SIMULATION_CONFIG[appState.experimentId] || {};
+    var stage0 = appState.currentStage;
+    var dur = 2500;
+    if (stage0 === 'dissolve') dur = simCfg.dissolveDurationMs || dur;
+    else if (stage0 === 'concentrate') dur = simCfg.concentrateDurationMs || dur;
+    else if (stage0 === 'crystallize') dur = simCfg.crystallizeDurationMs || dur;
+    else if (stage0 === 'meltingPointTest') dur = simCfg.mpDurationMs || dur;
+    else if (stage0 === 'boilingPointTest') dur = simCfg.bpDurationMs || dur;
+    else if (stage0 === 'performReaction') dur = simCfg.reactionDurationMs || dur;
+    else if (stage0 === 'performTest') dur = simCfg.testDurationMs || simCfg.flameDurationMs || dur;
+    else if (simCfg.heatDurationMs) dur = simCfg.heatDurationMs;
     st.simulation = { startTime: Date.now(), done: false };
     st.m7ActionDone = false;
     renderExperimentStage();
@@ -950,7 +961,7 @@ var ChemSim = (function() {
       st.m7ActionDone = true;
       st.m7ObservationDone = true;
       renderExperimentStage();
-    }, 2500);
+    }, dur);
   }
 
   function handleM7ConfirmIon() {

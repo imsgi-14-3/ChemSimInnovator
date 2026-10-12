@@ -160,11 +160,12 @@ var SIMULATION_CONFIG = {
   },
   "M7_1": {
     label: "SIMULATED EDUCATIONAL VALUES",
-    heatDurationMs: 3000,
+    heatDurationMs: 4500,
     naphthaleneSublimes: true
   },
   "M7_2": {
     label: "SIMULATED EDUCATIONAL VALUES",
+    flameDurationMs: 3200,
     ions: [
       { id: "Na", name: "Na⁺", flameColour: "Yellow", flameHex: "#ffcc00" },
       { id: "K", name: "K⁺", flameColour: "Lilac/Violet", flameHex: "#cc66ff" },
@@ -176,18 +177,18 @@ var SIMULATION_CONFIG = {
   "M7_3": {
     label: "SIMULATED EDUCATIONAL VALUES",
     crystalColour: "#3366cc",
-    dissolveDurationMs: 2000,
+    dissolveDurationMs: 3000, concentrateDurationMs: 3500,
     crystallizeDurationMs: 3000
   },
   "M7_4": {
     label: "SIMULATED EDUCATIONAL VALUES",
     expectedMeltingPoint: 80.26,
-    heatDurationMs: 4000
+    heatDurationMs: 5500
   },
   "M7_5": {
     label: "SIMULATED EDUCATIONAL VALUES",
     expectedBoilingPoint: 78.37,
-    heatDurationMs: 4000
+    heatDurationMs: 5500
   },
   "M7_6": {
     label: "SIMULATED EDUCATIONAL VALUES",
@@ -207,7 +208,7 @@ var SIMULATION_CONFIG = {
     label: "SIMULATED EDUCATIONAL VALUES",
     expectedMP: 0,
     expectedBP: 100,
-    mpDurationMs: 3000,
-    bpDurationMs: 3000
+    mpDurationMs: 3500,
+    bpDurationMs: 4500
   }
 };
