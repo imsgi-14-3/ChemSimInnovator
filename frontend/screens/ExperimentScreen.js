@@ -14,16 +14,23 @@ var ExperimentScreen = {
         html += ExperimentScreen.renderApparatusStage(exp, state);
         break;
       default:
+        var stageBody = '';
         if (id === 'A2' || id === 'A3') {
-          html += ChromatographyRenderer.renderStage(stage, exp, state, appState);
+          stageBody = ChromatographyRenderer.renderStage(stage, exp, state, appState);
         } else if (id === 'A1') {
-          html += DistillationRenderer.renderStage(stage, exp, state, appState);
+          stageBody = DistillationRenderer.renderStage(stage, exp, state, appState);
         } else if (id === 'A4') {
-          html += TitrationRenderer.renderStage(stage, exp, state, appState);
+          stageBody = TitrationRenderer.renderStage(stage, exp, state, appState);
         } else if (id === 'A5') {
-          html += GasRenderer.renderStage(stage, exp, state, appState);
+          stageBody = GasRenderer.renderStage(stage, exp, state, appState);
         } else {
-          html += MinorExperimentRenderer.renderStage(stage, exp, state, appState);
+          stageBody = MinorExperimentRenderer.renderStage(stage, exp, state, appState);
+        }
+        var skipSide = id === 'M7_4' && (stage === 'prepare' || stage === 'heat' || stage === 'monitor');
+        if (skipSide) {
+          html += stageBody;
+        } else {
+          html += '<div class="lab-stage-row"><div class="lab-canvas-cell">' + stageBody + '</div>' + InstructionPanel.renderSide(exp, stage, state) + '</div>';
         }
         break;
     }
