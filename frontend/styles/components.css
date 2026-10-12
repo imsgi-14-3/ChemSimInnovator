@@ -2661,7 +2661,7 @@ input.form-range[type="range"]::-moz-range-thumb {
   justify-content: center;
   font-weight: 800;
   letter-spacing: 0.04em;
-  background: linear-gradient(145deg, #1a6b4f, #134d39);
+  background: linear-gradient(145deg, #0a2a66, #08204f);
   color: #fff;
   font-size: 0.95rem;
   box-shadow: 0 6px 16px rgba(26,107,79,0.35);
@@ -2882,7 +2882,7 @@ input.form-range[type="range"]::-moz-range-thumb {
 
 .demo-nb-step {
   display: inline-block;
-  background: #1a6b4f;
+  background: #0a2a66;
   color: #fff;
   font-size: 0.72rem;
   font-weight: 700;
@@ -3550,7 +3550,7 @@ input.form-range[type="range"]::-moz-range-thumb {
 }
 
 .titration-tool-btn.correct {
-  border-color: var(--color-success, #16a34a);
+  border-color: var(--color-success, #12428f);
   background: var(--color-success-50, #f0fdf4);
   color: var(--color-success-dark, #166534);
 }
@@ -3605,7 +3605,7 @@ input.form-range[type="range"]::-moz-range-thumb {
 }
 
 .titration-step.done .titration-step-icon {
-  background: var(--color-success, #16a34a);
+  background: var(--color-success, #12428f);
   color: #fff;
 }
 
@@ -3698,7 +3698,7 @@ input.form-range[type="range"]::-moz-range-thumb {
 }
 
 .titre-tracker-dot.done {
-  background: var(--color-success, #16a34a);
+  background: var(--color-success, #12428f);
   color: #fff;
 }
 
@@ -3710,7 +3710,7 @@ input.form-range[type="range"]::-moz-range-thumb {
 }
 
 .titre-tracker-line.done {
-  background: var(--color-success, #16a34a);
+  background: var(--color-success, #12428f);
 }
 
 /* Titrate reading display */
@@ -3872,7 +3872,7 @@ input.form-range[type="range"]::-moz-range-thumb {
 }
 
 .gas-identity-card.detected {
-  border-color: var(--color-success, #16a34a);
+  border-color: var(--color-success, #12428f);
   background: var(--color-success-50, #f0fdf4);
 }
 
@@ -3951,7 +3951,7 @@ input.form-range[type="range"]::-moz-range-thumb {
 }
 
 .gas-tracker-dot.done {
-  background: var(--color-success, #16a34a);
+  background: var(--color-success, #12428f);
   color: #fff;
 }
 
@@ -3968,7 +3968,7 @@ input.form-range[type="range"]::-moz-range-thumb {
 }
 
 .gas-tracker-line.done {
-  background: var(--color-success, #16a34a);
+  background: var(--color-success, #12428f);
 }
 
 /* Gas summary cards */
@@ -3990,7 +3990,7 @@ input.form-range[type="range"]::-moz-range-thumb {
 }
 
 .gas-summary-card.detected {
-  border-color: var(--color-success, #16a34a);
+  border-color: var(--color-success, #12428f);
   background: var(--color-success-50, #f0fdf4);
 }
 
@@ -4033,7 +4033,7 @@ input.form-range[type="range"]::-moz-range-thumb {
 }
 
 .gas-summary-badge.detected {
-  background: var(--color-success, #16a34a);
+  background: var(--color-success, #12428f);
   color: #fff;
 }
 

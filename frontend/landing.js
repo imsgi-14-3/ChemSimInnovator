@@ -21,17 +21,17 @@ var ChemSimLanding = (function() {
 
   var LOGO_BADGE =
     '<svg width="36" height="36" viewBox="0 0 48 48" fill="none">' +
-    '<path d="M19 6h10" stroke="#15803d" stroke-width="4" stroke-linecap="round"/>' +
-    '<path d="M21 6v11.5L11.5 35a4.6 4.6 0 0 0 4 6.9h17a4.6 4.6 0 0 0 4-6.9L27 17.5V6" fill="#ffffff" stroke="#15803d" stroke-width="3.4" stroke-linejoin="round"/>' +
-    '<path d="M15.8 30h16.4l3.4 6.2a3.2 3.2 0 0 1-2.8 4.7H15.2a3.2 3.2 0 0 1-2.8-4.7z" fill="#22c55e"/>' +
-    '<path d="M36 4c-4.6.4-7.6 3-8.4 7 4.6-.4 7.7-2.9 8.4-7z" fill="#16a34a"/>' +
+    '<path d="M19 6h10" stroke="#0a2a66" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M21 6v11.5L11.5 35a4.6 4.6 0 0 0 4 6.9h17a4.6 4.6 0 0 0 4-6.9L27 17.5V6" fill="#ffffff" stroke="#0a2a66" stroke-width="3.4" stroke-linejoin="round"/>' +
+    '<path d="M15.8 30h16.4l3.4 6.2a3.2 3.2 0 0 1-2.8 4.7H15.2a3.2 3.2 0 0 1-2.8-4.7z" fill="#2479e8"/>' +
+    '<path d="M36 4c-4.6.4-7.6 3-8.4 7 4.6-.4 7.7-2.9 8.4-7z" fill="#2479e8"/>' +
     '<circle cx="21" cy="34" r="1.6" fill="#ffffff" opacity=".85"/>' +
     '<circle cx="26.5" cy="37" r="1.2" fill="#ffffff" opacity=".7"/>' +
     '</svg>';
 
   var HEX1 = '<svg width="150" height="170" viewBox="0 0 100 112" fill="none"><polygon points="50,3 93,28 93,80 50,107 7,80 7,28" stroke="rgba(34,197,94,.30)" stroke-width="3"/></svg>';
   var HEX2 = '<svg width="96" height="108" viewBox="0 0 100 112" fill="none"><polygon points="50,3 93,28 93,80 50,107 7,80 7,28" stroke="rgba(34,197,94,.22)" stroke-width="3.5"/></svg>';
-  var LEAF = '<svg width="86" height="60" viewBox="0 0 86 60" fill="none"><path d="M4 56C10 24 38 4 82 4c0 36-26 56-62 54A96 96 0 0 1 4 56z" fill="url(#lgLeafG)"/><path d="M10 54C24 34 48 16 76 10" stroke="#0f7a37" stroke-width="2.4" stroke-linecap="round"/><defs><linearGradient id="lgLeafG" x1="4" y1="56" x2="82" y2="4" gradientUnits="userSpaceOnUse"><stop stop-color="#16a34a"/><stop offset="1" stop-color="#5ee88b"/></linearGradient></defs></svg>';
+  var LEAF = '<svg width="86" height="60" viewBox="0 0 86 60" fill="none"><path d="M4 56C10 24 38 4 82 4c0 36-26 56-62 54A96 96 0 0 1 4 56z" fill="url(#lgLeafG)"/><path d="M10 54C24 34 48 16 76 10" stroke="#0d3f8f" stroke-width="2.4" stroke-linecap="round"/><defs><linearGradient id="lgLeafG" x1="4" y1="56" x2="82" y2="4" gradientUnits="userSpaceOnUse"><stop stop-color="#2479e8"/><stop offset="1" stop-color="#7dc4ff"/></linearGradient></defs></svg>';
 
   function molecule(bx, by, s) {
     var pts = [[0, 0], [34, -22], [68, -4], [34, 26], [86, -34]];
@@ -58,7 +58,7 @@ var ChemSimLanding = (function() {
       var x = 34 + t * 44;
       out += '<path d="M' + x + ' 0h30v96a15 15 0 0 1-30 0z" fill="rgba(255,255,255,.55)" stroke="#90a4ae" stroke-width="3"/>';
       out += '<path d="M' + (x + 2) + ' ' + (46 + t * 6) + 'h26v' + (50 - t * 6) + 'a13 13 0 0 1-26 0z" fill="url(#lgLiqG)" opacity=".92"/>';
-      out += '<ellipse cx="' + (x + 15) + '" cy="' + (46 + t * 6) + '" rx="13" ry="4" fill="#a3e635" opacity=".85"/>';
+      out += '<ellipse cx="' + (x + 15) + '" cy="' + (46 + t * 6) + '" rx="13" ry="4" fill="#ffc629" opacity=".85"/>';
       out += '<rect x="' + (x + 5) + '" y="8" width="5" height="30" rx="2.5" fill="#ffffff" opacity=".7"/>';
     }
     out += '<rect x="-6" y="148" width="176" height="10" rx="5" fill="#90a4ae"/>';
@@ -69,10 +69,10 @@ var ChemSimLanding = (function() {
     var s = '';
     s += '<svg class="lg-illu" viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg">';
     s += '<defs>';
-    s += '<linearGradient id="lgLiqG" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#7dff9b"/><stop offset=".5" stop-color="#31d35f"/><stop offset="1" stop-color="#12913f"/></linearGradient>';
-    s += '<radialGradient id="lgBallG" cx=".35" cy=".3" r=".8"><stop stop-color="#6ff592"/><stop offset=".55" stop-color="#22c55e"/><stop offset="1" stop-color="#0e7a37"/></radialGradient>';
+    s += '<linearGradient id="lgLiqG" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a8d4ff"/><stop offset=".5" stop-color="#2479e8"/><stop offset="1" stop-color="#0d3f8f"/></linearGradient>';
+    s += '<radialGradient id="lgBallG" cx=".35" cy=".3" r=".8"><stop stop-color="#8ec8ff"/><stop offset=".55" stop-color="#2479e8"/><stop offset="1" stop-color="#0d3f8f"/></radialGradient>';
     s += '<linearGradient id="lgGlassG" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ffffff" stop-opacity=".9"/><stop offset=".5" stop-color="#e3f2fd" stop-opacity=".55"/><stop offset="1" stop-color="#ffffff" stop-opacity=".85"/></linearGradient>';
-    s += '<radialGradient id="lgGlowG" cx=".5" cy=".5" r=".5"><stop stop-color="#c9ffd8"/><stop offset="1" stop-color="#c9ffd8" stop-opacity="0"/></radialGradient>';
+    s += '<radialGradient id="lgGlowG" cx=".5" cy=".5" r=".5"><stop stop-color="#d9ebff"/><stop offset="1" stop-color="#d9ebff" stop-opacity="0"/></radialGradient>';
     s += '</defs>';
     s += '<g opacity=".8">';
     s += '<g transform="translate(30,120)">' + HEX2 + '</g>';
@@ -86,14 +86,14 @@ var ChemSimLanding = (function() {
     s += '<g transform="translate(455,150)">';
     s += '<path d="M62 0h44v58l52 108a72 72 0 1 1-148 0L62 58V0z" fill="url(#lgGlassG)" stroke="#8fa8bc" stroke-width="5" stroke-linejoin="round"/>';
     s += '<path d="M25 168a66 66 0 0 0 130 0z" fill="url(#lgLiqG)" opacity=".9"/>';
-    s += '<ellipse cx="90" cy="168" rx="65" ry="12" fill="#a3e635" opacity=".8"/>';
+    s += '<ellipse cx="90" cy="168" rx="65" ry="12" fill="#ffc629" opacity=".8"/>';
     s += '<rect x="66" y="6" width="9" height="46" rx="4.5" fill="#ffffff" opacity=".8"/>';
     s += '</g>';
     /* conical flask (front centre) */
     s += '<g transform="translate(210,120)">';
     s += '<path d="M66 6h68v112l84 190a44 44 0 0 1-40 62H112a44 44 0 0 1-40-62l84-190V6z" fill="url(#lgGlassG)" stroke="#7f97ac" stroke-width="6" stroke-linejoin="round"/>';
     s += '<path d="M84 208h112l48 106a30 30 0 0 1-27 44H83a30 30 0 0 1-27-44z" fill="url(#lgLiqG)"/>';
-    s += '<ellipse cx="140" cy="210" rx="56" ry="11" fill="#b7ff69" opacity=".95"/>';
+    s += '<ellipse cx="140" cy="210" rx="56" ry="11" fill="#ffd766" opacity=".95"/>';
     s += '<rect x="72" y="14" width="12" height="88" rx="6" fill="#ffffff" opacity=".85"/>';
     s += '<path d="M66 6h68" stroke="#5f768a" stroke-width="7" stroke-linecap="round"/>';
     s += '<circle cx="118" cy="270" r="9" fill="#ffffff" opacity=".55"/>';
@@ -108,7 +108,7 @@ var ChemSimLanding = (function() {
     s += '<g transform="translate(690,410) rotate(160)">' + LEAF + '</g>';
     s += '<g transform="translate(560,60) rotate(-30)">' + LEAF + '</g>';
     /* rising vapour */
-    s += '<g stroke="#6ee7a0" stroke-width="7" stroke-linecap="round" fill="none" opacity=".7">';
+    s += '<g stroke="#8ec8ff" stroke-width="7" stroke-linecap="round" fill="none" opacity=".7">';
     s += '<path d="M300 118c-14-16 12-26 0-44"/>';
     s += '<path d="M330 100c-12-14 10-22 0-38"/>';
     s += '<path d="M508 132c-12-14 10-22 0-38"/>';
@@ -120,9 +120,9 @@ var ChemSimLanding = (function() {
   function wave() {
     return '<div class="lg-wave">' +
       '<svg viewBox="0 0 1600 150" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<path d="M0 70C260 10 520 0 800 40s540 110 800 60v50H0z" fill="#bbf0cb"/>' +
-      '<path d="M0 100C300 40 560 40 840 78s500 72 760 34v38H0z" fill="#8ce6a9"/>' +
-      '<path d="M0 128C320 86 600 92 880 116s460 34 720 10v24H0z" fill="#16a34a"/>' +
+      '<path d="M0 70C260 10 520 0 800 40s540 110 800 60v50H0z" fill="#cfe5ff"/>' +
+      '<path d="M0 100C300 40 560 40 840 78s500 72 760 34v38H0z" fill="#a8d4ff"/>' +
+      '<path d="M0 128C320 86 600 92 880 116s460 34 720 10v24H0z" fill="#2479e8"/>' +
       '</svg></div>';
   }
 

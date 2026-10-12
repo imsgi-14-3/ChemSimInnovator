@@ -2,14 +2,14 @@
 
 :root {
   /* Colors - Laboratory-inspired */
-  --color-bg: #f0f2f5;
+  --color-bg: #f2f7fd;
   --color-surface: #ffffff;
   --color-surface-elevated: #ffffff;
-  --color-primary: #16a34a;
-  --color-primary-light: #22c55e;
-  --color-primary-dark: #15803d;
-  --color-primary-50: rgba(22, 163, 74, 0.05);
-  --color-primary-100: rgba(22, 163, 74, 0.1);
+  --color-primary: #12428f;
+  --color-primary-light: #2479e8;
+  --color-primary-dark: #0a2a66;
+  --color-primary-50: rgba(18, 66, 143, 0.05);
+  --color-primary-100: rgba(18, 66, 143, 0.1);
   --color-text: #1a2332;
   --color-text-secondary: #5a6577;
   --color-text-light: #8892a0;
@@ -23,8 +23,8 @@
   --color-error-bg: #fdf0f1;
   --color-warning: #f0ad4e;
   --color-warning-bg: #fef8ec;
-  --color-info: #4a90d9;
-  --color-info-bg: #eef4fc;
+  --color-info: #2479e8;
+  --color-info-bg: #eaf3ff;
 
   /* Typography */
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;

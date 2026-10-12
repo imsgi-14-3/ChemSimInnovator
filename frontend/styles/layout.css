@@ -14,8 +14,9 @@
   left: 0;
   right: 0;
   height: 56px;
-  background-color: var(--color-primary-dark);
-  color: #ffffff;
+  background-color: #ffffff;
+  color: var(--color-primary-dark);
+  border-bottom: 1px solid #d9e6f8;
   display: flex;
   align-items: center;
   padding: 0 var(--space-5);
@@ -32,7 +33,7 @@
 
 .header-home-btn,
 .header-back-btn {
-  color: #fff;
+  color: var(--color-primary-dark);
   padding: var(--space-1);
 }
 
@@ -384,7 +385,7 @@
   align-items: center;
   gap: 6px;
   background: #ffffff;
-  color: #15803d;
+  color: var(--color-primary);
   font-weight: 700;
   font-size: var(--text-sm);
   border: 0;
@@ -396,6 +397,6 @@
 }
 
 .app-header .header-landing-btn:hover {
-  background: #dcfce7;
+  background: #e3efff;
   transform: translateX(-2px);
 }
