@@ -183,7 +183,7 @@ var ChemSimLanding = (function() {
 
     h += '<section class="lg-features">';
     h += card('experiments', ICON.flask, 'Virtual Experiments', 'Perform chemical experiments safely and easily.');
-    h += card('experiments', ICON.atom, 'Chemical Reactions', 'Explore reactions and understand the science.');
+    h += card('apparatus', ICON.atom, 'Apparatus', 'See every piece of equipment used in the experiments.');
     h += card('learn', ICON.book, 'Learn &amp; Grow', 'Build your knowledge with interactive learning.');
     h += card('safe', ICON.shield, 'Safe &amp; Eco-Friendly', 'No real chemicals, no harm to environment.');
     h += '</section>';
@@ -199,6 +199,8 @@ var ChemSimLanding = (function() {
     h += safeItem('\u267B\uFE0F', 'Promotes Sustainable Learning', 'Explore chemistry while learning environmentally responsible habits.');
     h += safeItem('\uD83C\uDF31', 'Builds Environmental Awareness', 'Understand how science can support a cleaner future.');
     h += '</div></div></div>';
+
+    h += apparatusMarkup();
 
     h += '<section class="lg-about" id="lg-about">';
     h += '<h3>About ChemSim</h3>';
@@ -243,6 +245,79 @@ var ChemSimLanding = (function() {
     window.setTimeout(function() { m.hidden = true; }, 300);
   }
 
+
+  var APP_SVG_HEAD = '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">';
+  var APP_SVG_TAIL = '</svg>';
+  var APP_ICON_G = '<g fill="none" stroke="#0a2a66" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">';
+  var APP_ICON = {
+    beaker: APP_ICON_G + '<path d="M22 10h20v6l-2.5 30a5 5 0 0 1-5 4.5h-5a5 5 0 0 1-5-4.5L20 16z"/><path d="M22.8 32h18.4l-1.8 14.5H24.6z" fill="#2479e8" opacity=".55" stroke="none"/><path d="M22 10h20"/><path d="M42 10l5 3"/></g>',
+    conical: APP_ICON_G + '<path d="M26 10h12v14l10 22a4 4 0 0 1-3.6 5.8H19.6A4 4 0 0 1 16 46l10-22z"/><path d="M22 36h20l3.5 10H18.5z" fill="#2479e8" opacity=".55" stroke="none"/><path d="M24 10h16"/></g>',
+    round: APP_ICON_G + '<circle cx="32" cy="36" r="16"/><path d="M27 10h10v11"/><path d="M18.5 38h27a13.5 13.5 0 0 1-27 0z" fill="#2479e8" opacity=".55" stroke="none"/><path d="M27 10h10"/></g>',
+    burette: APP_ICON_G + '<path d="M29 6h6v36h-6z"/><circle cx="32" cy="46" r="4"/><path d="M32 50v6"/><path d="M29 12h4M29 18h4M29 24h4M29 30h4M29 36h4"/></g>',
+    pipette: APP_ICON_G + '<path d="M28 8h8l4 16a5 5 0 0 1-4 6h-8a5 5 0 0 1-4-6z"/><path d="M30 30h4v22h-4z"/><path d="M26 8h12"/></g>',
+    tubes: APP_ICON_G + '<path d="M18 10h10v28a5 5 0 0 1-10 0z"/><path d="M18.4 32h9.2l-.8 6h-7.6z" fill="#2479e8" opacity=".55" stroke="none"/><path d="M36 10h10v28a5 5 0 0 1-10 0z"/><path d="M36.4 34h9.2l-.8 4h-7.6z" fill="#2479e8" opacity=".55" stroke="none"/><path d="M17 10h12M35 10h12"/></g>',
+    gasjar: APP_ICON_G + '<path d="M20 14h24v36H20z"/><path d="M18 8h28v5H18z"/><path d="M24 24h4M34 30h4M26 38h4" opacity=".7"/></g>',
+    thermo: APP_ICON_G + '<path d="M29 8h6v28h-6z"/><circle cx="32" cy="44" r="8"/><path d="M32 20v18" stroke="#dc3545"/><circle cx="32" cy="44" r="4.5" fill="#dc3545" stroke="none"/><path d="M35 14h-3M35 20h-3M35 26h-3"/></g>',
+    funnel: APP_ICON_G + '<path d="M14 12h36L37 32v18h-10V32z"/><path d="M19 18h26l-6 10H25z" fill="#2479e8" opacity=".5" stroke="none"/></g>',
+    filter: APP_ICON_G + '<circle cx="32" cy="32" r="18"/><path d="M32 14v36"/><path d="M18 24l20 16"/></g>',
+    watch: APP_ICON_G + '<path d="M10 30a22 14 0 0 0 44 0z"/><path d="M10 30h44"/></g>',
+    dish: APP_ICON_G + '<path d="M12 28h40l-5 16a5 5 0 0 1-5 4H22a5 5 0 0 1-5-4z"/><path d="M17 36h30l-2.5 8h-25z" fill="#2479e8" opacity=".55" stroke="none"/></g>',
+    rod: APP_ICON_G + '<path d="M16 48L48 16"/><path d="M20 44l4 4" opacity=".6"/></g>',
+    stand: APP_ICON_G + '<path d="M12 52h40v5H12z"/><path d="M20 8h5v44h-5z"/><path d="M25 22h14v5H25z"/><circle cx="41" cy="24.5" r="3"/></g>',
+    tripod: APP_ICON_G + '<path d="M12 18h40v7H12z"/><path d="M20 18v7M32 18v7M44 18v7" opacity=".6"/><path d="M17 25l-3 27M47 25l3 27M32 25v27"/></g>',
+    bunsen: APP_ICON_G + '<path d="M20 50h24v5H20z"/><path d="M28 22h8v28h-8z"/><path d="M28 34h-6" opacity=".7"/><path d="M32 4c4 8 6 11 6 15a6 6 0 0 1-12 0c0-4 2-7 6-15z" fill="#ffc629" stroke="#0a2a66"/></g>',
+    condenser: APP_ICON_G + '<path d="M24 8h16v40H24z"/><path d="M29 8v40M35 8v40" opacity=".7"/><path d="M24 18h-8M40 38h8"/><path d="M16 15v6M48 35v6"/></g>',
+    column: APP_ICON_G + '<path d="M24 8h16v44H24z"/><circle cx="32" cy="16" r="2.5" fill="#8ec8ff" stroke="none"/><circle cx="28" cy="24" r="2.5" fill="#8ec8ff" stroke="none"/><circle cx="36" cy="24" r="2.5" fill="#8ec8ff" stroke="none"/><circle cx="32" cy="32" r="2.5" fill="#8ec8ff" stroke="none"/><circle cx="28" cy="40" r="2.5" fill="#8ec8ff" stroke="none"/><circle cx="36" cy="40" r="2.5" fill="#8ec8ff" stroke="none"/></g>',
+    delivery: APP_ICON_G + '<path d="M12 42h18a12 12 0 0 0 12-12V14" stroke-width="6"/><path d="M12 42h18a12 12 0 0 0 12-12V14" stroke="#eaf3ff" stroke-width="2.5"/></g>',
+    chroma: APP_ICON_G + '<path d="M20 8h24v48H20z"/><path d="M22 44h20" stroke-dasharray="4 3"/><circle cx="32" cy="40" r="3" fill="#2479e8" stroke="none"/><path d="M22 16h20" stroke-dasharray="4 3" opacity=".7"/></g>',
+    capillary: APP_ICON_G + '<path d="M30 8h4v36h-4z"/><circle cx="32" cy="48" r="3.5" fill="#2479e8" stroke="none"/></g>',
+    ruler: APP_ICON_G + '<path d="M10 24h44v16H10z"/><path d="M18 24v6M26 24v8M34 24v6M42 24v8M50 24v6"/></g>',
+    dropper: APP_ICON_G + '<circle cx="32" cy="14" r="7"/><path d="M29 21h6l-1.5 21h-3z"/><circle cx="32" cy="48" r="2.5" fill="#2479e8" stroke="none"/></g>',
+    loop: APP_ICON_G + '<path d="M14 50c2-14 10-22 18-24"/><circle cx="40" cy="20" r="8"/><path d="M36 4l1 6M48 12l-5 3M50 28l-6-2" opacity=".6"/></g>',
+    wash: APP_ICON_G + '<path d="M20 26h24v22a4 4 0 0 1-4 4H24a4 4 0 0 1-4-4z"/><path d="M27 26v-5h10v5"/><path d="M44 30l8-8"/><path d="M50 18l4 2-2 4" opacity=".7"/><path d="M24 36h16" opacity=".5"/></g>',
+    tile: APP_ICON_G + '<rect x="12" y="20" width="40" height="24" rx="4" fill="#f0f6ff"/><path d="M12 32h40" opacity=".5"/></g>'
+  };
+  var APPARATUS = [
+    ['Beaker', 'beaker'], ['Conical Flask', 'conical'], ['Round-Bottom Flask', 'round'],
+    ['Burette', 'burette'], ['Volumetric Pipette', 'pipette'], ['Test Tubes', 'tubes'],
+    ['Gas Jar', 'gasjar'], ['Thermometer', 'thermo'], ['Funnel', 'funnel'],
+    ['Filter Paper', 'filter'], ['Watch Glass', 'watch'], ['Evaporating Dish', 'dish'],
+    ['Glass Rod', 'rod'], ['Retort Stand &amp; Clamp', 'stand'], ['Tripod &amp; Gauze', 'tripod'],
+    ['Bunsen Burner', 'bunsen'], ['Condenser', 'condenser'], ['Fractionating Column', 'column'],
+    ['Delivery Tube', 'delivery'], ['Chromatography Paper', 'chroma'], ['Capillary Tube', 'capillary'],
+    ['Ruler', 'ruler'], ['Dropper', 'dropper'], ['Wire Loop', 'loop'],
+    ['Wash Bottle', 'wash'], ['White Tile', 'tile']
+  ];
+
+  function apparatusMarkup() {
+    var h = '<div class="lg-modal" id="lg-apparatus" hidden>';
+    h += '<div class="lg-modal-card">';
+    h += '<button class="lg-modal-close" data-lg="apparatus-close" aria-label="Close">&times;</button>';
+    h += '<div class="lg-modal-head"><span class="lg-modal-ico lg-modal-ico--head">' + ICON.atom + '</span><h3>Lab Apparatus</h3></div>';
+    h += '<p class="lg-app-note">Every piece of equipment used across the ChemSim experiments.</p>';
+    h += '<div class="lg-app-wrap"><div class="lg-app-grid">';
+    for (var i = 0; i < APPARATUS.length; i++) {
+      h += '<div class="lg-app-item"><span class="lg-app-ico">' + APP_SVG_HEAD + (APP_ICON[APPARATUS[i][1]] || '') + APP_SVG_TAIL + '</span><b>' + APPARATUS[i][0] + '</b></div>';
+    }
+    h += '</div></div></div></div>';
+    return h;
+  }
+
+  function openApparatusModal() {
+    var m = document.getElementById('lg-apparatus');
+    if (!m) return;
+    m.hidden = false;
+    window.setTimeout(function() { m.className = 'lg-modal lg-modal--open'; }, 20);
+  }
+
+  function closeApparatusModal() {
+    var m = document.getElementById('lg-apparatus');
+    if (!m || m.hidden) return;
+    m.className = 'lg-modal';
+    window.setTimeout(function() { m.hidden = true; }, 300);
+  }
+
+
   var escBound = false;
 
   function wire(el) {
@@ -254,6 +329,8 @@ var ChemSimLanding = (function() {
         if (action === 'about') scrollToAbout();
         else if (action === 'safe') openSafeModal();
         else if (action === 'safe-close') closeSafeModal();
+        else if (action === 'apparatus') openApparatusModal();
+        else if (action === 'apparatus-close') closeApparatusModal();
         else if (action === 'experiments') closeLanding('experiment-select');
         else if (action === 'learn') closeLanding('revision');
         else closeLanding('home');
@@ -265,10 +342,16 @@ var ChemSimLanding = (function() {
         if (ev.target === modal) closeSafeModal();
       });
     }
+    var appModal = document.getElementById('lg-apparatus');
+    if (appModal) {
+      appModal.addEventListener('click', function(ev) {
+        if (ev.target === appModal) closeApparatusModal();
+      });
+    }
     if (!escBound) {
       escBound = true;
       document.addEventListener('keydown', function(ev) {
-        if (ev.keyCode === 27) closeSafeModal();
+        if (ev.keyCode === 27) { closeSafeModal(); closeApparatusModal(); }
       });
     }
   }
