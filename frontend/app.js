@@ -165,6 +165,7 @@ var ChemSim = (function() {
 
   function isStageCompleted(expId, stage, state) {
     if (!state) return false;
+    if (stage === 'interpret' || stage === 'conclude') return true;
     if (expId === 'A4') {
       switch(stage) {
         case 'select': return true;
@@ -177,12 +178,65 @@ var ChemSim = (function() {
         case 'endpoint': return true;
         case 'record': return true;
         case 'calculate': return state.titrationCalcChecked === true;
-        case 'interpret': return state.interpretation && state.interpretation.trim().length > 0;
+        case 'interpret': return true;
         case 'complete': return true;
         default: return true;
       }
     }
+    if (expId === 'A1') {
+      if (stage === 'startHeating') return state.distHeating === true;
+      if (stage === 'collect') return state.distCollected === true;
+      return true;
+    }
+    if (expId === 'A2' || expId === 'A3') {
+      if (stage === 'setup') return state.feedback === 'setup_ok' || state.paperInBeaker === true;
+      if (stage === 'run') return !!(state.simulation && state.simulation.done);
+      return true;
+    }
+    if (expId === 'A5') {
+      if (stage === 'performTest') return !!(state.gasTestPerformed && state.simulation && state.simulation.done);
+      return true;
+    }
+    if (expId.indexOf('M7_') === 0) {
+      switch (stage) {
+        case 'heat': case 'dissolve': case 'crystallize': case 'performReaction':
+        case 'performTest': case 'meltingPointTest': case 'boilingPointTest':
+        case 'monitor': case 'observe': case 'collect':
+          return !!(state.simulation && state.simulation.done);
+        case 'record': case 'recordMP': case 'recordBP':
+          return !!(state.interpretation && state.interpretation.trim().length > 0);
+        default: return true;
+      }
+    }
     return true;
+  }
+
+  var autoAdvKey = '';
+
+  function isAutoAdvanceStage(expId, stage) {
+    if (expId.indexOf('M7_') === 0) {
+      return ['heat','dissolve','crystallize','performReaction','performTest','meltingPointTest','boilingPointTest'].indexOf(stage) !== -1;
+    }
+    if (expId === 'A2' || expId === 'A3') return stage === 'run';
+    return false;
+  }
+
+  function maybeAutoAdvance() {
+    if (!appState.experiment || appState.screen !== 'experiment') return;
+    var stg = appState.currentStage;
+    if (!stg || stg === 'interpret' || stg === 'conclude' || stg === 'complete') return;
+    if (!isAutoAdvanceStage(appState.experimentId, stg)) return;
+    if (!isStageCompleted(appState.experimentId, stg, appState.state)) return;
+    var key = appState.experimentId + ':' + stg + ':' + appState.stageIndex;
+    if (autoAdvKey === key) return;
+    autoAdvKey = key;
+    window.setTimeout(function() {
+      if (!appState.experiment || appState.screen !== 'experiment') return;
+      var curKey = appState.experimentId + ':' + appState.currentStage + ':' + appState.stageIndex;
+      if (curKey !== key) return;
+      if (!isStageCompleted(appState.experimentId, appState.currentStage, appState.state)) return;
+      goNext();
+    }, 900);
   }
 
   function goNext() {
@@ -358,11 +412,12 @@ var ChemSim = (function() {
     btnActionReset.style.display = appState.screen === 'experiment' ? '' : 'none';
     var hasNext = idx < total - 1 && stage !== 'complete';
     btnActionNext.style.display = hasNext ? '' : 'none';
+    var completed = isStageCompleted(exp.id, stage, appState.state);
+    btnActionNext.disabled = hasNext && !completed;
 
     var isLastStage = stage === 'complete';
     var stageHtml = ExperimentScreen.renderStage(exp, stage, appState.state, appState);
     if (hasNext) {
-      var completed = isStageCompleted(exp.id, stage, appState.state);
       stageHtml += '<div class="stage-next-btn-wrap"><button class="btn btn-primary stage-next-btn" id="stage-next-btn"' + (completed ? '' : ' disabled') + '>Next Step →</button></div>';
     }
     workspace.innerHTML = stageHtml;
@@ -379,6 +434,7 @@ var ChemSim = (function() {
     if (stageNextBtn) {
       stageNextBtn.addEventListener('click', goNext);
     }
+    maybeAutoAdvance();
   }
 
   var labRafId = null;
