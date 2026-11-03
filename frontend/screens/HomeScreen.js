@@ -129,6 +129,7 @@ ChemSim.registerScreen('home', function(appState) {
     }
   }
 
+  var assetBase = location.pathname.indexOf('/frontend/') !== -1 ? '' : 'frontend/';
   var html = '<div class="home-screen"><div class="home-shell">';
 
   /* Navy sidebar navigation */
@@ -154,6 +155,7 @@ ChemSim.registerScreen('home', function(appState) {
   html += '<p class="hero-text">A virtual chemistry lab designed to help you build skills, gain confidence and be ready for the real lab.</p>';
   html += '</div>';
   html += '<div class="hero-art" aria-hidden="true">';
+  html += '<img class="hero-photo" src="' + assetBase + 'assets/home-hero.png?v=pic1" alt="Chemistry lab glassware">';
   html += '<svg viewBox="0 0 260 170" xmlns="http://www.w3.org/2000/svg">';
   html += '<rect x="96" y="18" width="66" height="118" rx="10" fill="#eaf3ff" stroke="#b9d6f2" stroke-width="3"/>';
   html += '<rect x="104" y="44" width="50" height="84" rx="7" fill="#2479e8" opacity=".75"/>';

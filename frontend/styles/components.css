@@ -4612,3 +4612,16 @@ input.form-range[type="range"]::-moz-range-thumb {
     flex-wrap: wrap;
   }
 }
+
+/* ---- Hero picture ---- */
+.hero-art svg {
+  display: none;
+}
+.hero-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(18, 66, 143, 0.16);
+  border: 1px solid #d9eaff;
+}
