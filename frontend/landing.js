@@ -162,6 +162,7 @@ var ChemSimLanding = (function() {
     h += '<button class="lg-link" data-lg="experiments">' + ICON.flask + '<span>Experiments</span></button>';
     h += '<button class="lg-link" data-lg="about">' + ICON.atom + '<span>About</span></button>';
     h += '<button class="lg-link" data-lg="learn">' + ICON.book + '<span>Learn</span></button>';
+    h += '<button class="lg-link" data-lg="experiments">' + ICON.flask + '<span>Practical Lab</span></button>';
     h += '</nav>';
     h += '<button class="lg-cta" data-lg="start"><span class="lg-cta-play">' + ICON.play + '</span>Get Started</button>';
     h += '</header>';
@@ -223,7 +224,7 @@ var ChemSimLanding = (function() {
       try {
         if (window.ChemSim && screen) ChemSim.navigateTo(screen);
       } catch (e) { /* app still usable without landing */ }
-    }, 300);
+    }, 0);
   }
 
   function scrollToAbout() {

@@ -4625,3 +4625,29 @@ input.form-range[type="range"]::-moz-range-thumb {
   box-shadow: 0 12px 30px rgba(18, 66, 143, 0.16);
   border: 1px solid #d9eaff;
 }
+
+/* ---- Home top bar fixes: [hidden] must win, search result rows ---- */
+.hb-note[hidden],
+.hb-menu[hidden],
+.hb-results[hidden] {
+  display: none;
+}
+.hb-results button {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.hb-res-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: #2479e8;
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-right: 8px;
+  vertical-align: middle;
+}

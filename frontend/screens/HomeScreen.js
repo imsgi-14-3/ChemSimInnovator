@@ -69,6 +69,20 @@ ChemSim.registerScreen('home', function(appState) {
       ChemSim.navigateTo(s);
     }
 
+    function hbMatch(hay, q) {
+      hay = String(hay || '').toLowerCase();
+      var words = q.split(/\s+/);
+      for (var w = 0; w < words.length; w++) {
+        if (words[w] && hay.indexOf(words[w]) === -1) return false;
+      }
+      return true;
+    }
+    function goExp(id) {
+      if (results) { results.hidden = true; }
+      if (searchEl) { searchEl.value = ''; }
+      ChemSim.navigateTo('experiment-select', { experimentId: id });
+    }
+
     if (searchEl && results) {
       searchEl.addEventListener('input', function() {
         var q = searchEl.value.trim().toLowerCase();
@@ -76,9 +90,20 @@ ChemSim.registerScreen('home', function(appState) {
         var h = '';
         var hits = 0;
         for (var i = 0; i < hbNavList.length; i++) {
-          if (hbNavList[i][1].toLowerCase().indexOf(q) !== -1) {
+          if (hbMatch(hbNavList[i][1], q)) {
             h += '<button data-screen="' + hbNavList[i][0] + '">' + hbNavList[i][1] + '</button>';
             hits++;
+          }
+        }
+        if (typeof EXPERIMENTS !== 'undefined' && EXPERIMENTS && EXPERIMENTS.length) {
+          var shown = 0;
+          for (var e = 0; e < EXPERIMENTS.length && shown < 6; e++) {
+            var ex = EXPERIMENTS[e];
+            var exHay = (ex.id || '') + ' ' + (ex.title || '') + ' ' + (ex.section || '');
+            if (hbMatch(exHay, q)) {
+              h += '<button data-exp="' + ex.id + '"><span class="hb-res-tag">Experiment</span>' + ex.title + '</button>';
+              hits++; shown++;
+            }
           }
         }
         if (!hits) h = '<div class="hb-nores">No matches &mdash; press Enter for Practical Lab</div>';
@@ -87,14 +112,18 @@ ChemSim.registerScreen('home', function(appState) {
       });
       searchEl.addEventListener('keydown', function(ev) {
         if (ev.keyCode === 13) {
-          var first = results.querySelector('[data-screen]');
-          goScreen(first ? first.getAttribute('data-screen') : 'experiment-select');
+          var first = results.querySelector('[data-screen],[data-exp]');
+          if (!first) goScreen('experiment-select');
+          else if (first.getAttribute('data-exp')) goExp(first.getAttribute('data-exp'));
+          else goScreen(first.getAttribute('data-screen'));
         }
       });
       results.addEventListener('click', function(ev) {
         var t = ev.target;
-        while (t && t !== results && (!t.getAttribute || !t.getAttribute('data-screen'))) t = t.parentNode;
-        if (t && t.getAttribute && t.getAttribute('data-screen')) goScreen(t.getAttribute('data-screen'));
+        while (t && t !== results && (!t.getAttribute || (!t.getAttribute('data-screen') && !t.getAttribute('data-exp')))) t = t.parentNode;
+        if (!t || t === results || !t.getAttribute) return;
+        if (t.getAttribute('data-exp')) goExp(t.getAttribute('data-exp'));
+        else if (t.getAttribute('data-screen')) goScreen(t.getAttribute('data-screen'));
       });
     }
 
