@@ -24,6 +24,111 @@ ChemSim.registerScreen('home', function(appState) {
     ['demo', 'Demo Mode', IC.play, false]
   ];
 
+
+
+  var HB_IC = {
+    search: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a6577" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.2-4.2"/></svg>',
+    bell: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0d2f6e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg>',
+    user: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>',
+    chev: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0d2f6e" stroke-width="2.6" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>',
+    close: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+  };
+  var hbNavList = [
+    ['home', 'Home'], ['experiment-select', 'Practical Lab'], ['pba', 'PBA Practice'],
+    ['mystery', 'Mystery Lab'], ['log', 'Experiment Log'], ['revision', 'Learning & Revision'],
+    ['demo', 'Demo Mode']
+  ];
+
+  function hbTopbar() {
+    var h = '<div class="home-topbar">';
+    h += '<div class="hb-search">' + HB_IC.search +
+      '<input id="hb-search-input" type="text" placeholder="Search experiments, topics..." autocomplete="off">' +
+      '<div class="hb-results" id="hb-results" hidden></div></div>';
+    h += '<button class="hb-icon-btn" id="hb-bell" aria-label="Notifications">' + HB_IC.bell + '<span class="hb-dot"></span></button>';
+    h += '<button class="hb-student" id="hb-student"><span class="hb-avatar">' + HB_IC.user + '</span>Student' + HB_IC.chev + '</button>';
+    h += '<div class="hb-menu" id="hb-student-menu" hidden>' +
+      '<div class="hb-menu-head">Student</div>' +
+      '<button data-screen="experiment-select">Practical Lab</button>' +
+      '<button data-screen="pba">PBA Practice</button>' +
+      '<button data-screen="log">Experiment Log</button>' +
+      '<button data-screen="revision">Learning &amp; Revision</button>' +
+      '<button id="hb-to-landing">Back to Landing</button>' +
+      '</div>';
+    h += '<div class="hb-note" id="hb-note" hidden><span>Welcome to ChemSim! Open <b>Practical Lab</b> to start experimenting.</span><button id="hb-note-close" aria-label="Dismiss">' + HB_IC.close + '</button></div>';
+    h += '</div>';
+    return h;
+  }
+
+  function hbWire(scope) {
+    var results = document.getElementById('hb-results');
+    var searchEl = document.getElementById('hb-search-input');
+
+    function goScreen(s) {
+      if (results) { results.hidden = true; }
+      if (searchEl) { searchEl.value = ''; }
+      ChemSim.navigateTo(s);
+    }
+
+    if (searchEl && results) {
+      searchEl.addEventListener('input', function() {
+        var q = searchEl.value.trim().toLowerCase();
+        if (!q) { results.hidden = true; results.innerHTML = ''; return; }
+        var h = '';
+        var hits = 0;
+        for (var i = 0; i < hbNavList.length; i++) {
+          if (hbNavList[i][1].toLowerCase().indexOf(q) !== -1) {
+            h += '<button data-screen="' + hbNavList[i][0] + '">' + hbNavList[i][1] + '</button>';
+            hits++;
+          }
+        }
+        if (!hits) h = '<div class="hb-nores">No matches &mdash; press Enter for Practical Lab</div>';
+        results.innerHTML = h;
+        results.hidden = false;
+      });
+      searchEl.addEventListener('keydown', function(ev) {
+        if (ev.keyCode === 13) {
+          var first = results.querySelector('[data-screen]');
+          goScreen(first ? first.getAttribute('data-screen') : 'experiment-select');
+        }
+      });
+      results.addEventListener('click', function(ev) {
+        var t = ev.target;
+        while (t && t !== results && (!t.getAttribute || !t.getAttribute('data-screen'))) t = t.parentNode;
+        if (t && t.getAttribute && t.getAttribute('data-screen')) goScreen(t.getAttribute('data-screen'));
+      });
+    }
+
+    var bell = document.getElementById('hb-bell');
+    var note = document.getElementById('hb-note');
+    if (bell && note) {
+      bell.addEventListener('click', function() { note.hidden = !note.hidden; });
+    }
+    var noteClose = document.getElementById('hb-note-close');
+    if (noteClose && note) {
+      noteClose.addEventListener('click', function() { note.hidden = true; });
+    }
+
+    var student = document.getElementById('hb-student');
+    var menu = document.getElementById('hb-student-menu');
+    if (student && menu) {
+      student.addEventListener('click', function() { menu.hidden = !menu.hidden; });
+    }
+    if (menu) {
+      menu.addEventListener('click', function(ev) {
+        var t = ev.target;
+        while (t && t !== menu && (!t.getAttribute || !t.getAttribute('data-screen'))) t = t.parentNode;
+        if (t && t.getAttribute && t.getAttribute('data-screen')) goScreen(t.getAttribute('data-screen'));
+      });
+    }
+    var toLanding = document.getElementById('hb-to-landing');
+    if (toLanding) {
+      toLanding.addEventListener('click', function() {
+        if (window.ChemSimLanding && ChemSimLanding.showLanding) ChemSimLanding.showLanding();
+        else if (window.ChemSimLanding && ChemSimLanding.show) ChemSimLanding.show();
+      });
+    }
+  }
+
   var html = '<div class="home-screen"><div class="home-shell">';
 
   /* Navy sidebar navigation */
@@ -39,6 +144,7 @@ ChemSim.registerScreen('home', function(appState) {
 
   /* Main area */
   html += '<div class="home-main">';
+  html += hbTopbar();
 
   /* Welcome banner */
   html += '<section class="home-hero2">';
@@ -98,6 +204,7 @@ ChemSim.registerScreen('home', function(appState) {
         });
       })(navs[n]);
     }
+    hbWire(scope);
   }, 0);
 
   return html;
