@@ -177,6 +177,7 @@ var ChemSimLanding = (function() {
     h += '</div>';
     h += '<div class="lg-hero-right">';
     h += '<div class="lg-slogan">Think. Experiment.<br>Discover.</div>';
+    h += '<img class="lg-hero-photo" src="' + lgAsset + 'assets/landing-hero.png?v=lgpic1" alt="Chemistry laboratory glassware">';
     h += illustration();
     h += '</div>';
     h += '</section>';
@@ -365,6 +366,8 @@ var ChemSimLanding = (function() {
       navigator.serviceWorker.register(url).catch(function() { /* offline install is optional */ });
     } catch (e) { /* older browsers */ }
   }
+
+  var lgAsset = /\/frontend\//.test(location.pathname) ? '' : 'frontend/';
 
   function showLanding() {
     var host = document.getElementById('landing');
