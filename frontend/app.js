@@ -40,6 +40,8 @@ var ChemSim = (function() {
   }
 
   function showExperimentListing() {
+    var appSidebar = document.getElementById('app-sidebar');
+    if (appSidebar) appSidebar.style.display = '';
     var workspace = document.getElementById('workspace-content');
     var instructionPanel = document.getElementById('instruction-content');
     var sidebarExperiments = document.getElementById('sidebar-experiments');
@@ -297,6 +299,8 @@ var ChemSim = (function() {
   }
 
   function renderCurrentScreen() {
+    var appSidebar = document.getElementById('app-sidebar');
+    if (appSidebar) appSidebar.style.display = (appState.screen === 'home') ? 'none' : '';
     var workspace = document.getElementById('workspace-content');
     var instructionPanel = document.getElementById('instruction-content');
     var sidebarExperiments = document.getElementById('sidebar-experiments');
