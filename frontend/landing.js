@@ -29,8 +29,8 @@ var ChemSimLanding = (function() {
     '<circle cx="26.5" cy="37" r="1.2" fill="#ffffff" opacity=".7"/>' +
     '</svg>';
 
-  var HEX1 = '<svg width="150" height="170" viewBox="0 0 100 112" fill="none"><polygon points="50,3 93,28 93,80 50,107 7,80 7,28" stroke="rgba(34,197,94,.30)" stroke-width="3"/></svg>';
-  var HEX2 = '<svg width="96" height="108" viewBox="0 0 100 112" fill="none"><polygon points="50,3 93,28 93,80 50,107 7,80 7,28" stroke="rgba(34,197,94,.22)" stroke-width="3.5"/></svg>';
+  var HEX1 = '<svg width="150" height="170" viewBox="0 0 100 112" fill="none"><polygon points="50,3 93,28 93,80 50,107 7,80 7,28" stroke="rgba(110,170,255,.50)" stroke-width="3"/></svg>';
+  var HEX2 = '<svg width="96" height="108" viewBox="0 0 100 112" fill="none"><polygon points="50,3 93,28 93,80 50,107 7,80 7,28" stroke="rgba(110,170,255,.40)" stroke-width="3.5"/></svg>';
   var LEAF = '<svg width="86" height="60" viewBox="0 0 86 60" fill="none"><path d="M4 56C10 24 38 4 82 4c0 36-26 56-62 54A96 96 0 0 1 4 56z" fill="url(#lgLeafG)"/><path d="M10 54C24 34 48 16 76 10" stroke="#0d3f8f" stroke-width="2.4" stroke-linecap="round"/><defs><linearGradient id="lgLeafG" x1="4" y1="56" x2="82" y2="4" gradientUnits="userSpaceOnUse"><stop stop-color="#2479e8"/><stop offset="1" stop-color="#7dc4ff"/></linearGradient></defs></svg>';
 
   function molecule(bx, by, s) {

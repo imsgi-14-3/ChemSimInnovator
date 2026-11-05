@@ -767,3 +767,126 @@
 .lg-slogan {
   display: none;
 }
+
+/* ================= EXACT PIC RESTYLE + FULLY STATIC ================= */
+/* lg-pic-exact: zero animation, layout per design reference */
+#landing, #landing *, #landing *::before, #landing *::after {
+  transition: none !important;
+  animation: none !important;
+}
+.lg-cta:hover, .lg-enter:hover, .lg-card:hover, .lg-modal-close:hover {
+  transform: none !important;
+}
+
+/* hero = banner card, photo flush to right edge */
+.lg-hero {
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  background: linear-gradient(110deg, #f4faff 0%, #e9f4ff 48%, #dceeff 100%);
+  border: 1px solid #d9eaff;
+  border-radius: 26px;
+  overflow: hidden;
+  min-height: 400px;
+}
+.lg-hero-left {
+  flex: 1 1 50%;
+  min-width: 0;
+  padding: 44px 42px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.lg-hero-right {
+  flex: 0 0 50%;
+  min-width: 0;
+  position: relative;
+}
+.lg-hero-photo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.lg-underline {
+  display: none;
+}
+
+/* sizes/colors per picture */
+.lg-eyebrow {
+  font-size: 13px;
+  letter-spacing: 1.4px;
+  padding: 10px 20px;
+  color: #1f6fd0;
+  background: #e3f0ff;
+}
+.lg-title {
+  font-size: clamp(40px, 5.2vw, 66px);
+  letter-spacing: -1.5px;
+  margin-top: 20px;
+  color: #17356f;
+}
+.lg-title span {
+  color: #2479e8;
+}
+.lg-lead {
+  font-size: 17px;
+  margin-top: 22px;
+  max-width: 520px;
+}
+.lg-enter {
+  font-size: 18px;
+  padding: 17px 34px;
+  margin-top: 30px;
+  box-shadow: 0 14px 30px rgba(18, 66, 143, 0.35);
+  background: linear-gradient(135deg, #2f8bff 0%, #12428f 60%, #0f57bc 100%);
+}
+.lg-link {
+  font-size: 15px;
+  padding: 9px 14px 12px;
+}
+.lg-cta {
+  font-size: 15px;
+  padding: 12px 24px;
+}
+.lg-card {
+  padding: 22px 22px 20px;
+}
+.lg-card h3 {
+  font-size: 18px;
+}
+.lg-card p {
+  font-size: 14px;
+}
+.lg-card-rule {
+  background: #2479e8;
+  width: 44px;
+  height: 4px;
+}
+.lg-card-icon {
+  width: 52px;
+  height: 52px;
+  color: #1f6fd0;
+}
+.lg-modal {
+  background: rgba(10, 42, 102, 0.55);
+}
+
+/* decorations: light blue, static, behind content (no overlap) */
+.lg-hex {
+  opacity: 0.55;
+  z-index: 1;
+}
+.lg-leafbg {
+  opacity: 0.9;
+  z-index: 1;
+}
+.lg-enter:hover { box-shadow: 0 14px 30px rgba(18, 66, 143, 0.35); }
