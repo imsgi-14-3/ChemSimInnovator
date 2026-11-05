@@ -890,3 +890,19 @@
   z-index: 1;
 }
 .lg-enter:hover { box-shadow: 0 14px 30px rgba(18, 66, 143, 0.35); }
+
+/* ---- lg-app-real: realistic apparatus gallery ---- */
+.lg-app-item {
+  background: #ffffff;
+  border: 1px solid #e3edf8;
+  border-radius: 16px;
+  padding: 14px 10px 12px;
+  box-shadow: 0 6px 16px rgba(18, 66, 143, 0.08);
+}
+.lg-app-ico svg {
+  width: 52px;
+  height: 52px;
+}
+.lg-app-item b {
+  font-size: 12.5px;
+}
