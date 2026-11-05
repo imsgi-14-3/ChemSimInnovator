@@ -178,7 +178,7 @@ var ChemSimLanding = (function() {
     h += '</div>';
     h += '<div class="lg-hero-right">';
     h += '<div class="lg-slogan">Think. Experiment.<br>Discover.</div>';
-    h += '<img class="lg-hero-photo" src="' + lgAsset + 'assets/landing-hero.png?v=lgpic2" alt="Chemistry laboratory glassware">';
+    h += '<img class="lg-hero-photo" src="' + lgAsset + 'assets/landing-hero.png?v=lgpic3" alt="Chemistry laboratory glassware">';
     h += illustration();
     h += '</div>';
     h += '</section>';
