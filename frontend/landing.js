@@ -165,6 +165,7 @@ var ChemSimLanding = (function() {
     h += '<button class="lg-link" data-lg="experiments">' + ICON.flask + '<span>Practical Lab</span></button>';
     h += '</nav>';
     h += '<button class="lg-cta" data-lg="start"><span class="lg-cta-play">' + ICON.play + '</span>Get Started</button>';
+    h += '<button class="lg-burger" data-lg="burger" aria-label="Menu" aria-expanded="false"><i></i><i></i><i></i></button>';
     h += '</header>';
 
     h += '<section class="lg-hero">';
@@ -475,7 +476,19 @@ var ChemSimLanding = (function() {
       nodes[i].addEventListener('click', function(ev) {
         ev.preventDefault();
         var action = this.getAttribute('data-lg');
-        if (action === 'about') scrollToAbout();
+        /* any link click closes the mobile hamburger menu */
+        if (action !== 'burger') {
+          var navClose = document.querySelector('.lg-nav');
+          if (navClose) navClose.classList.remove('lg-nav--open');
+        }
+        if (action === 'burger') {
+          var navEl = document.querySelector('.lg-nav');
+          if (navEl) {
+            var opened = navEl.classList.toggle('lg-nav--open');
+            this.setAttribute('aria-expanded', opened ? 'true' : 'false');
+          }
+        }
+        else if (action === 'about') scrollToAbout();
         else if (action === 'safe') openSafeModal();
         else if (action === 'safe-close') closeSafeModal();
         else if (action === 'apparatus') openApparatusModal();

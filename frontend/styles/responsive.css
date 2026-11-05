@@ -175,6 +175,8 @@
     bottom: 48px;
     width: 100%;
     min-width: 100%;
+    /* width is 100% here — must hide fully off-screen, not -320px */
+    right: -100%;
   }
 
   .app-action-bar {
@@ -239,6 +241,250 @@
   .table td {
     padding: var(--space-2) var(--space-3);
     font-size: var(--text-xs);
+  }
+}
+
+/* ============================================================
+   FULL RESPONSIVE PASS — resp1
+   Covers header menu controls, lab stage rows, grids, modals,
+   touch targets and horizontal-overflow safety at every size.
+   ============================================================ */
+
+/* ---- global overflow safety (no horizontal page scroll) ---- */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+}
+
+.app-workspace {
+  overflow-x: hidden;
+}
+
+/* ---- header mobile controls (hidden on desktop) ---- */
+.header-menu-btn,
+.header-panel-btn {
+  display: none;
+}
+
+/* overlays only exist as fixed layers on small screens */
+.app-sidebar__overlay,
+.app-instruction-panel__overlay {
+  display: none;
+}
+
+/* ---- touch-friendly taps (removes double-tap zoom delay) ---- */
+.btn,
+.sidebar-item,
+.experiment-item,
+.canvas-container canvas,
+.lg-link,
+.lg-card {
+  touch-action: manipulation;
+}
+
+/* ============ Laptop / tablet landscape — 1024px and below ============ */
+@media (max-width: 1024px) {
+  /* instruction-panel toggle button becomes visible */
+  .header-panel-btn {
+    display: inline-flex;
+  }
+
+  .app-instruction-panel__overlay {
+    display: block;
+  }
+
+  .app-header {
+    padding: 0 var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .workspace-content {
+    padding: var(--space-5);
+  }
+
+  .progress-bar-container {
+    width: 90px;
+  }
+
+  /* side-by-side lab rows stack so nothing is cut off */
+  .m74-stage-row {
+    flex-direction: column;
+  }
+
+  .m74-side {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* ============ Tablet portrait / mobile — 768px and below ============ */
+@media (max-width: 768px) {
+  /* hamburger menu button becomes visible */
+  .header-menu-btn {
+    display: inline-flex;
+  }
+
+  .app-sidebar__overlay {
+    display: block;
+  }
+
+  .workspace-content {
+    padding: var(--space-4);
+    overflow-x: auto;
+  }
+
+  .canvas-container {
+    padding: var(--space-2);
+  }
+
+  /* touch-friendly targets */
+  .btn {
+    min-height: 44px;
+  }
+
+  .btn-sm {
+    min-height: 40px;
+  }
+
+  .sidebar-item,
+  .experiment-item {
+    min-height: 44px;
+  }
+
+  /* lab stage rows: canvas above side panel */
+  .lab-stage-row,
+  .m74-stage-row {
+    flex-direction: column;
+  }
+
+  .lab-side,
+  .m74-side {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* action bar wraps instead of clipping buttons */
+  .app-action-bar {
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    row-gap: var(--space-1);
+  }
+
+  .action-left,
+  .action-right {
+    flex: 0 0 auto;
+  }
+
+  .action-center {
+    flex-wrap: wrap;
+  }
+
+  .table th,
+  .table td {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-xs);
+  }
+
+  .mystery-casebar {
+    flex-wrap: wrap;
+    row-gap: var(--space-1);
+  }
+}
+
+/* ============ Very small phones — 480px and below ============ */
+@media (max-width: 480px) {
+  /* header shrinks to 44px here — keep overlays aligned under it */
+  .app-sidebar__overlay,
+  .app-instruction-panel__overlay {
+    top: 44px;
+  }
+}
+
+/* ============ Large phone / small tablet — 620px and below ============ */
+@media (max-width: 620px) {
+  .progress-label {
+    display: none;
+  }
+
+  .progress-bar-container {
+    width: 64px;
+  }
+
+  .header-experiment-id {
+    display: none;
+  }
+
+  .app-action-bar {
+    height: auto;
+    min-height: 52px;
+    padding: var(--space-2) var(--space-3);
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+
+  .action-center {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .action-left,
+  .action-right {
+    flex: 1 1 auto;
+  }
+
+  .modal {
+    width: 96%;
+    max-height: 88vh;
+  }
+
+  .modal__footer {
+    flex-direction: column;
+  }
+
+  .modal__footer .btn {
+    width: 100%;
+  }
+
+  .workspace-content {
+    padding: var(--space-3);
+  }
+}
+
+/* ============ Small phone — 420px and below ============ */
+@media (max-width: 420px) {
+  .brand-name {
+    font-size: 14px;
+  }
+
+  .header-landing-btn {
+    padding: 6px 10px;
+  }
+
+  .demo-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .gas-identity-cards {
+    gap: 4px;
+  }
+
+  .gas-identity-card {
+    padding: 6px 2px;
+    font-size: 11px;
+  }
+
+  .progress-bar-container {
+    width: 48px;
   }
 }
 

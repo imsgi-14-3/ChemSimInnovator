@@ -14,12 +14,12 @@
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
   
   <!-- Design System & Styles -->
-  <link rel="stylesheet" href="styles/landing.css?v=appreal1">
+  <link rel="stylesheet" href="styles/landing.css?v=resp2">
   <link rel="stylesheet" href="styles/design-system.css?v=theme2">
   <link rel="stylesheet" href="styles/layout.css?v=theme2">
   <link rel="stylesheet" href="styles/components.css?v=search1">
   <link rel="stylesheet" href="styles/laboratory.css?v=theme2">
-  <link rel="stylesheet" href="styles/responsive.css">
+  <link rel="stylesheet" href="styles/responsive.css?v=resp2">
 </head>
 <body>
   <!-- Landing page (shown in front of the app) -->
@@ -28,7 +28,12 @@
     <!-- Header -->
     <header class="app-header" id="app-header">
       <div class="header-left">
-        <button class="btn btn-ghost btn-sm header-home-btn" id="btn-home" aria-label="Home">
+        <button class="btn btn-ghost btn-sm header-menu-btn" id="btn-menu" aria-label="Open menu" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <button class="btn btn-ghost btn-sm header-panel-btn" id="btn-panel" aria-label="Show instructions" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </button>        <button class="btn btn-ghost btn-sm header-home-btn" id="btn-home" aria-label="Home">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </button>
         <button class="btn btn-ghost btn-sm header-back-btn" id="btn-back" style="display:none;" aria-label="Back">
@@ -114,6 +119,10 @@
           </div>
         </div>
       </aside>
+
+      <!-- Mobile overlays: tap outside to close the panels -->
+      <div class="app-sidebar__overlay" id="sidebar-overlay"></div>
+      <div class="app-instruction-panel__overlay" id="panel-overlay"></div>
     </div>
 
     <!-- Action Bar -->
@@ -182,9 +191,9 @@
   <script src="renderers/MinorExperimentRenderer.js?v=m75w2"></script>
 
   <!-- Main Application -->
-  <script src="app.js?v=home2"></script>
+  <script src="app.js?v=resp1"></script>
 
   <!-- Landing page (front page) -->
-  <script src="landing.js?v=appreal1"></script>
+  <script src="landing.js?v=resp1"></script>
 </body>
 </html>

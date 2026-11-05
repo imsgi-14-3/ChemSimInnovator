@@ -42,6 +42,8 @@ var ChemSim = (function() {
   function showExperimentListing() {
     var appSidebar = document.getElementById('app-sidebar');
     if (appSidebar) appSidebar.style.display = '';
+    var menuBtn = document.getElementById('btn-menu');
+    if (menuBtn) menuBtn.style.display = '';
     var workspace = document.getElementById('workspace-content');
     var instructionPanel = document.getElementById('instruction-content');
     var sidebarExperiments = document.getElementById('sidebar-experiments');
@@ -298,9 +300,26 @@ var ChemSim = (function() {
     }
   }
 
+  /* --- Responsive: close mobile sidebar / instruction panel --- */
+  function closeMobilePanels() {
+    var sb = document.getElementById('app-sidebar');
+    var sbOv = document.getElementById('sidebar-overlay');
+    var pn = document.getElementById('instruction-panel');
+    var pnOv = document.getElementById('panel-overlay');
+    if (sb) sb.classList.remove('app-sidebar--open');
+    if (sbOv) sbOv.classList.remove('app-sidebar__overlay--visible');
+    if (pn) pn.classList.remove('app-instruction-panel--open');
+    if (pnOv) pnOv.classList.remove('app-instruction-panel__overlay--visible');
+    var menuBtn = document.getElementById('btn-menu');
+    if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+  }
+
   function renderCurrentScreen() {
     var appSidebar = document.getElementById('app-sidebar');
     if (appSidebar) appSidebar.style.display = (appState.screen === 'home') ? 'none' : '';
+    var menuBtn = document.getElementById('btn-menu');
+    if (menuBtn) menuBtn.style.display = (appState.screen === 'home') ? 'none' : '';
+    closeMobilePanels();
     var workspace = document.getElementById('workspace-content');
     var instructionPanel = document.getElementById('instruction-content');
     var sidebarExperiments = document.getElementById('sidebar-experiments');
@@ -1185,6 +1204,7 @@ var ChemSim = (function() {
     list.querySelectorAll('.experiment-item').forEach(function(el) {
       el.addEventListener('click', function() {
         var expId = el.getAttribute('data-exp-id');
+        closeMobilePanels();
         navigateTo('experiment', { experimentId: expId });
       });
     });
@@ -1197,9 +1217,48 @@ var ChemSim = (function() {
     document.getElementById('btn-action-next').addEventListener('click', goNext);
     document.getElementById('btn-action-reset').addEventListener('click', resetExperiment);
 
+    /* --- Responsive: hamburger (sidebar) + instruction panel toggles --- */
+    var menuBtn = document.getElementById('btn-menu');
+    var panelBtn = document.getElementById('btn-panel');
+    var sidebarEl = document.getElementById('app-sidebar');
+    var panelEl = document.getElementById('instruction-panel');
+    var sidebarOv = document.getElementById('sidebar-overlay');
+    var panelOv = document.getElementById('panel-overlay');
+
+    if (menuBtn) {
+      menuBtn.addEventListener('click', function() {
+        if (!sidebarEl || sidebarEl.style.display === 'none') return;
+        var open = sidebarEl.classList.toggle('app-sidebar--open');
+        if (sidebarOv) sidebarOv.classList.toggle('app-sidebar__overlay--visible', open);
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        /* only one mobile panel open at a time */
+        if (open && panelEl) {
+          panelEl.classList.remove('app-instruction-panel--open');
+          if (panelOv) panelOv.classList.remove('app-instruction-panel__overlay--visible');
+        }
+      });
+    }
+
+    if (panelBtn) {
+      panelBtn.addEventListener('click', function() {
+        if (!panelEl) return;
+        var open = panelEl.classList.toggle('app-instruction-panel--open');
+        if (panelOv) panelOv.classList.toggle('app-instruction-panel__overlay--visible', open);
+        if (open && sidebarEl) {
+          sidebarEl.classList.remove('app-sidebar--open');
+          if (sidebarOv) sidebarOv.classList.remove('app-sidebar__overlay--visible');
+          if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    if (sidebarOv) sidebarOv.addEventListener('click', closeMobilePanels);
+    if (panelOv) panelOv.addEventListener('click', closeMobilePanels);
+
     document.querySelectorAll('.sidebar-nav .sidebar-item').forEach(function(el) {
       el.addEventListener('click', function() {
         var screen = el.getAttribute('data-screen');
+        closeMobilePanels();
         navigateTo(screen);
       });
     });

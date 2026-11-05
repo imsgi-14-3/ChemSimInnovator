@@ -906,3 +906,245 @@
 .lg-app-item b {
   font-size: 12.5px;
 }
+
+/* ================================================================
+   RESPONSIVE PASS — resp1
+   Hamburger menu on phones, hero fixes, overflow safety.
+   ================================================================ */
+
+/* burger hidden on tablet/desktop */
+.lg-burger {
+  display: none;
+}
+
+/* ---- 980px and below: stacked hero must not overflow ---- */
+@media (max-width: 980px) {
+  .lg-hero-left,
+  .lg-hero-right {
+    min-width: 0;
+  }
+
+  .lg-hero-left {
+    padding: 32px 26px;
+  }
+
+  /* hero photo is absolutely positioned — the panel needs a real height */
+  .lg-hero-right {
+    min-height: 280px;
+    height: 280px;
+  }
+
+  .lg-hero {
+    min-height: 0;
+  }
+}
+
+/* ---- 760px and below: professional hamburger menu ---- */
+@media (max-width: 760px) {
+  .lg-burger {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: #eef5ff;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+
+  .lg-burger i {
+    display: block;
+    width: 22px;
+    height: 2.6px;
+    border-radius: 3px;
+    background: #12428f;
+  }
+
+  .lg-nav--open .lg-burger i:nth-child(1) {
+    transform: translateY(7.6px) rotate(45deg);
+  }
+
+  .lg-nav--open .lg-burger i:nth-child(2) {
+    opacity: 0;
+  }
+
+  .lg-nav--open .lg-burger i:nth-child(3) {
+    transform: translateY(-7.6px) rotate(-45deg);
+  }
+
+  .lg-cta {
+    margin-left: auto;
+  }
+
+  /* links collapse into a dropdown panel below the nav bar */
+  .lg-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    width: auto;
+    flex-basis: auto;
+    order: 0;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 2px;
+    margin-top: 8px;
+    padding: 8px;
+    background: #ffffff;
+    border-top: 1px solid #eef4fb;
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 18px 34px rgba(18, 66, 143, 0.18);
+    z-index: 30;
+  }
+
+  .lg-nav--open .lg-links {
+    display: flex;
+  }
+
+  .lg-link {
+    justify-content: flex-start;
+    min-height: 46px;
+    font-size: 15.5px;
+    padding: 11px 14px;
+    border-radius: 12px;
+  }
+
+  /* show full link text inside the dropdown (never icons only) */
+  .lg-link span {
+    display: inline;
+  }
+
+  .lg-link--active::after {
+    display: none;
+  }
+
+  .lg-link--active {
+    background: rgba(36, 121, 232, 0.10);
+    border-radius: 12px;
+  }
+}
+
+/* ---- 620px and below: compact nav + phone sizing ---- */
+@media (max-width: 620px) {
+  .lg-logo-badge {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+  }
+
+  .lg-logo-text small {
+    display: none;
+  }
+
+  .lg-cta {
+    padding: 10px 16px;
+    font-size: 14px;
+    gap: 6px;
+  }
+
+  .lg-cta .lg-cta-play {
+    width: 20px;
+    height: 20px;
+  }
+
+  .lg-hero-left {
+    padding: 26px 20px;
+  }
+
+  .lg-hero-right {
+    min-height: 230px;
+    height: 230px;
+  }
+
+  .lg-eyebrow {
+    font-size: 11.5px;
+    letter-spacing: 1px;
+    padding: 9px 16px;
+  }
+
+  .lg-title {
+    letter-spacing: -1px;
+  }
+
+  .lg-lead {
+    font-size: 15.5px;
+  }
+
+  .lg-enter {
+    width: 100%;
+    justify-content: center;
+    padding: 16px 20px;
+    font-size: 16.5px;
+  }
+
+  .lg-enter-row {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .lg-about {
+    padding: 20px 18px;
+    margin: 6px 8px 0;
+  }
+
+  .lg-modal-card {
+    padding: 24px 16px 20px;
+    border-radius: 18px;
+  }
+}
+
+/* ---- 480px and below: keep the nav header on ONE row ---- */
+@media (max-width: 480px) {
+  .lg-nav {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .lg-logo-text b {
+    font-size: 19px;
+  }
+
+  .lg-cta {
+    padding: 9px 12px;
+    font-size: 13px;
+    gap: 5px;
+    white-space: nowrap;
+  }
+
+  .lg-cta .lg-cta-play {
+    display: none;
+  }
+
+  .lg-burger {
+    margin-left: 6px;
+  }
+}
+
+/* ---- 360px and below: smallest phones ---- */
+@media (max-width: 360px) {
+  .lg-cta {
+    display: none;
+  }
+
+  .lg-burger {
+    margin-left: auto;
+  }
+
+  .lg-app-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .lg-hero-right {
+    min-height: 200px;
+    height: 200px;
+  }
+}
